@@ -19,16 +19,80 @@
       </p>
     </div>
 
-    <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
-        Frete grátis a partir de (R$)
+    <div class="flex flex-col gap-6 sm:flex-row">
+      <div class="flex-1">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          Valor do frete (R$)
+        </label>
+        <input
+          [value]="shippingFee()"
+          (input)="shippingFee.set($any($event.target).value)"
+          inputmode="decimal"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        />
+        <p class="mt-1.5 text-xs text-slate-400">
+          Cobrado no checkout quando o pedido não atinge o frete grátis.
+        </p>
+      </div>
+      <div class="flex-1">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          Frete grátis a partir de (R$)
+        </label>
+        <input
+          [value]="threshold()"
+          (input)="threshold.set($any($event.target).value)"
+          inputmode="decimal"
+          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+        Frete por localidade (Melhor Envio)
+      </p>
+      <div class="flex flex-col gap-4 sm:flex-row">
+        <div class="flex-1">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+            CEP de origem
+          </label>
+          <input
+            [value]="originCep()"
+            (input)="onOriginCepInput($any($event.target).value)"
+            placeholder="00000-000"
+            maxlength="9"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          />
+          <p class="mt-1.5 text-xs text-slate-400">CEP de onde os produtos são enviados.</p>
+        </div>
+        <div class="flex-1">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Token da Melhor Envio
+          </label>
+          <input
+            [value]="melhorEnvioToken()"
+            (input)="melhorEnvioToken.set($any($event.target).value)"
+            type="password"
+            [placeholder]="hasMelhorEnvioToken() ? '•••••••• (já configurado)' : 'Cole o token aqui'"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          />
+          <p class="mt-1.5 text-xs text-slate-400">
+            Deixe em branco pra manter o token já salvo.
+          </p>
+        </div>
+      </div>
+      <label class="mt-4 flex items-center gap-2 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          [checked]="melhorEnvioSandbox()"
+          (change)="melhorEnvioSandbox.set($any($event.target).checked)"
+          class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-yellow-400"
+        />
+        Ambiente de testes (sandbox)
       </label>
-      <input
-        [value]="threshold()"
-        (input)="threshold.set($any($event.target).value)"
-        inputmode="decimal"
-        class="w-full max-w-xs rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
-      />
+      <p class="mt-2 text-xs text-slate-400">
+        Se a Melhor Envio não estiver configurada, a loja usa o frete fixo definido acima como alternativa.
+      </p>
     </div>
 
     <div>

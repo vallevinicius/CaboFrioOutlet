@@ -1,0 +1,128 @@
+<div class="flex min-h-screen flex-col bg-white">
+  <div class="sticky top-0 z-50">
+    <app-navbar
+      [activeCategory]="activeCategory()"
+      (categoryChange)="handleCategoryChange()"
+      [searchQuery]="searchQuery()"
+      (searchChange)="searchQuery.set($event)"
+    />
+  </div>
+
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+    @if (product(); as product) {
+      <nav class="mb-6 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+        <a routerLink="/" class="hover:text-slate-900">Início</a>
+        <lucide-icon [img]="ChevronRight" class="h-3.5 w-3.5" />
+        <span class="capitalize">{{ product.category }}</span>
+        <lucide-icon [img]="ChevronRight" class="h-3.5 w-3.5" />
+        <span class="truncate text-slate-900">{{ product.name }}</span>
+      </nav>
+
+      <div class="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        <div class="relative aspect-[4/5] overflow-hidden rounded-sm bg-slate-100">
+          <img
+            [src]="product.image"
+            [alt]="product.name"
+            (click)="lightboxOpen.set(true)"
+            class="h-full w-full cursor-zoom-in object-cover"
+            [class.opacity-50]="isOutOfStock()"
+            [class.grayscale]="isOutOfStock()"
+          />
+          <div class="absolute top-4 left-4 flex flex-col gap-1.5">
+            @if (isOutOfStock()) {
+              <span class="rounded-sm bg-red-500 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-white">
+                Esgotado
+              </span>
+            } @else {
+              @if (product.isNew) {
+                <span class="rounded-sm bg-slate-900 px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-white">
+                  Novo
+                </span>
+              }
+              @if (hasDiscount()) {
+                <span class="rounded-sm bg-accent px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-black">
+                  -{{ product.discountPercent }}%
+                </span>
+              }
+            }
+          </div>
+        </div>
+
+        <div class="flex flex-col">
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
+            {{ product.category }}{{ product.brand ? ' · ' + product.brand : '' }}
+          </span>
+          <h1 class="mt-2 font-display text-3xl font-semibold tracking-tight text-slate-900">
+            {{ product.name }}
+          </h1>
+
+          <div class="mt-4 flex items-baseline gap-3">
+            <span class="font-mono text-2xl font-bold tabular-nums text-slate-900">
+              {{ formatPrice(finalPrice()) }}
+            </span>
+            @if (hasDiscount()) {
+              <span class="font-mono text-sm tabular-nums text-slate-400 line-through">
+                {{ formatPrice(product.price) }}
+              </span>
+            }
+          </div>
+          <p class="mt-1 text-xs text-slate-500">
+            ou 3x de {{ formatPrice(finalPrice() / 3) }} sem juros
+          </p>
+
+          @if (product.description) {
+            <p class="mt-6 whitespace-pre-line text-sm leading-relaxed text-slate-600">
+              {{ product.description }}
+            </p>
+          }
+
+          <div class="mt-6">
+            <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Tamanho</span>
+            <div class="flex flex-wrap gap-2">
+              @for (size of product.sizes; track size) {
+                <button
+                  (click)="selectSize(size)"
+                  [disabled]="!isSizeAvailable(size)"
+                  class="rounded-sm border px-4 py-2 font-mono text-sm font-semibold transition-all duration-300"
+                  [class]="!isSizeAvailable(size)
+                    ? 'cursor-not-allowed border-slate-200 text-slate-300 line-through'
+                    : selectedSize() === size
+                      ? 'border-slate-900 bg-slate-900 text-white'
+                      : 'border-slate-300 text-slate-500 hover:border-accent hover:text-slate-900'"
+                >
+                  {{ size }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <button
+            (click)="handleAddToCart()"
+            [disabled]="!canAddToCart()"
+            class="mt-8 flex items-center justify-center gap-2 rounded-sm bg-accent py-3.5 text-sm font-bold uppercase tracking-wide text-black transition-all duration-300 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:border disabled:border-slate-200 disabled:bg-transparent disabled:text-slate-400"
+          >
+            <lucide-icon [img]="Plus" class="h-4 w-4" />
+            {{ isOutOfStock() ? 'Esgotado' : 'Adicionar ao Carrinho' }}
+          </button>
+        </div>
+      </div>
+
+      @if (lightboxOpen()) {
+        <app-image-lightbox [image]="product.image" [alt]="product.name" (close)="lightboxOpen.set(false)" />
+      }
+    } @else if (notFound()) {
+      <div class="flex flex-col items-center gap-4 py-24 text-center">
+        <h1 class="font-display text-2xl font-semibold text-slate-900">Produto não encontrado</h1>
+        <p class="text-sm text-slate-500">Esse produto pode ter sido removido do catálogo.</p>
+        <a routerLink="/" class="rounded-sm bg-accent px-6 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white">
+          Voltar à loja
+        </a>
+      </div>
+    } @else {
+      <div class="py-24 text-center text-sm text-slate-500">Carregando produto...</div>
+    }
+  </main>
+
+  <app-footer />
+  <app-cart-drawer />
+</div>

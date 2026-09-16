@@ -11,6 +11,7 @@ import { uploadRouter, UPLOADS_DIR } from './routes/upload';
 import { usersRouter } from './routes/users';
 import { heroSlidesRouter } from './routes/hero-slides';
 import { checkoutRouter } from './routes/checkout';
+import { shippingRouter } from './routes/shipping';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +30,7 @@ app.use('/api/upload', uploadRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/hero-slides', heroSlidesRouter);
 app.use('/api/checkout', checkoutRouter);
+app.use('/api/shipping', shippingRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

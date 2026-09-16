@@ -20,7 +20,14 @@ import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
 import { ProductCategory } from '../../types/product';
-import { formatOrderDate, formatOrderPrice, STATUS_LABELS, STATUS_STYLES } from '../../utils/order-format';
+import {
+  formatInstallments,
+  formatOrderDate,
+  formatOrderPrice,
+  formatPaymentMethod,
+  STATUS_LABELS,
+  STATUS_STYLES,
+} from '../../utils/order-format';
 import { formatPhone } from '../../utils/phone';
 import { formatCep } from '../../utils/cep';
 
@@ -58,6 +65,8 @@ export class AccountPage implements OnInit {
   readonly statusStyles = STATUS_STYLES;
   readonly formatPrice = formatOrderPrice;
   readonly formatDate = formatOrderDate;
+  readonly formatPaymentMethod = formatPaymentMethod;
+  readonly formatInstallments = formatInstallments;
 
   // navbar precisa desses inputs, mas essa página não filtra produtos
   activeCategory = signal<CategoryOrAll>('todos');
@@ -83,7 +92,7 @@ export class AccountPage implements OnInit {
   savingProfile = signal(false);
 
   constructor() {
-    this.titleService.setTitle(`Minha conta — ${this.settingsService.settings().storeName}`);
+    this.titleService.setTitle(`Minha conta | ${this.settingsService.settings().storeName}`);
   }
 
   ngOnInit(): void {

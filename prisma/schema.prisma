@@ -17,6 +17,10 @@ model Product {
   description     String        @db.Text
   isNew           Boolean       @default(false)
   discountPercent Float?
+  weightKg        Float         @default(0.3)
+  heightCm        Float         @default(4)
+  widthCm         Float         @default(20)
+  lengthCm        Float         @default(25)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   sizes           ProductSize[]
@@ -38,10 +42,20 @@ model Order {
   customerName    String
   customerContact String
   total           Float
+  shippingCost    Float       @default(0)
+  shippingService String?
+  shippingCep     String?
+  shippingStreet  String?
+  shippingNumber  String?
+  shippingComplement String?
+  shippingNeighborhood String?
+  shippingCity    String?
+  shippingState   String?
   status          String      @default("pendente")
   paymentId       String?
   paymentMethod   String?
   paymentStatus   String?
+  installments    Int?
   createdAt       DateTime    @default(now())
   items           OrderItem[]
   user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -65,6 +79,10 @@ model Settings {
   id                    Int    @id @default(1)
   storeName             String @default("Cabo Frio Outlet")
   freeShippingThreshold Float  @default(299)
+  shippingFee           Float  @default(19.9)
+  originCep             String  @default("")
+  melhorEnvioToken      String? @db.Text
+  melhorEnvioSandbox    Boolean @default(true)
   announcementMessages  String @db.Text
   brands                String @db.Text
 }

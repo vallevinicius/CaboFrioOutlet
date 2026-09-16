@@ -2,14 +2,27 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { Order } from '../types/order';
 
+export interface ShippingAddressInput {
+  cep: string;
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+}
+
 export interface CreateOrderInput {
   customerName: string;
   customerContact: string;
   items: { productId: string; size: string; quantity: number }[];
+  shippingAddress: ShippingAddressInput;
+  shippingOptionId?: number;
 }
 
 export interface PayInput {
   orderId: string;
+  selectedPaymentMethod: string;
   token?: string;
   payment_method_id: string;
   issuer_id?: string;
@@ -27,7 +40,7 @@ export interface PayResult {
   statusDetail?: string;
   orderId: string;
   orderStatus: string;
-  paymentId: number | string;
+  paymentId?: string;
   qrCode?: string;
   qrCodeBase64?: string;
   ticketUrl?: string;
@@ -38,6 +51,19 @@ export interface OrderStatusResult {
   status: string;
   paymentStatus: string | null;
   total: number;
+}
+
+export interface ShippingOption {
+  id: number;
+  name: string;
+  price: number;
+  deliveryTime: number | null;
+  company: string;
+}
+
+export interface ShippingCalculateResult {
+  options: ShippingOption[];
+  usedFallback: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -58,5 +84,12 @@ export class CheckoutService {
 
   getOrderStatus(orderId: string): Promise<OrderStatusResult> {
     return this.api.get(`/checkout/orders/${orderId}/status`);
+  }
+
+  calculateShipping(
+    cep: string,
+    items: { productId: string; quantity: number }[]
+  ): Promise<ShippingCalculateResult> {
+    return this.api.post('/shipping/calculate', { cep, items });
   }
 }

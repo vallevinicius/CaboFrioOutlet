@@ -1,8 +1,10 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Plus } from 'lucide-angular';
 import { Product } from '../../types/product';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { ImageLightbox } from '../image-lightbox/image-lightbox';
 
 function formatPrice(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -10,7 +12,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-card',
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, RouterLink, ImageLightbox],
   templateUrl: './product-card.html',
 })
 export class ProductCard {
@@ -21,6 +23,8 @@ export class ProductCard {
   readonly formatPrice = formatPrice;
 
   product = input.required<Product>();
+
+  lightboxOpen = signal(false);
 
   private firstAvailableSize = computed(() => {
     const product = this.product();
@@ -58,5 +62,10 @@ export class ProductCard {
     const size = this.selectedSize();
     this.cartService.addToCart(product, size);
     this.toastService.showToast('Produto adicionado!', `${product.name} (Tam. ${size})`);
+  }
+
+  openLightbox(event: Event): void {
+    event.stopPropagation();
+    this.lightboxOpen.set(true);
   }
 }

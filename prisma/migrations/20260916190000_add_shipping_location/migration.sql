@@ -1,0 +1,22 @@
+-- AlterTable
+ALTER TABLE `Product`
+  ADD COLUMN `weightKg` DOUBLE NOT NULL DEFAULT 0.3,
+  ADD COLUMN `heightCm` DOUBLE NOT NULL DEFAULT 4,
+  ADD COLUMN `widthCm` DOUBLE NOT NULL DEFAULT 20,
+  ADD COLUMN `lengthCm` DOUBLE NOT NULL DEFAULT 25;
+
+-- AlterTable
+ALTER TABLE `Order`
+  ADD COLUMN `shippingService` VARCHAR(191) NULL,
+  ADD COLUMN `shippingCep` VARCHAR(191) NULL,
+  ADD COLUMN `shippingStreet` VARCHAR(191) NULL,
+  ADD COLUMN `shippingNumber` VARCHAR(191) NULL,
+  ADD COLUMN `shippingComplement` VARCHAR(191) NULL,
+  ADD COLUMN `shippingNeighborhood` VARCHAR(191) NULL,
+  ADD COLUMN `shippingCity` VARCHAR(191) NULL,
+  ADD COLUMN `shippingState` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `Settings`
+  ADD COLUMN `originCep` VARCHAR(191) NOT NULL DEFAULT '',
+  ADD COLUMN `melhorEnvioToken` TEXT NULL;

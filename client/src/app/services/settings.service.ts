@@ -18,7 +18,7 @@ export class SettingsService {
       });
   }
 
-  async updateSettings(updates: Partial<StoreSettings>): Promise<void> {
+  async updateSettings(updates: Partial<StoreSettings> & { melhorEnvioToken?: string }): Promise<void> {
     const updated = await this.api.put<StoreSettings>('/settings', updates);
     this._settings.set(updated);
   }

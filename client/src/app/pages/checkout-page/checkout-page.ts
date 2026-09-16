@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { LucideAngularModule, Lock, CheckCircle2, XCircle, Copy, ArrowLeft } from 'lucide-angular';
@@ -7,18 +7,27 @@ import { Footer } from '../../components/footer/footer';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
-import { CheckoutService, PayResult } from '../../services/checkout.service';
+import { CheckoutService, PayResult, ShippingOption } from '../../services/checkout.service';
 import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
 import { ProductCategory } from '../../types/product';
 import { isValidCpf, normalizeCpf, formatCpf } from '../../utils/cpf';
+import { formatCep } from '../../utils/cep';
 
 type CategoryOrAll = ProductCategory | 'todos';
 type Step = 'dados' | 'pagamento' | 'aguardando' | 'sucesso' | 'recusado';
 
 const MP_SCRIPT_ID = 'mercadopago-sdk';
 const MP_SCRIPT_SRC = 'https://sdk.mercadopago.com/js/v2';
+
+interface ViaCepResponse {
+  erro?: boolean;
+  logradouro?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+}
 
 function formatPrice(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -59,8 +68,40 @@ export class CheckoutPage implements OnInit, OnDestroy {
   email = signal('');
   cpf = signal('');
 
+  cep = signal('');
+  street = signal('');
+  number = signal('');
+  complement = signal('');
+  neighborhood = signal('');
+  city = signal('');
+  state = signal('');
+  cepLookupState = signal<'idle' | 'loading' | 'not-found'>('idle');
+
+  shippingOptions = signal<ShippingOption[]>([]);
+  shippingLoading = signal(false);
+  selectedShippingOptionId = signal<number | null>(null);
+
   private brickController: { unmount(): void } | null = null;
   private pollHandle: ReturnType<typeof setInterval> | null = null;
+
+  // Antes do pedido ser criado, mostra uma estimativa com base no carrinho; depois,
+  // usa os valores reais gravados no pedido (fonte da verdade é o backend).
+  readonly cartSubtotal = computed(() => this.cartService.totalPrice());
+  readonly selectedShippingOption = computed(() =>
+    this.shippingOptions().find((opt) => opt.id === this.selectedShippingOptionId())
+  );
+  readonly shippingEstimate = computed(() => {
+    const chosen = this.selectedShippingOption();
+    if (chosen) return chosen.price;
+    const settings = this.settingsService.settings();
+    return this.cartSubtotal() >= settings.freeShippingThreshold ? 0 : settings.shippingFee;
+  });
+  readonly displayShipping = computed(() => this.order()?.shippingCost ?? this.shippingEstimate());
+  readonly displaySubtotal = computed(() => {
+    const order = this.order();
+    return order ? order.total - order.shippingCost : this.cartSubtotal();
+  });
+  readonly displayTotal = computed(() => this.order()?.total ?? this.cartSubtotal() + this.shippingEstimate());
 
   constructor() {
     this.titleService.setTitle(`Checkout — ${this.settingsService.settings().storeName}`);
@@ -76,6 +117,14 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.name.set(user.name);
       this.email.set(user.email);
       this.cpf.set(formatCpf(user.cpf));
+      this.cep.set(formatCep(user.cep));
+      this.street.set(user.street);
+      this.number.set(user.number);
+      this.complement.set(user.complement ?? '');
+      this.neighborhood.set(user.neighborhood);
+      this.city.set(user.city);
+      this.state.set(user.state);
+      if (user.cep) this.fetchShippingOptions(user.cep.replace(/\D/g, ''));
     }
   }
 
@@ -86,6 +135,59 @@ export class CheckoutPage implements OnInit, OnDestroy {
 
   onCpfInput(value: string): void {
     this.cpf.set(formatCpf(value));
+  }
+
+  onCepInput(value: string): void {
+    const formatted = formatCep(value);
+    this.cep.set(formatted);
+    const digits = formatted.replace(/\D/g, '');
+    if (digits.length === 8) {
+      this.lookupCep(digits);
+      this.fetchShippingOptions(digits);
+    } else {
+      this.shippingOptions.set([]);
+      this.selectedShippingOptionId.set(null);
+    }
+  }
+
+  private async lookupCep(digits: string): Promise<void> {
+    this.cepLookupState.set('loading');
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data: ViaCepResponse = await res.json();
+      if (data.erro) {
+        this.cepLookupState.set('not-found');
+        return;
+      }
+      this.street.set(data.logradouro ?? '');
+      this.neighborhood.set(data.bairro ?? '');
+      this.city.set(data.localidade ?? '');
+      this.state.set(data.uf ?? '');
+      this.cepLookupState.set('idle');
+    } catch {
+      this.cepLookupState.set('not-found');
+    }
+  }
+
+  private async fetchShippingOptions(digits: string): Promise<void> {
+    this.shippingLoading.set(true);
+    try {
+      const result = await this.checkoutService.calculateShipping(
+        digits,
+        this.cartService.items().map((item) => ({ productId: item.product.id, quantity: item.quantity }))
+      );
+      this.shippingOptions.set(result.options);
+      this.selectedShippingOptionId.set(result.options[0]?.id ?? null);
+    } catch {
+      this.shippingOptions.set([]);
+      this.selectedShippingOptionId.set(null);
+    } finally {
+      this.shippingLoading.set(false);
+    }
+  }
+
+  selectShippingOption(id: number): void {
+    this.selectedShippingOptionId.set(id);
   }
 
   handleCategoryChange(): void {
@@ -99,6 +201,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     const name = this.name().trim();
     const email = this.email().trim();
     const cpf = normalizeCpf(this.cpf());
+    const cepDigits = this.cep().replace(/\D/g, '');
 
     if (!name) {
       this.toastService.showToast('Informe seu nome completo.');
@@ -112,6 +215,21 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.toastService.showToast('Informe um CPF válido.');
       return;
     }
+    if (
+      cepDigits.length !== 8 ||
+      !this.street().trim() ||
+      !this.number().trim() ||
+      !this.neighborhood().trim() ||
+      !this.city().trim() ||
+      !this.state().trim()
+    ) {
+      this.toastService.showToast('Preencha o endereço de entrega completo.');
+      return;
+    }
+    if (this.shippingOptions().length === 0 || this.selectedShippingOptionId() === null) {
+      this.toastService.showToast('Escolha uma opção de frete.');
+      return;
+    }
 
     this.submittingOrder.set(true);
     try {
@@ -123,6 +241,16 @@ export class CheckoutPage implements OnInit, OnDestroy {
           size: item.selectedSize,
           quantity: item.quantity,
         })),
+        shippingAddress: {
+          cep: cepDigits,
+          street: this.street().trim(),
+          number: this.number().trim(),
+          complement: this.complement().trim() || undefined,
+          neighborhood: this.neighborhood().trim(),
+          city: this.city().trim(),
+          state: this.state().trim(),
+        },
+        shippingOptionId: this.selectedShippingOptionId() ?? undefined,
       });
       this.order.set(order);
       this.step.set('pagamento');
@@ -177,7 +305,8 @@ export class CheckoutPage implements OnInit, OnDestroy {
         },
         callbacks: {
           onReady: () => {},
-          onSubmit: ({ formData }: { formData: Record<string, unknown> }) => this.handlePaymentSubmit(formData),
+          onSubmit: ({ selectedPaymentMethod, formData }: { selectedPaymentMethod: string; formData: Record<string, unknown> }) =>
+            this.handlePaymentSubmit(selectedPaymentMethod, formData),
           onError: (error: unknown) => {
             console.error('Erro no Payment Brick:', error);
           },
@@ -191,7 +320,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
   }
 
-  private async handlePaymentSubmit(formData: Record<string, unknown>): Promise<void> {
+  private async handlePaymentSubmit(selectedPaymentMethod: string, formData: Record<string, unknown>): Promise<void> {
     const order = this.order();
     if (!order) return;
 
@@ -202,6 +331,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
       };
       const result = await this.checkoutService.pay({
         orderId: order.id,
+        selectedPaymentMethod,
         token: formData['token'] as string | undefined,
         payment_method_id: formData['payment_method_id'] as string,
         issuer_id: formData['issuer_id'] as string | undefined,
@@ -222,13 +352,15 @@ export class CheckoutPage implements OnInit, OnDestroy {
   }
 
   private handlePayResult(result: PayResult): void {
-    if (result.status === 'approved') {
+    // Usa orderStatus (vocabulário normalizado nosso: confirmado/cancelado/pendente)
+    // em vez do status cru da Mercado Pago, que já mudou de nome uma vez (approved -> processed).
+    if (result.orderStatus === 'confirmado') {
       this.cartService.clearCart();
       this.step.set('sucesso');
-    } else if (result.status === 'rejected' || result.status === 'cancelled') {
+    } else if (result.orderStatus === 'cancelado') {
       this.step.set('recusado');
     } else {
-      // in_process / pending — ex: Pix aguardando pagamento ou boleto emitido
+      // pendente — ex: Pix aguardando pagamento ou boleto emitido
       this.step.set('aguardando');
       this.startPolling(result.orderId);
     }

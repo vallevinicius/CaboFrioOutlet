@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { prisma } from '../db';
 import { optionalAuth } from '../middleware/auth';
-import { MP_PUBLIC_KEY, mpPayment } from '../services/mercadopago';
+import { MP_PUBLIC_KEY, mpFetch } from '../services/mercadopago';
+import { restoreStockForOrder } from '../services/stock';
 
 export const checkoutRouter = Router();
 
@@ -18,88 +19,81 @@ interface PayerInput {
 
 interface PayPayload {
   orderId?: string;
-  token?: string;
+  selectedPaymentMethod?: string;
   payment_method_id?: string;
+  token?: string;
   issuer_id?: string;
   installments?: number;
   payer?: PayerInput;
 }
 
-// Restaura o estoque reservado na criação do pedido quando o pagamento é
-// recusado/cancelado. Usa updateMany condicionado ao status atual do pedido
-// para não rodar duas vezes (ex: resposta direta do pagamento + webhook).
-async function restoreStockForOrder(orderId: string) {
-  const items = await prisma.orderItem.findMany({ where: { orderId } });
-  for (const item of items) {
-    if (!item.productId) continue;
-    await prisma.productSize.updateMany({
-      where: { productId: item.productId, size: item.size },
-      data: { stock: { increment: item.quantity } },
-    });
-  }
+interface OrderPaymentInfo {
+  id?: string;
+  status?: string;
+  status_detail?: string;
+  payment_method?: {
+    type?: string;
+    installments?: number;
+    qr_code?: string;
+    qr_code_base64?: string;
+    ticket_url?: string;
+  };
 }
 
-function extractPixData(payment: Record<string, unknown>) {
-  const poi = payment['point_of_interaction'] as
-    | { transaction_data?: { qr_code?: string; qr_code_base64?: string; ticket_url?: string } }
-    | undefined;
-  const data = poi?.transaction_data;
-  return {
-    qrCode: data?.qr_code,
-    qrCodeBase64: data?.qr_code_base64,
-    ticketUrl: data?.ticket_url,
-  };
+// Resposta da Orders API: em sucesso (2xx) o corpo é o pedido diretamente;
+// em erro de pagamento (ex: 402 recusado) o pedido vem aninhado em `data`,
+// junto com uma lista de erros. As duas formas trazem o pedido completo.
+interface MpOrderResponse {
+  id?: string;
+  status?: string;
+  status_detail?: string;
+  external_reference?: string;
+  transactions?: { payments?: OrderPaymentInfo[] };
+}
+
+interface MpOrderErrorResponse {
+  errors?: { code?: string; message?: string; details?: string[] }[];
+  data?: MpOrderResponse;
 }
 
 // Aplica o resultado de um pagamento (vindo tanto da resposta direta da API
 // quanto do webhook) ao pedido correspondente, de forma idempotente.
-async function applyPaymentResult(orderId: string, payment: {
-  id?: number | string;
-  status?: string;
-  status_detail?: string;
-  payment_method_id?: string;
-}) {
+// Vocabulário de status da Orders API: "processed" (aprovado), "failed" /
+// "cancelled" (recusado), "processing" / demais (pendente, aguardando).
+async function applyPaymentResult(orderId: string, payment: OrderPaymentInfo) {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return null;
 
-  const paymentId = payment.id != null ? String(payment.id) : null;
-  const status = payment.status ?? 'pending';
+  const paymentId = payment.id ?? null;
+  const status = payment.status ?? 'processing';
+  const paymentMethod = payment.payment_method?.type ?? null;
+  const installments = payment.payment_method?.installments ?? null;
 
-  if (status === 'approved') {
+  if (status === 'processed') {
     const updated = await prisma.order.updateMany({
       where: { id: orderId, status: 'pendente' },
-      data: {
-        status: 'confirmado',
-        paymentId,
-        paymentMethod: payment.payment_method_id ?? null,
-        paymentStatus: status,
-      },
+      data: { status: 'confirmado', paymentId, paymentMethod, paymentStatus: status, installments },
     });
     if (updated.count === 0) {
       // Já processado antes (ex: webhook chegou depois da resposta direta) — apenas garante os dados de pagamento.
       await prisma.order.update({
         where: { id: orderId },
-        data: { paymentId, paymentMethod: payment.payment_method_id ?? null, paymentStatus: status },
+        data: { paymentId, paymentMethod, paymentStatus: status, installments },
       });
     }
-  } else if (status === 'rejected' || status === 'cancelled') {
+  } else if (status === 'failed' || status === 'cancelled') {
     const updated = await prisma.order.updateMany({
       where: { id: orderId, status: 'pendente' },
-      data: {
-        status: 'cancelado',
-        paymentId,
-        paymentMethod: payment.payment_method_id ?? null,
-        paymentStatus: status,
-      },
+      data: { status: 'cancelado', paymentId, paymentMethod, paymentStatus: status, installments },
     });
     if (updated.count > 0) {
       await restoreStockForOrder(orderId);
     }
   } else {
-    // in_process / pending (ex: Pix aguardando pagamento) — mantém o pedido como pendente.
+    // processing / action_required (ex: Pix aguardando pagamento) — mantém o pedido como pendente.
     await prisma.order.update({
       where: { id: orderId },
-      data: { paymentId, paymentMethod: payment.payment_method_id ?? null, paymentStatus: status },
+      data: { paymentId, paymentMethod, paymentStatus: status, installments },
     });
   }
 
@@ -125,41 +119,68 @@ checkoutRouter.post('/pay', optionalAuth, async (req, res) => {
     return res.status(400).json({ error: 'Este pedido já foi processado.' });
   }
 
-  try {
-    const response = await mpPayment.create({
-      body: {
-        transaction_amount: order.total,
-        description: `Pedido Cabo Frio Outlet #${order.id.slice(-8).toUpperCase()}`,
-        payment_method_id: body.payment_method_id,
-        token: body.token,
-        issuer_id: body.issuer_id ? Number(body.issuer_id) : undefined,
-        installments: body.installments ?? 1,
-        payer: {
-          email: body.payer?.email ?? order.customerContact,
-          first_name: body.payer?.first_name,
-          last_name: body.payer?.last_name,
-          identification: body.payer?.identification,
-        },
-        external_reference: order.id,
+  const amount = order.total.toFixed(2);
+
+  // Cartão precisa de token/installments; Pix e boleto não aceitam esses campos
+  // (a Orders API rejeita com "Properties not supported" se forem enviados).
+  const isCardPayment = body.selectedPaymentMethod === 'credit_card' || body.selectedPaymentMethod === 'debit_card';
+
+  const result = await mpFetch<MpOrderResponse | MpOrderErrorResponse>('/v1/orders', {
+    method: 'POST',
+    idempotencyKey: order.id,
+    body: {
+      type: 'online',
+      processing_mode: 'automatic',
+      external_reference: order.id,
+      total_amount: amount,
+      payer: {
+        email: body.payer?.email ?? order.customerContact,
+        first_name: body.payer?.first_name,
+        last_name: body.payer?.last_name,
+        identification:
+          body.payer?.identification?.type && body.payer?.identification?.number
+            ? { type: body.payer.identification.type, number: body.payer.identification.number }
+            : undefined,
       },
-      requestOptions: { idempotencyKey: order.id },
-    });
+      transactions: {
+        payments: [
+          {
+            amount,
+            payment_method: {
+              id: body.payment_method_id,
+              type: body.selectedPaymentMethod,
+              ...(isCardPayment ? { token: body.token, installments: body.installments ?? 1 } : {}),
+            },
+          },
+        ],
+      },
+    },
+  });
 
-    const updatedOrder = await applyPaymentResult(order.id, response);
-    const pix = extractPixData(response as unknown as Record<string, unknown>);
+  // Em respostas de erro (ex: pagamento recusado), o pedido vem aninhado em `data`.
+  const orderData: MpOrderResponse | undefined = result.ok
+    ? (result.body as MpOrderResponse)
+    : (result.body as MpOrderErrorResponse).data;
 
-    res.json({
-      status: response.status,
-      statusDetail: response.status_detail,
-      orderId: order.id,
-      orderStatus: updatedOrder?.status ?? order.status,
-      paymentId: response.id,
-      ...pix,
-    });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erro ao processar o pagamento.';
-    res.status(400).json({ error: message });
+  if (!orderData) {
+    const errorMessage =
+      (result.body as MpOrderErrorResponse).errors?.[0]?.message ?? 'Erro ao processar o pagamento.';
+    return res.status(400).json({ error: errorMessage });
   }
+
+  const payment = orderData.transactions?.payments?.[0];
+  const updatedOrder = payment ? await applyPaymentResult(order.id, payment) : null;
+
+  res.json({
+    status: payment?.status ?? orderData.status,
+    statusDetail: payment?.status_detail ?? orderData.status_detail,
+    orderId: order.id,
+    orderStatus: updatedOrder?.status ?? order.status,
+    paymentId: payment?.id,
+    qrCode: payment?.payment_method?.qr_code,
+    qrCodeBase64: payment?.payment_method?.qr_code_base64,
+    ticketUrl: payment?.payment_method?.ticket_url,
+  });
 });
 
 checkoutRouter.get('/orders/:id/status', async (req, res) => {
@@ -173,19 +194,20 @@ checkoutRouter.get('/orders/:id/status', async (req, res) => {
   res.json(order);
 });
 
-// Notificação assíncrona da Mercado Pago (webhook/IPN). Precisa de URL pública
+// Notificação assíncrona da Mercado Pago (webhook). Precisa de URL pública
 // configurada no painel do Mercado Pago para funcionar fora de localhost —
 // usada principalmente para confirmar Pix/boleto, já que cartão responde na hora.
 checkoutRouter.post('/webhook', async (req, res) => {
   try {
     const body = req.body as { type?: string; action?: string; data?: { id?: string } };
-    const paymentId = body.data?.id ?? (req.query['data.id'] as string | undefined);
+    const mpOrderId = body.data?.id ?? (req.query['data.id'] as string | undefined);
     const type = body.type ?? (req.query['type'] as string | undefined);
 
-    if (type === 'payment' && paymentId) {
-      const payment = await mpPayment.get({ id: paymentId });
-      const orderId = payment.external_reference;
-      if (orderId) {
+    if (type === 'order' && mpOrderId) {
+      const result = await mpFetch<MpOrderResponse>(`/v1/orders/${mpOrderId}`);
+      const orderId = result.body.external_reference;
+      const payment = result.body.transactions?.payments?.[0];
+      if (orderId && payment) {
         await applyPaymentResult(orderId, payment);
       }
     }

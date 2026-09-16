@@ -15,6 +15,7 @@ async function main() {
       id: 1,
       storeName: 'Cabo Frio Outlet',
       freeShippingThreshold: 299,
+      shippingFee: 19.9,
       announcementMessages: JSON.stringify([
         'Parcele em até 3x sem juros',
         'Troca grátis em até 30 dias',

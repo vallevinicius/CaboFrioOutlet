@@ -1,0 +1,20 @@
+<div
+  class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/90 p-6 animate-fade-in"
+  (click)="close.emit()"
+>
+  <button
+    type="button"
+    (click)="close.emit()"
+    class="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-sm bg-white/10 text-white transition-colors duration-300 hover:bg-white/20"
+    aria-label="Fechar"
+  >
+    <lucide-icon [img]="X" class="h-6 w-6" />
+  </button>
+
+  <img
+    [src]="image()"
+    [alt]="alt()"
+    (click)="$event.stopPropagation()"
+    class="max-h-full max-w-full rounded-sm object-contain"
+  />
+</div>

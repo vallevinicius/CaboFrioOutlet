@@ -18,6 +18,17 @@ export interface Order {
   customerContact: string;
   items: OrderItem[];
   total: number;
+  shippingCost: number;
+  shippingService?: string | null;
+  shippingCep?: string | null;
+  shippingStreet?: string | null;
+  shippingNumber?: string | null;
+  shippingComplement?: string | null;
+  shippingNeighborhood?: string | null;
+  shippingCity?: string | null;
+  shippingState?: string | null;
   status: OrderStatus;
   userId?: string | null;
+  paymentMethod?: string | null;
+  installments?: number | null;
 }

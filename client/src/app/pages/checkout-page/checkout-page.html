@@ -60,6 +60,117 @@
                 />
                 <p class="mt-1 text-[11px] text-slate-400">Exigido pelo Mercado Pago para processar o pagamento.</p>
               </div>
+
+              <p class="mt-2 text-xs font-bold uppercase tracking-wider text-slate-500">Endereço de entrega</p>
+
+              <div class="relative">
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">CEP</label>
+                <input
+                  [value]="cep()"
+                  (input)="onCepInput($any($event.target).value)"
+                  maxlength="9"
+                  required
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                />
+                @if (cepLookupState() === 'loading') {
+                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-slate-400">Buscando...</span>
+                }
+                @if (cepLookupState() === 'not-found') {
+                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-red-500">Não encontrado</span>
+                }
+              </div>
+
+              <div class="grid grid-cols-[1fr_auto] gap-3">
+                <div>
+                  <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Rua</label>
+                  <input
+                    [value]="street()"
+                    (input)="street.set($any($event.target).value)"
+                    required
+                    class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Número</label>
+                  <input
+                    [value]="number()"
+                    (input)="number.set($any($event.target).value)"
+                    required
+                    class="w-24 rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Complemento (opcional)
+                </label>
+                <input
+                  [value]="complement()"
+                  (input)="complement.set($any($event.target).value)"
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                />
+              </div>
+
+              <div class="grid grid-cols-[1fr_1fr_auto] gap-3">
+                <div>
+                  <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Bairro</label>
+                  <input
+                    [value]="neighborhood()"
+                    (input)="neighborhood.set($any($event.target).value)"
+                    required
+                    class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">Cidade</label>
+                  <input
+                    [value]="city()"
+                    (input)="city.set($any($event.target).value)"
+                    required
+                    class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">UF</label>
+                  <input
+                    maxlength="2"
+                    [value]="state()"
+                    (input)="state.set($any($event.target).value)"
+                    required
+                    class="w-16 rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-center text-sm uppercase text-slate-900 focus:border-accent focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              @if (shippingLoading()) {
+                <p class="text-xs text-slate-500">Calculando opções de frete...</p>
+              } @else if (shippingOptions().length > 0) {
+                <div>
+                  <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Opções de frete</p>
+                  <div class="flex flex-col gap-2">
+                    @for (opt of shippingOptions(); track opt.id) {
+                      <button
+                        type="button"
+                        (click)="selectShippingOption(opt.id)"
+                        class="flex items-center justify-between rounded-sm border px-3.5 py-2.5 text-left text-sm transition-colors duration-300"
+                        [class]="selectedShippingOptionId() === opt.id ? 'border-slate-900 bg-slate-50' : 'border-slate-300 hover:border-slate-400'"
+                      >
+                        <span>
+                          <span class="font-semibold text-slate-900">{{ opt.name }}</span>
+                          @if (opt.deliveryTime) {
+                            <span class="text-xs text-slate-500"> · {{ opt.deliveryTime }} dias úteis</span>
+                          }
+                        </span>
+                        <span class="font-mono text-sm font-bold tabular-nums text-slate-900">
+                          {{ opt.price > 0 ? formatPrice(opt.price) : 'Grátis' }}
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
               <button
                 type="submit"
                 [disabled]="submittingOrder()"
@@ -176,29 +287,45 @@
         }
       </section>
 
-      <aside class="h-fit rounded-sm border border-slate-200 bg-slate-50 p-5">
-        <h2 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Resumo do pedido</h2>
-        <ul class="flex flex-col gap-3">
-          @for (item of cartService.items(); track item.product.id + '-' + item.selectedSize) {
-            <li class="flex gap-3">
-              <img [src]="item.product.image" [alt]="item.product.name" class="h-16 w-12 flex-shrink-0 rounded-sm object-cover" />
-              <div class="flex-1 text-sm">
-                <p class="font-semibold leading-snug text-slate-900">{{ item.product.name }}</p>
-                <p class="text-xs text-slate-500">Tam. {{ item.selectedSize }} · Qtd {{ item.quantity }}</p>
-              </div>
-              <span class="font-mono text-xs font-bold tabular-nums text-slate-900">
-                {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
+      @if (step() === 'dados' || step() === 'pagamento' || step() === 'aguardando') {
+        <aside class="h-fit rounded-sm border border-slate-200 bg-slate-50 p-5">
+          <h2 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Resumo do pedido</h2>
+          <ul class="flex flex-col gap-3">
+            @for (item of cartService.items(); track item.product.id + '-' + item.selectedSize) {
+              <li class="flex gap-3">
+                <img [src]="item.product.image" [alt]="item.product.name" class="h-16 w-12 flex-shrink-0 rounded-sm object-cover" />
+                <div class="flex-1 text-sm">
+                  <p class="font-semibold leading-snug text-slate-900">{{ item.product.name }}</p>
+                  <p class="text-xs text-slate-500">Tam. {{ item.selectedSize }} · Qtd {{ item.quantity }}</p>
+                </div>
+                <span class="font-mono text-xs font-bold tabular-nums text-slate-900">
+                  {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
+                </span>
+              </li>
+            }
+          </ul>
+          <div class="mt-4 flex flex-col gap-1.5 border-t border-slate-200 pt-4">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-500">Subtotal</span>
+              <span class="font-mono text-sm tabular-nums text-slate-900">
+                {{ formatPrice(displaySubtotal()) }}
               </span>
-            </li>
-          }
-        </ul>
-        <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-          <span class="text-sm font-medium text-slate-500">Total</span>
-          <span class="font-mono text-lg font-bold tabular-nums text-slate-900">
-            {{ formatPrice(cartService.totalPrice()) }}
-          </span>
-        </div>
-      </aside>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-500">Frete</span>
+              <span class="font-mono text-sm tabular-nums text-slate-900">
+                {{ displayShipping() > 0 ? formatPrice(displayShipping()) : 'Grátis' }}
+              </span>
+            </div>
+            <div class="mt-1.5 flex items-center justify-between border-t border-slate-200 pt-3">
+              <span class="text-sm font-medium text-slate-500">Total</span>
+              <span class="font-mono text-lg font-bold tabular-nums text-slate-900">
+                {{ formatPrice(displayTotal()) }}
+              </span>
+            </div>
+          </div>
+        </aside>
+      }
     </div>
   </main>
 
