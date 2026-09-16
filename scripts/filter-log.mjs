@@ -1,6 +1,14 @@
 import readline from 'node:readline';
 
-const KEEP = [/https?:\/\/localhost/i, /rodando em/i, /error/i, /erro\b/i, /warn/i];
+const KEEP = [
+  /https?:\/\/localhost/i,
+  /rodando em/i,
+  /error/i,
+  /erro\b/i,
+  /warn/i,
+  /bundle generation complete/i,
+  /watching for file changes/i,
+];
 
 const rl = readline.createInterface({ input: process.stdin, terminal: false });
 
