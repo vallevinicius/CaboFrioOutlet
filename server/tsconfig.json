@@ -1,5 +1,4 @@
-{
-  "compilerOptions": {
+"compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
     "module": "ESNext",
@@ -10,8 +9,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "./dist",
     "types": ["node"]
-  },
-  "include": ["."]
-}
+  }
