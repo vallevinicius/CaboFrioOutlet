@@ -93,8 +93,8 @@
         </label>
         <input
           [value]="price()"
-          (input)="price.set($any($event.target).value)"
-          inputmode="decimal"
+          (input)="onPriceInput($any($event.target).value)"
+          inputmode="numeric"
           placeholder="149,90"
           class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
         />

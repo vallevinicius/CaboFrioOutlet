@@ -5,6 +5,7 @@ import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 import { ApiError } from '../../../services/api-error';
 import { SettingsService } from '../../../services/settings.service';
+import { formatPriceFromNumber, formatPriceInput, parsePriceInput } from '../../../utils/price';
 
 const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
   { label: 'Camisas', value: 'camisas' },
@@ -60,12 +61,16 @@ export class ProductForm implements OnInit {
     this.name.set(product.name);
     this.category.set(product.category);
     this.brand.set(product.brand ?? '');
-    this.price.set(String(product.price));
+    this.price.set(formatPriceFromNumber(product.price));
     this.discountPercent.set(product.discountPercent ? String(product.discountPercent) : '');
     this.description.set(product.description);
     this.isNew.set(product.isNew ?? false);
     this.sizes.set(product.sizes);
     this.image.set(product.image);
+  }
+
+  onPriceInput(value: string): void {
+    this.price.set(formatPriceInput(value));
   }
 
   addSize(): void {
@@ -109,7 +114,7 @@ export class ProductForm implements OnInit {
 
   handleSubmit(event: Event): void {
     event.preventDefault();
-    const priceNum = parseFloat(this.price().replace(',', '.'));
+    const priceNum = parsePriceInput(this.price());
 
     if (!this.name().trim()) {
       this.error.set('Informe o nome do produto.');

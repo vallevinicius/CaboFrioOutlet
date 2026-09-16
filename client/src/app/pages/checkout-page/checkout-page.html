@@ -1,0 +1,206 @@
+<div class="flex min-h-screen flex-col bg-white">
+  <div class="sticky top-0 z-50">
+    <app-navbar
+      [activeCategory]="activeCategory()"
+      (categoryChange)="handleCategoryChange()"
+      [searchQuery]="searchQuery()"
+      (searchChange)="searchQuery.set($event)"
+    />
+  </div>
+
+  <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+    <div class="mb-8 flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
+      <span [class]="step() === 'dados' ? 'text-slate-900' : 'text-slate-400'">1. Seus dados</span>
+      <span class="h-px w-8 bg-slate-300"></span>
+      <span [class]="step() !== 'dados' ? 'text-slate-900' : 'text-slate-400'">2. Pagamento</span>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
+      <section>
+        @switch (step()) {
+          @case ('dados') {
+            <h1 class="mb-6 font-display text-2xl font-semibold tracking-tight text-slate-900">
+              Seus dados
+            </h1>
+            <form (submit)="handleDadosSubmit($event)" class="flex max-w-md flex-col gap-4">
+              <div>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Nome completo
+                </label>
+                <input
+                  [value]="name()"
+                  (input)="name.set($any($event.target).value)"
+                  required
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                />
+              </div>
+              <div>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  E-mail
+                </label>
+                <input
+                  type="email"
+                  [value]="email()"
+                  (input)="email.set($any($event.target).value)"
+                  required
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                />
+                <p class="mt-1 text-[11px] text-slate-400">Usado para enviar a confirmação do pagamento.</p>
+              </div>
+              <div>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  CPF
+                </label>
+                <input
+                  [value]="cpf()"
+                  (input)="onCpfInput($any($event.target).value)"
+                  maxlength="14"
+                  required
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
+                />
+                <p class="mt-1 text-[11px] text-slate-400">Exigido pelo Mercado Pago para processar o pagamento.</p>
+              </div>
+              <button
+                type="submit"
+                [disabled]="submittingOrder()"
+                class="mt-2 flex items-center justify-center gap-2 rounded-sm bg-accent py-3.5 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white disabled:opacity-60"
+              >
+                {{ submittingOrder() ? 'Aguarde...' : 'Continuar para o pagamento' }}
+              </button>
+            </form>
+          }
+
+          @case ('pagamento') {
+            <h1 class="mb-2 font-display text-2xl font-semibold tracking-tight text-slate-900">
+              Pagamento
+            </h1>
+            <p class="mb-6 flex items-center gap-1.5 text-xs text-slate-500">
+              <lucide-icon [img]="Lock" class="h-3.5 w-3.5" />
+              Pagamento processado com segurança pelo Mercado Pago.
+            </p>
+            <div id="payment-brick-container" class="max-w-md"></div>
+          }
+
+          @case ('aguardando') {
+            <div class="max-w-md">
+              <h1 class="mb-2 font-display text-2xl font-semibold tracking-tight text-slate-900">
+                Aguardando pagamento
+              </h1>
+              @if (payResult()?.qrCodeBase64) {
+                <p class="mb-4 text-sm text-slate-500">
+                  Escaneie o QR Code com o app do seu banco ou copie o código Pix abaixo.
+                </p>
+                <img
+                  [src]="'data:image/png;base64,' + payResult()!.qrCodeBase64"
+                  alt="QR Code Pix"
+                  class="mx-auto mb-4 h-56 w-56 rounded-sm border border-slate-200"
+                />
+                <button
+                  type="button"
+                  (click)="copyPixCode()"
+                  class="flex w-full items-center justify-center gap-2 rounded-sm border border-slate-900 py-3 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+                >
+                  <lucide-icon [img]="Copy" class="h-4 w-4" />
+                  Copiar código Pix
+                </button>
+              } @else if (payResult()?.ticketUrl) {
+                <p class="mb-4 text-sm text-slate-500">
+                  Seu boleto foi gerado. Ele pode levar até 3 dias úteis para ser compensado.
+                </p>
+                <a
+                  [href]="payResult()!.ticketUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex w-full items-center justify-center rounded-sm bg-accent py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+                >
+                  Ver boleto
+                </a>
+              } @else {
+                <p class="text-sm text-slate-500">Estamos confirmando seu pagamento...</p>
+              }
+              <p class="mt-4 text-center text-xs text-slate-400">
+                Esta página vai atualizar automaticamente assim que o pagamento for confirmado.
+              </p>
+            </div>
+          }
+
+          @case ('sucesso') {
+            <div class="max-w-md">
+              <lucide-icon [img]="CheckCircle2" class="mb-4 h-12 w-12 text-emerald-500" />
+              <h1 class="mb-2 font-display text-2xl font-semibold tracking-tight text-slate-900">
+                Pagamento confirmado!
+              </h1>
+              <p class="mb-6 text-sm text-slate-500">
+                Pedido #{{ order()?.id?.slice(-8)?.toUpperCase() }} recebido. Em breve entraremos em contato com você.
+              </p>
+              <div class="flex flex-col gap-3 sm:flex-row">
+                @if (authService.isAuthenticated()) {
+                  <button
+                    type="button"
+                    (click)="goToOrders()"
+                    class="flex-1 rounded-sm bg-accent py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+                  >
+                    Ver meus pedidos
+                  </button>
+                }
+                <button
+                  type="button"
+                  (click)="goHome()"
+                  class="flex-1 rounded-sm border border-slate-300 py-3 text-xs font-bold uppercase tracking-wide text-slate-500 transition-colors duration-300 hover:border-slate-900 hover:text-slate-900"
+                >
+                  Voltar à loja
+                </button>
+              </div>
+            </div>
+          }
+
+          @case ('recusado') {
+            <div class="max-w-md">
+              <lucide-icon [img]="XCircle" class="mb-4 h-12 w-12 text-red-500" />
+              <h1 class="mb-2 font-display text-2xl font-semibold tracking-tight text-slate-900">
+                Pagamento não aprovado
+              </h1>
+              <p class="mb-6 text-sm text-slate-500">
+                Seu pagamento foi recusado. Verifique os dados do cartão ou tente outro método de pagamento.
+              </p>
+              <button
+                type="button"
+                (click)="retryPayment()"
+                class="flex items-center gap-2 rounded-sm bg-accent px-6 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+              >
+                <lucide-icon [img]="ArrowLeft" class="h-4 w-4" />
+                Tentar novamente
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+      <aside class="h-fit rounded-sm border border-slate-200 bg-slate-50 p-5">
+        <h2 class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Resumo do pedido</h2>
+        <ul class="flex flex-col gap-3">
+          @for (item of cartService.items(); track item.product.id + '-' + item.selectedSize) {
+            <li class="flex gap-3">
+              <img [src]="item.product.image" [alt]="item.product.name" class="h-16 w-12 flex-shrink-0 rounded-sm object-cover" />
+              <div class="flex-1 text-sm">
+                <p class="font-semibold leading-snug text-slate-900">{{ item.product.name }}</p>
+                <p class="text-xs text-slate-500">Tam. {{ item.selectedSize }} · Qtd {{ item.quantity }}</p>
+              </div>
+              <span class="font-mono text-xs font-bold tabular-nums text-slate-900">
+                {{ formatPrice(getDiscountedPrice(item.product) * item.quantity) }}
+              </span>
+            </li>
+          }
+        </ul>
+        <div class="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+          <span class="text-sm font-medium text-slate-500">Total</span>
+          <span class="font-mono text-lg font-bold tabular-nums text-slate-900">
+            {{ formatPrice(cartService.totalPrice()) }}
+          </span>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <app-footer />
+</div>

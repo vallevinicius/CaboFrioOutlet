@@ -94,7 +94,7 @@
   }
 
   @if (cartService.items().length > 0) {
-    <form (submit)="handleCheckout($event)" class="border-t border-slate-200 px-5 py-4">
+    <div class="border-t border-slate-200 px-5 py-4">
       <div class="mb-4 flex items-center justify-between">
         <span class="text-sm font-medium text-slate-500">Total</span>
         <span class="font-mono text-xl font-bold tabular-nums text-slate-900">
@@ -102,30 +102,14 @@
         </span>
       </div>
 
-      <div class="mb-3 flex flex-col gap-2">
-        <input
-          [value]="customerName()"
-          (input)="customerName.set($any($event.target).value)"
-          placeholder="Seu nome"
-          required
-          class="w-full rounded-sm border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
-        />
-        <input
-          [value]="customerContact()"
-          (input)="customerContact.set($any($event.target).value)"
-          placeholder="WhatsApp ou e-mail"
-          required
-          class="w-full rounded-sm border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
-        />
-      </div>
-
       <button
-        type="submit"
-        [disabled]="submitting()"
-        class="w-full rounded-sm bg-accent py-3.5 text-sm font-bold uppercase tracking-wide text-black transition-all duration-300 hover:bg-accent-hover disabled:opacity-60"
+        type="button"
+        (click)="handleCheckout()"
+        class="flex w-full items-center justify-center gap-2 rounded-sm bg-accent py-3.5 text-sm font-bold uppercase tracking-wide text-black transition-all duration-300 hover:bg-accent-hover"
       >
-        {{ submitting() ? 'Enviando...' : 'Finalizar Compra' }}
+        <lucide-icon [img]="Lock" class="h-4 w-4" />
+        Finalizar Compra
       </button>
-    </form>
+    </div>
   }
 </aside>

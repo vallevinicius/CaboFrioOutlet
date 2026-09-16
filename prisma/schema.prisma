@@ -39,6 +39,9 @@ model Order {
   customerContact String
   total           Float
   status          String      @default("pendente")
+  paymentId       String?
+  paymentMethod   String?
+  paymentStatus   String?
   createdAt       DateTime    @default(now())
   items           OrderItem[]
   user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
