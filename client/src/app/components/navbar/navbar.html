@@ -1,6 +1,8 @@
 <header class="w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
   <div class="hidden border-b border-slate-200 sm:block">
-    <div class="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 text-[11px] font-medium text-slate-500 sm:px-6 lg:px-8">
+    <div
+      class="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 text-[11px] font-medium text-slate-500 sm:px-6 lg:px-8"
+    >
       <a
         [href]="whatsappUrl"
         target="_blank"
@@ -22,7 +24,13 @@
           Rastrear pedido
         </a>
         <div class="flex items-center gap-3">
-          <a [href]="instagramUrl" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="transition-colors duration-300 hover:text-slate-900">
+          <a
+            [href]="instagramUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            class="transition-colors duration-300 hover:text-slate-900"
+          >
             <lucide-icon [img]="Instagram" class="h-3.5 w-3.5" />
           </a>
         </div>
@@ -32,17 +40,13 @@
 
   <div class="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
     <a href="#" class="flex flex-shrink-0 items-center gap-2.5 text-slate-900">
-      <span class="flex h-9 w-9 items-center justify-center rounded-sm border border-slate-900 text-[11px] font-mono font-bold tracking-tight text-slate-900">
-        {{ storeInitials(settingsService.settings().storeName) }}
-      </span>
-      <span class="hidden font-display text-lg font-semibold uppercase tracking-tight sm:inline">
-        {{ wordmark().lead ? wordmark().lead + ' ' : '' }}
-        <span class="bg-accent px-1 text-black">{{ wordmark().accent }}</span>
-      </span>
+      <img src="Logo Preto.png" alt="Logo Preto" class="h-10 w-16 rounded-lg" />
     </a>
 
     <div class="hidden flex-1 sm:block">
-      <div class="flex items-center gap-3 rounded-sm border border-slate-300 bg-slate-50 px-4 py-2.5 transition-colors duration-300 focus-within:border-accent">
+      <div
+        class="flex items-center gap-3 rounded-sm border border-slate-300 bg-slate-50 px-4 py-2.5 transition-colors duration-300 focus-within:border-accent"
+      >
         <lucide-icon [img]="Search" class="h-4 w-4 flex-shrink-0 text-slate-400" />
         <input
           type="text"
@@ -95,10 +99,13 @@
         </button>
 
         @if (accountMenuOpen()) {
-          <div class="absolute right-0 top-full z-20 mt-2 w-80 rounded-sm border border-slate-200 bg-white p-4 shadow-2xl animate-fade-in">
+          <div
+            class="absolute right-0 top-full z-20 mt-2 w-80 rounded-sm border border-slate-200 bg-white p-4 shadow-2xl animate-fade-in"
+          >
             @if (authService.isAuthenticated()) {
               <p class="text-sm text-slate-600">
-                Logado como <span class="font-semibold text-slate-900">{{ authService.user()?.name }}</span>
+                Logado como
+                <span class="font-semibold text-slate-900">{{ authService.user()?.name }}</span>
               </p>
               <p class="mt-0.5 text-xs text-slate-500">{{ authService.user()?.email }}</p>
               <a
@@ -146,7 +153,11 @@
                 </button>
                 <p class="text-center text-xs text-slate-500">
                   Não tem conta?
-                  <button type="button" (click)="openRegisterModal()" class="font-semibold text-slate-900 underline underline-offset-2">
+                  <button
+                    type="button"
+                    (click)="openRegisterModal()"
+                    class="font-semibold text-slate-900 underline underline-offset-2"
+                  >
                     Criar conta
                   </button>
                 </p>
@@ -163,7 +174,9 @@
       >
         <lucide-icon [img]="ShoppingBag" class="h-5 w-5 text-slate-900" />
         @if (cartService.totalItems() > 0) {
-          <span class="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-sm bg-accent font-mono text-[9px] font-bold text-black">
+          <span
+            class="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-sm bg-accent font-mono text-[9px] font-bold text-black"
+          >
             {{ cartService.totalItems() > 9 ? '9+' : cartService.totalItems() }}
           </span>
         }
@@ -209,7 +222,9 @@
       <button
         (click)="handleHomeClick()"
         class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-        [class]="activeCategory() === 'todos' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'"
+        [class]="
+          activeCategory() === 'todos' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
+        "
       >
         Início
         <span
@@ -221,7 +236,11 @@
         <button
           (click)="handleCategoryClick(cat.value)"
           class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="activeCategory() === cat.value ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'"
+          [class]="
+            activeCategory() === cat.value
+              ? 'text-slate-900'
+              : 'text-slate-500 hover:text-slate-900'
+          "
         >
           {{ cat.label }}
           <span
@@ -246,7 +265,9 @@
         <button
           (click)="handleCategoryClick(cat.value)"
           class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="activeCategory() === cat.value ? 'bg-slate-100 text-slate-900' : 'text-slate-500'"
+          [class]="
+            activeCategory() === cat.value ? 'bg-slate-100 text-slate-900' : 'text-slate-500'
+          "
         >
           {{ cat.label }}
         </button>
