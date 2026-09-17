@@ -11,7 +11,7 @@ function formatDate(iso: string): string {
 }
 
 function formatCpf(cpf: string): string {
-  if (cpf.length !== 11) return cpf || '—';
+  if (cpf.length !== 11) return cpf || 'Não informado';
   return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 

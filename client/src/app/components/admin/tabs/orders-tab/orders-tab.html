@@ -28,7 +28,7 @@
           >
             <div>
               <p class="text-sm font-bold text-slate-900">
-                #{{ order.id.slice(-6).toUpperCase() }} — {{ order.customerName }}
+                #{{ order.id.slice(-6).toUpperCase() }} · {{ order.customerName }}
               </p>
               <p class="mt-0.5 text-xs text-slate-500">
                 {{ formatDate(order.createdAt) }} · {{ order.customerContact }}

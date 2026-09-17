@@ -82,7 +82,7 @@ export class ProductPage {
     effect(() => {
       const product = this.product();
       if (product) {
-        this.titleService.setTitle(`${product.name} — ${this.settingsService.settings().storeName}`);
+        this.titleService.setTitle(`${product.name} | ${this.settingsService.settings().storeName}`);
       }
     });
   }

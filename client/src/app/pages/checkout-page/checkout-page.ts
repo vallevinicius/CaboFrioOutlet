@@ -104,7 +104,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
   readonly displayTotal = computed(() => this.order()?.total ?? this.cartSubtotal() + this.shippingEstimate());
 
   constructor() {
-    this.titleService.setTitle(`Checkout — ${this.settingsService.settings().storeName}`);
+    this.titleService.setTitle(`Checkout | ${this.settingsService.settings().storeName}`);
   }
 
   ngOnInit(): void {

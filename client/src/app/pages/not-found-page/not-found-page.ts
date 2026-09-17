@@ -23,7 +23,7 @@ export class NotFoundPage {
   searchQuery = signal('');
 
   constructor() {
-    this.titleService.setTitle(`Página não encontrada — ${this.settingsService.settings().storeName}`);
+    this.titleService.setTitle(`Página não encontrada | ${this.settingsService.settings().storeName}`);
   }
 
   handleCategoryChange(category: CategoryOrAll): void {

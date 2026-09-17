@@ -38,9 +38,9 @@
                 <p class="text-xs text-slate-500">{{ customer.email }}</p>
               </td>
               <td class="px-5 py-4 text-slate-600">{{ formatCpf(customer.cpf) }}</td>
-              <td class="px-5 py-4 text-slate-600">{{ customer.phone || '—' }}</td>
+              <td class="px-5 py-4 text-slate-600">{{ customer.phone || 'Não informado' }}</td>
               <td class="px-5 py-4 text-slate-600">
-                {{ customer.city ? customer.city + '/' + customer.state : '—' }}
+                {{ customer.city ? customer.city + '/' + customer.state : 'Não informado' }}
               </td>
               <td class="px-5 py-4 text-slate-600">{{ formatDate(customer.createdAt) }}</td>
               <td class="px-5 py-4 text-right">
