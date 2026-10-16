@@ -1,73 +1,83 @@
-# Cabo Frio Outlet — MVP E-commerce de Vestuário Urbano
+<div align="center">
 
-MVP de e-commerce (React + TypeScript + Tailwind CSS) focado em bermudas,
-calças, camisas e bonés, com carrinho de compras funcional no lado do cliente.
+# Cabo Frio Outlet
 
-## 🚀 Como rodar localmente
+**E-commerce for an urban apparel store: Angular storefront, Express API, Mercado Pago and Melhor Envio.**
 
-Pré-requisitos: [Node.js](https://nodejs.org/) 18+ instalado.
+🇧🇷 [Leia em português](README.pt-BR.md)
+
+![Angular](https://img.shields.io/badge/Angular--DD0031?logo=angular&logoColor=white) ![Express](https://img.shields.io/badge/Express--000000?logo=express&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white) ![MySQL](https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white) ![Mercado Pago](https://img.shields.io/badge/Mercado%20Pago--00B1EA?logo=mercadopago&logoColor=white)
+
+</div>
+
+## About
+
+Online store for a clothing outlet. The Angular SPA is served by an Express API that handles the catalog, customer accounts, checkout with Mercado Pago (including installments) and shipping quotes through Melhor Envio. Store staff manage products, sizes, brands, home-page banners and orders from an admin area.
+
+## Features
+
+- Catalog with sizes, brands and stock per size
+- Customer accounts and order history
+- Checkout with Mercado Pago (cards with installments) and payment status tracking
+- Shipping quote by ZIP code via Melhor Envio (sandbox flag configurable)
+- Admin: products, hero slides, store settings, users and orders
+- Image upload with `sharp` processing
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Front-end | Angular (standalone), Tailwind CSS, Lucide |
+| API | Express, TypeScript (`tsx`) |
+| Data | MySQL + Prisma (12 versioned migrations) |
+| Integrations | Mercado Pago, Melhor Envio |
+| Auth | JWT + `bcryptjs` |
+
+## Architecture
+
+```
+client/            Angular app (built into client/dist and served by Express)
+server/
+  routes/          auth, products, orders, checkout, shipping, hero-slides, settings, upload, users
+  services/        mercadopago.ts, melhor-envio.ts, stock.ts
+  middleware/      authentication / authorization
+prisma/            schema and migrations
+```
+In development, `npm run dev` rebuilds the Angular app on change and restarts the API, so everything is served from one port.
+
+## Getting started
+
+**Prerequisites:** Node.js 20+, MySQL 8
 
 ```bash
-# 1. Instalar as dependências
-npm install
-
-# 2. Rodar o servidor de desenvolvimento
-npm run dev
+npm install && npm --prefix client install
+# create .env with the variables below
+npm run db:migrate
+npm run db:seed
+npm run dev        # http://localhost:3001
 ```
+Use `npm run dev:live` to run the Angular dev server with live reload instead.
 
-Depois é só abrir o endereço mostrado no terminal (geralmente
-`http://localhost:5173`) no navegador.
+### Environment variables
 
-## 🧪 Testando antes de commitar
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | MySQL connection string |
+| `PORT` | API port (default 3001) |
+| `JWT_SECRET` | Secret for session tokens |
+| `ADMIN_EMAIL / ADMIN_DEFAULT_PASSWORD` | First admin account |
+| `MP_ACCESS_TOKEN / MP_PUBLIC_KEY` | Mercado Pago credentials |
 
-Como pedido, teste sempre localmente antes de subir qualquer commit:
+### Scripts
 
-```bash
-npm run dev      # testar em modo desenvolvimento (hot reload)
-npm run build    # garantir que o build de produção (TypeScript + Vite) não quebra
-npm run preview  # servir o build de produção localmente para conferência final
-```
+| Command | Description |
+|---|---|
+| `npm run dev` | Angular watch build + API with reload |
+| `npm run build` | Build the client and type-check the server |
+| `npm run preview` | Serve the production build |
+| `npm run db:migrate / db:seed / db:studio` | Prisma helpers |
 
-Se `npm run build` apontar erros de tipo, corrija antes de commitar — o
-`tsconfig.json` está com `strict: true`.
+## Team
 
-## 📁 Estrutura do projeto
-
-```
-src/
-  components/     → Componentes de UI reutilizáveis
-  context/        → CartContext (useCart) e ToastContext (useToast)
-  data/           → mockData.ts — fonte única de produtos (fácil de trocar por API)
-  types/          → Interfaces TypeScript (Product, CartItem)
-  App.tsx         → Composição principal da página
-  main.tsx        → Entry point React
-  index.css       → Diretivas Tailwind + estilos globais
-```
-
-## 🔌 Integrando com um backend real
-
-Toda a listagem de produtos vem de `src/data/mockData.ts`, que exporta um
-array tipado `Product[]`. Para plugar um backend real, basta:
-
-1. Criar uma função `fetchProducts(): Promise<Product[]>` que chame sua API.
-2. Substituir a importação estática de `products` em `src/App.tsx` por um
-   `useEffect` + `useState` que chame essa função (ou usar React Query/SWR).
-
-A interface `Product` (em `src/types/product.ts`) já reflete os campos
-esperados: `id`, `name`, `price`, `category`, `image`, `description`, `sizes`.
-
-## 🎨 Design System
-
-- **Preto** (`black`) — fundo principal e superfícies estruturais
-- **Amarelo** (`yellow-400` / hover `yellow-500`) — CTAs e badges de desconto
-- **Branco** — texto principal e elementos de contraste sobre o preto
-- Cantos arredondados (`rounded-md` / `rounded-lg`) e transições suaves
-  (`transition-all duration-300`) em toda a interface
-
-## 🛠️ Stack
-
-- React 18 (function components + hooks)
-- TypeScript (strict mode)
-- Tailwind CSS
-- Lucide React (ícones)
-- Context API para carrinho (`useCart`) e notificações (`useToast`)
+- [Vinicius do Valle](https://github.com/vallevinicius)
+- [Vinícius Diller](https://github.com/viniciusdiller)
