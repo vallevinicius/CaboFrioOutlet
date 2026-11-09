@@ -12,6 +12,7 @@ import { usersRouter } from './routes/users';
 import { heroSlidesRouter } from './routes/hero-slides';
 import { checkoutRouter } from './routes/checkout';
 import { shippingRouter } from './routes/shipping';
+import { reviewsRouter } from './routes/reviews';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -31,6 +32,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/hero-slides', heroSlidesRouter);
 app.use('/api/checkout', checkoutRouter);
 app.use('/api/shipping', shippingRouter);
+app.use('/api/reviews', reviewsRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

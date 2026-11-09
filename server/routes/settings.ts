@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { prisma } from '../db';
 import { requireAdmin } from '../middleware/auth';
+import {
+  normalizeEmail,
+  normalizeOpeningHours,
+  normalizePlaceId,
+  normalizeWhatsapp,
+  parseOpeningHours,
+} from '../utils/contact';
 
 export const settingsRouter = Router();
 
@@ -22,6 +29,10 @@ function serialize(settings: {
   melhorEnvioSandbox: boolean;
   announcementMessages: string;
   brands: string;
+  whatsapp: string;
+  contactEmail: string;
+  openingHours: string | null;
+  googlePlaceId: string;
 }) {
   return {
     storeName: settings.storeName,
@@ -32,6 +43,10 @@ function serialize(settings: {
     melhorEnvioSandbox: settings.melhorEnvioSandbox,
     announcementMessages: parseJsonArray(settings.announcementMessages),
     brands: parseJsonArray(settings.brands),
+    whatsapp: settings.whatsapp,
+    contactEmail: settings.contactEmail,
+    openingHours: parseOpeningHours(settings.openingHours),
+    googlePlaceId: settings.googlePlaceId,
   };
 }
 
@@ -54,6 +69,10 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     melhorEnvioSandbox,
     announcementMessages,
     brands,
+    whatsapp,
+    contactEmail,
+    openingHours,
+    googlePlaceId,
   } = req.body as {
     storeName?: string;
     freeShippingThreshold?: number;
@@ -63,7 +82,33 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     melhorEnvioSandbox?: boolean;
     announcementMessages?: string[];
     brands?: string[];
+    whatsapp?: string;
+    contactEmail?: string;
+    openingHours?: unknown;
+    googlePlaceId?: string;
   };
+
+  const contact: { whatsapp?: string; contactEmail?: string; openingHours?: string; googlePlaceId?: string } = {};
+  if (typeof whatsapp === 'string') {
+    const value = normalizeWhatsapp(whatsapp);
+    if (value === null) return res.status(400).json({ error: 'WhatsApp inválido. Use DDD + número.' });
+    contact.whatsapp = value;
+  }
+  if (typeof contactEmail === 'string') {
+    const value = normalizeEmail(contactEmail);
+    if (value === null) return res.status(400).json({ error: 'E-mail de contato inválido.' });
+    contact.contactEmail = value;
+  }
+  if (openingHours !== undefined) {
+    const value = normalizeOpeningHours(openingHours);
+    if (value === null) return res.status(400).json({ error: 'Horários inválidos.' });
+    contact.openingHours = JSON.stringify(value);
+  }
+  if (typeof googlePlaceId === 'string') {
+    const value = normalizePlaceId(googlePlaceId);
+    if (value === null) return res.status(400).json({ error: 'Place ID do Google inválido.' });
+    contact.googlePlaceId = value;
+  }
 
   const settings = await prisma.settings.upsert({
     where: { id: 1 },
@@ -82,6 +127,7 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
         ? { announcementMessages: JSON.stringify(announcementMessages) }
         : {}),
       ...(Array.isArray(brands) ? { brands: JSON.stringify(brands) } : {}),
+      ...contact,
     },
     create: {
       id: 1,
@@ -93,6 +139,7 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
       melhorEnvioSandbox: typeof melhorEnvioSandbox === 'boolean' ? melhorEnvioSandbox : undefined,
       announcementMessages: JSON.stringify(announcementMessages ?? []),
       brands: JSON.stringify(brands ?? []),
+      ...contact,
     },
   });
 
