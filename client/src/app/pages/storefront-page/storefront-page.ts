@@ -1,5 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
+import { ActivatedRoute } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../services/product.service';
 import { SettingsService } from '../../services/settings.service';
 import { ProductCategory } from '../../types/product';
@@ -12,8 +14,11 @@ import { ProductGrid } from '../../components/product-grid/product-grid';
 import { BrandBanner } from '../../components/brand-banner/brand-banner';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
 import { Footer } from '../../components/footer/footer';
+import { StoreLocation } from '../../components/store-location/store-location';
 
 type CategoryOrAll = ProductCategory | 'todos';
+
+const VALID_CATEGORIES: readonly ProductCategory[] = ['camisas', 'calças', 'bermudas', 'bonés'];
 
 @Component({
   selector: 'app-storefront-page',
@@ -27,6 +32,7 @@ type CategoryOrAll = ProductCategory | 'todos';
     BrandBanner,
     CartDrawer,
     Footer,
+    StoreLocation,
   ],
   templateUrl: './storefront-page.html',
 })
@@ -34,6 +40,8 @@ export class StorefrontPage {
   private productService = inject(ProductService);
   private settingsService = inject(SettingsService);
   private titleService = inject(Title);
+  private route = inject(ActivatedRoute);
+  private queryParams = toSignal(this.route.queryParamMap);
 
   readonly products = this.productService.products;
   readonly loading = this.productService.loading;
@@ -43,6 +51,14 @@ export class StorefrontPage {
   searchQuery = signal('');
 
   constructor() {
+    // Links de categoria do rodapé: /?categoria=camisas
+    effect(() => {
+      const param = this.queryParams()?.get('categoria');
+      if (param && (VALID_CATEGORIES as readonly string[]).includes(param)) {
+        this.activeCategory.set(param as ProductCategory);
+      }
+    });
+
     effect(() => {
       this.titleService.setTitle(this.settingsService.settings().storeName);
     });

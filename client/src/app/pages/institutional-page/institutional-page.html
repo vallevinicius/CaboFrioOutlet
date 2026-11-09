@@ -1,0 +1,100 @@
+<div class="flex min-h-screen flex-col bg-white">
+  <div class="sticky top-0 z-50">
+    <app-navbar
+      [activeCategory]="activeCategory()"
+      (categoryChange)="handleCategoryChange($event)"
+      [searchQuery]="searchQuery()"
+      (searchChange)="searchQuery.set($event)"
+    />
+  </div>
+
+  @if (page; as p) {
+    <header class="border-b border-slate-200 bg-slate-50">
+      <div class="mx-auto max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
+        <span class="inline-flex items-center rounded-sm bg-accent px-3.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wider text-black">
+          {{ p.eyebrow }}
+        </span>
+        <h1 class="mt-5 font-display text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+          {{ p.title }}
+        </h1>
+        <p class="mt-3 max-w-xl text-sm text-slate-500 sm:text-base">{{ p.intro }}</p>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+      <div class="flex flex-col gap-6">
+        @for (block of p.blocks; track $index) {
+          @switch (block.type) {
+            @case ('heading') {
+              <h2 class="mt-4 font-display text-xl font-semibold tracking-tight text-slate-900">{{ block.text }}</h2>
+            }
+            @case ('paragraph') {
+              <p class="text-sm leading-relaxed text-slate-600 sm:text-base">{{ block.text }}</p>
+            }
+            @case ('list') {
+              <ul class="flex list-disc flex-col gap-2 pl-5 text-sm leading-relaxed text-slate-600 marker:text-accent sm:text-base">
+                @for (item of block.items; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            }
+            @case ('highlights') {
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                @for (h of block.items; track h.value) {
+                  <div class="rounded-sm border border-slate-200 p-5">
+                    <p class="font-display text-2xl font-semibold text-slate-900">{{ h.value }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ h.label }}</p>
+                  </div>
+                }
+              </div>
+            }
+            @case ('faq') {
+              <div class="divide-y divide-slate-200 rounded-sm border border-slate-200">
+                @for (item of block.items; track item.question) {
+                  <details class="group p-5">
+                    <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900 sm:text-base">
+                      {{ item.question }}
+                      <span class="text-lg leading-none text-slate-400 transition-transform duration-300 group-open:rotate-45">+</span>
+                    </summary>
+                    <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ item.answer }}</p>
+                  </details>
+                }
+              </div>
+            }
+            @case ('table') {
+              <div class="overflow-x-auto rounded-sm border border-slate-200">
+                <table class="w-full text-left text-sm">
+                  <caption class="border-b border-slate-200 bg-slate-50 px-4 py-3 text-left font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
+                    {{ block.caption }}
+                  </caption>
+                  <thead class="text-xs uppercase tracking-wide text-slate-500">
+                    <tr>
+                      @for (h of block.head; track h) {
+                        <th scope="col" class="px-4 py-3 font-semibold">{{ h }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 text-slate-600">
+                    @for (row of block.rows; track $index) {
+                      <tr>
+                        @for (cell of row; track $index) {
+                          <td class="px-4 py-3" [class.font-semibold]="$first" [class.text-slate-900]="$first">{{ cell }}</td>
+                        }
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+            @case ('location') {
+              <app-store-location variant="card" />
+            }
+          }
+        }
+      </div>
+    </main>
+  }
+
+  <app-footer />
+  <app-cart-drawer />
+</div>

@@ -5,6 +5,8 @@ import { AccountPage } from './pages/account-page/account-page';
 import { CheckoutPage } from './pages/checkout-page/checkout-page';
 import { ProductPage } from './pages/product-page/product-page';
 import { NotFoundPage } from './pages/not-found-page/not-found-page';
+import { InstitutionalPage } from './pages/institutional-page/institutional-page';
+import { INSTITUTIONAL_PAGES } from './data/institutional-pages';
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 
@@ -14,5 +16,10 @@ export const routes: Routes = [
   { path: 'checkout', component: CheckoutPage },
   { path: 'produto/:id', component: ProductPage },
   { path: 'admin', component: AdminPage, canActivate: [adminGuard] },
+  ...INSTITUTIONAL_PAGES.map((page) => ({
+    path: page.slug,
+    component: InstitutionalPage,
+    data: { slug: page.slug },
+  })),
   { path: '**', component: NotFoundPage },
 ];

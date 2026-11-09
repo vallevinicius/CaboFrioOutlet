@@ -1,14 +1,10 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, Instagram, ArrowRight } from 'lucide-angular';
+import { LucideAngularModule, Instagram, ArrowRight, MapPin } from 'lucide-angular';
 import { ToastService } from '../../services/toast.service';
 import { SettingsService, splitStoreName } from '../../services/settings.service';
-
-const LINK_COLUMNS = [
-  { title: 'Institucional', links: ['Sobre nós', 'Contato', 'Trabalhe conosco'] },
-  { title: 'Ajuda', links: ['Trocas e devoluções', 'Perguntas frequentes', 'Guia de medidas'] },
-  { title: 'Categorias', links: ['Camisas', 'Calças', 'Bermudas', 'Bonés'] },
-];
+import { FOOTER_COLUMNS } from '../../data/footer-links';
+import { STORE_INFO } from '../../data/store-info';
 
 @Component({
   selector: 'app-footer',
@@ -21,10 +17,12 @@ export class Footer {
 
   readonly Instagram = Instagram;
   readonly ArrowRight = ArrowRight;
-  readonly linkColumns = LINK_COLUMNS;
+  readonly MapPin = MapPin;
+  readonly linkColumns = FOOTER_COLUMNS;
   readonly splitStoreName = splitStoreName;
   readonly currentYear = new Date().getFullYear();
-  readonly instagramUrl = 'https://www.instagram.com/cabofrio.outlet';
+  readonly instagramUrl = STORE_INFO.instagramUrl;
+  readonly store = STORE_INFO;
 
   email = signal('');
 
