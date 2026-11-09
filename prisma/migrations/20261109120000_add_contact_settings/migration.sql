@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `Settings` ADD COLUMN `whatsapp` VARCHAR(191) NOT NULL DEFAULT '',
+    ADD COLUMN `contactEmail` VARCHAR(191) NOT NULL DEFAULT '',
+    ADD COLUMN `openingHours` TEXT NULL,
+    ADD COLUMN `googlePlaceId` VARCHAR(191) NOT NULL DEFAULT '';

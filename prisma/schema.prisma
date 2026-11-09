@@ -85,6 +85,11 @@ model Settings {
   melhorEnvioSandbox    Boolean @default(true)
   announcementMessages  String @db.Text
   brands                String @db.Text
+  whatsapp              String  @default("")
+  contactEmail          String  @default("")
+  /// JSON: [{ label, hours }]. Nulo = usa o horário padrão definido no código.
+  openingHours          String? @db.Text
+  googlePlaceId         String  @default("")
 }
 
 model HeroSlide {

@@ -7,7 +7,7 @@ export type PageBlock =
   | { type: 'faq'; items: { question: string; answer: string }[] }
   | { type: 'table'; caption: string; head: string[]; rows: string[][] }
   | { type: 'highlights'; items: { value: string; label: string }[] }
-  | { type: 'location' };
+  | { type: 'location'; map?: boolean; details?: boolean };
 
 export interface InstitutionalPageContent {
   slug: string;
@@ -55,8 +55,8 @@ export const INSTITUTIONAL_PAGES: InstitutionalPageContent[] = [
     eyebrow: 'Institucional',
     intro: 'Fale com a gente pelas redes ou venha experimentar as peças na loja.',
     blocks: [
-      { type: 'heading', text: 'Onde estamos' },
-      { type: 'location' },
+      { type: 'heading', text: 'Onde estamos e como falar com a gente' },
+      { type: 'location', map: true, details: true },
       { type: 'heading', text: 'Redes sociais' },
       {
         type: 'paragraph',
