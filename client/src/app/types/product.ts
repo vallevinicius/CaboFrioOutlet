@@ -6,6 +6,8 @@ export interface ProductInput {
   category: ProductCategory;
   brand?: string;
   image: string;
+  /** Fotos adicionais (a capa é `image`). */
+  images?: string[];
   description: string;
   sizes: string[];
   discountPercent?: number;

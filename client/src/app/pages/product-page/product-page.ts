@@ -6,6 +6,9 @@ import { LucideAngularModule, Plus, ChevronRight } from 'lucide-angular';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
+import { ProductCard } from '../../components/product-card/product-card';
+import { FavoriteButton } from '../../components/favorite-button/favorite-button';
+import { SizeGuideModal } from '../../components/size-guide-modal/size-guide-modal';
 import { ImageLightbox } from '../../components/image-lightbox/image-lightbox';
 import { ProductService } from '../../services/product.service';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
@@ -13,6 +16,7 @@ import { ToastService } from '../../services/toast.service';
 import { SeoService } from '../../services/seo.service';
 import { SettingsService } from '../../services/settings.service';
 import { ProductCategory } from '../../types/product';
+import { lowStockLabel, relatedProducts } from '../../utils/product-list';
 
 type CategoryOrAll = ProductCategory | 'todos';
 
@@ -22,7 +26,17 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-page',
-  imports: [LucideAngularModule, RouterLink, Navbar, Footer, CartDrawer, ImageLightbox],
+  imports: [
+    LucideAngularModule,
+    RouterLink,
+    Navbar,
+    Footer,
+    CartDrawer,
+    ImageLightbox,
+    ProductCard,
+    FavoriteButton,
+    SizeGuideModal,
+  ],
   templateUrl: './product-page.html',
 })
 export class ProductPage {
@@ -45,6 +59,8 @@ export class ProductPage {
   searchQuery = signal('');
 
   lightboxOpen = signal(false);
+  sizeGuideOpen = signal(false);
+  selectedImageIndex = signal(0);
   selectedSizeOverride = signal<string | null>(null);
 
   private paramMap = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
@@ -57,6 +73,18 @@ export class ProductPage {
     const product = this.product();
     if (!product) return undefined;
     return product.sizes.find((size) => (product.stock[size] ?? 0) > 0) ?? product.sizes[0];
+  });
+
+  /** Capa + fotos adicionais. */
+  readonly gallery = computed(() => {
+    const product = this.product();
+    return product ? [product.image, ...(product.images ?? [])] : [];
+  });
+  readonly activeImage = computed(() => this.gallery()[this.selectedImageIndex()] ?? this.gallery()[0] ?? '');
+
+  readonly related = computed(() => {
+    const product = this.product();
+    return product ? relatedProducts(this.productService.products(), product) : [];
   });
 
   readonly selectedSize = computed(() => this.selectedSizeOverride() ?? this.firstAvailableSize());
@@ -78,9 +106,20 @@ export class ProductPage {
     if (!product || !size) return false;
     return (product.stock[size] ?? 0) > 0;
   });
+  readonly stockWarning = computed(() => {
+    const product = this.product();
+    const size = this.selectedSize();
+    return product && size ? lowStockLabel(product.stock[size] ?? 0) : null;
+  });
   readonly canAddToCart = computed(() => !this.isOutOfStock() && this.selectedSizeAvailable());
 
   constructor() {
+    // Ao trocar de produto, volta para a foto de capa.
+    effect(() => {
+      this.productId();
+      this.selectedImageIndex.set(0);
+    });
+
     effect(() => {
       const product = this.product();
       if (product) {

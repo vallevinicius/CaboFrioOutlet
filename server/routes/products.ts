@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { Prisma, Product, ProductSize } from '@prisma/client';
+import { Prisma, Product, ProductImage, ProductSize } from '@prisma/client';
 import { prisma } from '../db';
 import { requireAdmin } from '../middleware/auth';
+import { normalizeImages } from '../utils/product-images';
 
 export const productsRouter = Router();
 
-type ProductWithSizes = Product & { sizes: ProductSize[] };
+type ProductWithSizes = Product & { sizes: ProductSize[]; images: ProductImage[] };
+
+const INCLUDE = { sizes: true, images: { orderBy: { position: 'asc' as const } } };
 
 function serializeProduct(product: ProductWithSizes) {
   const stock: Record<string, number> = {};
@@ -21,6 +24,7 @@ function serializeProduct(product: ProductWithSizes) {
     category: product.category,
     brand: product.brand ?? undefined,
     image: product.image,
+    images: product.images.map((i) => i.url),
     description: product.description,
     isNew: product.isNew,
     discountPercent: product.discountPercent ?? undefined,
@@ -35,6 +39,7 @@ interface ProductPayload {
   category: string;
   brand?: string;
   image: string;
+  images?: string[];
   description: string;
   sizes: string[];
   stock: Record<string, number>;
@@ -61,7 +66,7 @@ function validatePayload(body: unknown): body is ProductPayload {
 
 productsRouter.get('/', async (_req, res) => {
   const products = await prisma.product.findMany({
-    include: { sizes: true },
+    include: INCLUDE,
     orderBy: { createdAt: 'desc' },
   });
   res.json(products.map(serializeProduct));
@@ -72,6 +77,10 @@ productsRouter.post('/', requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'Dados do produto inválidos.' });
   }
   const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew } = req.body as ProductPayload;
+  const extraImages = normalizeImages((req.body as ProductPayload).images, image);
+  if (extraImages === null) {
+    return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
+  }
 
   const product = await prisma.product.create({
     data: {
@@ -86,8 +95,9 @@ productsRouter.post('/', requireAdmin, async (req, res) => {
       sizes: {
         create: sizes.map((size) => ({ size, stock: Math.max(0, stock[size] ?? 0) })),
       },
+      images: { create: extraImages.map((url, position) => ({ url, position })) },
     },
-    include: { sizes: true },
+    include: INCLUDE,
   });
 
   res.status(201).json(serializeProduct(product));
@@ -99,9 +109,15 @@ productsRouter.put('/:id', requireAdmin, async (req, res) => {
   }
   const id = req.params.id as string;
   const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew } = req.body as ProductPayload;
+  const extraImages = normalizeImages((req.body as ProductPayload).images, image);
+  if (extraImages === null) {
+    return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
+  }
 
   try {
     await prisma.$transaction([
+      prisma.productImage.deleteMany({ where: { productId: id } }),
+      prisma.productImage.createMany({ data: extraImages.map((url, position) => ({ url, position, productId: id })) }),
       prisma.productSize.deleteMany({ where: { productId: id, size: { notIn: sizes } } }),
       ...sizes.map((size) =>
         prisma.productSize.upsert({
@@ -125,10 +141,10 @@ productsRouter.put('/:id', requireAdmin, async (req, res) => {
       }),
     ]);
 
-    const product = await prisma.product.findUniqueOrThrow({ where: { id }, include: { sizes: true } });
+    const product = await prisma.product.findUniqueOrThrow({ where: { id }, include: INCLUDE });
     res.json(serializeProduct(product));
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && (err.code === 'P2025' || err.code === 'P2003')) {
       return res.status(404).json({ error: 'Produto não encontrado.' });
     }
     throw err;
@@ -149,7 +165,7 @@ productsRouter.put('/:id/stock', requireAdmin, async (req, res) => {
       update: { stock: Math.max(0, quantity) },
       create: { productId: id, size, stock: Math.max(0, quantity) },
     });
-    const product = await prisma.product.findUniqueOrThrow({ where: { id }, include: { sizes: true } });
+    const product = await prisma.product.findUniqueOrThrow({ where: { id }, include: INCLUDE });
     res.json(serializeProduct(product));
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2025') {

@@ -1,0 +1,116 @@
+<div class="mb-6 border-y border-slate-200 py-3">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <p class="text-sm text-slate-500" aria-live="polite">
+      <span class="font-semibold text-slate-900">{{ resultCount() }}</span>
+      {{ resultCount() === 1 ? 'produto' : 'produtos' }}
+    </p>
+
+    <div class="flex items-center gap-2">
+      <button
+        type="button"
+        (click)="panelOpen.set(!panelOpen())"
+        [attr.aria-expanded]="panelOpen()"
+        aria-controls="painel-filtros"
+        class="flex items-center gap-2 rounded-sm border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-900 transition-colors duration-300 hover:border-slate-900"
+      >
+        <lucide-icon [img]="SlidersHorizontal" class="h-4 w-4" />
+        Filtros
+        @if (activeCount() > 0) {
+          <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[11px] font-bold text-black">
+            {{ activeCount() }}
+          </span>
+        }
+      </button>
+
+      <label class="sr-only" for="ordenar-por">Ordenar por</label>
+      <select
+        id="ordenar-por"
+        [value]="sort()"
+        (change)="sort.set($any($event.target).value)"
+        class="rounded-sm border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-accent focus:outline-none"
+      >
+        @for (opt of sortOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (panelOpen()) {
+    <div id="painel-filtros" class="mt-4 grid gap-6 border-t border-slate-200 pt-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Tamanho</p>
+        <div class="flex flex-wrap gap-2">
+          @for (size of sizeOptions(); track size) {
+            <button
+              type="button"
+              (click)="toggleSize(size)"
+              [attr.aria-pressed]="sizes().includes(size)"
+              class="rounded-sm border px-3 py-1.5 font-mono text-xs font-semibold transition-all duration-300"
+              [class]="sizes().includes(size)
+                ? 'border-slate-900 bg-slate-900 text-white'
+                : 'border-slate-300 text-slate-500 hover:border-accent hover:text-slate-900'"
+            >
+              {{ size }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (brandOptions().length > 0) {
+        <div>
+          <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Marca</p>
+          <div class="flex flex-wrap gap-2">
+            @for (b of brandOptions(); track b) {
+              <button
+                type="button"
+                (click)="setBrand(b)"
+                [attr.aria-pressed]="brand() === b"
+                class="rounded-sm border px-3 py-1.5 text-xs font-semibold transition-all duration-300"
+                [class]="brand() === b
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-300 text-slate-500 hover:border-accent hover:text-slate-900'"
+              >
+                {{ b }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <div>
+        <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Preço (R$)</p>
+        <div class="flex items-center gap-2">
+          <input
+            [value]="priceMin() ?? ''"
+            (input)="onPrice('min', $any($event.target).value)"
+            inputmode="decimal"
+            placeholder="Mín"
+            aria-label="Preço mínimo"
+            class="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+          <span class="text-slate-400">–</span>
+          <input
+            [value]="priceMax() ?? ''"
+            (input)="onPrice('max', $any($event.target).value)"
+            inputmode="decimal"
+            placeholder="Máx"
+            aria-label="Preço máximo"
+            class="w-full rounded-sm border border-slate-300 px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+        </div>
+      </div>
+
+      @if (activeCount() > 0) {
+        <button
+          type="button"
+          (click)="clear()"
+          class="flex items-center gap-1.5 self-end text-sm font-semibold text-slate-900 underline decoration-accent decoration-2 underline-offset-4 hover:text-slate-600 sm:col-span-2 lg:col-span-3 sm:justify-self-start"
+        >
+          <lucide-icon [img]="X" class="h-4 w-4" />
+          Limpar filtros
+        </button>
+      }
+    </div>
+  }
+</div>

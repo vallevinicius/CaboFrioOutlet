@@ -52,6 +52,8 @@ export class ProductForm implements OnInit {
   sizeInput = signal('');
   initialStock = signal('10');
   image = signal('');
+  extraImages = signal<string[]>([]);
+  readonly maxExtraImages = 8;
   uploading = signal(false);
   error = signal('');
 
@@ -67,6 +69,7 @@ export class ProductForm implements OnInit {
     this.isNew.set(product.isNew ?? false);
     this.sizes.set(product.sizes);
     this.image.set(product.image);
+    this.extraImages.set(product.images ?? []);
   }
 
   onPriceInput(value: string): void {
@@ -112,6 +115,30 @@ export class ProductForm implements OnInit {
     }
   }
 
+  async handleExtraFilesChange(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []).slice(0, this.maxExtraImages - this.extraImages().length);
+    if (files.length === 0) return;
+    this.uploading.set(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const { url } = await this.api.post<{ url: string }>('/upload', formData);
+        this.extraImages.update((prev) => [...prev, url]);
+      }
+    } catch (err) {
+      this.toastService.showToast('Erro ao enviar imagem', err instanceof ApiError ? err.message : undefined);
+    } finally {
+      this.uploading.set(false);
+      input.value = '';
+    }
+  }
+
+  removeExtraImage(index: number): void {
+    this.extraImages.update((prev) => prev.filter((_, i) => i !== index));
+  }
+
   handleSubmit(event: Event): void {
     event.preventDefault();
     const priceNum = parsePriceInput(this.price());
@@ -149,6 +176,7 @@ export class ProductForm implements OnInit {
       brand: this.brand().trim() || undefined,
       price: priceNum,
       image: this.image(),
+      images: this.extraImages(),
       description: this.description().trim(),
       sizes: this.sizes(),
       stock,

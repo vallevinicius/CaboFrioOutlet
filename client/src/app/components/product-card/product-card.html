@@ -29,6 +29,10 @@
       }
     </div>
 
+    <div class="absolute right-3 top-3">
+      <app-favorite-button [productId]="product().id" />
+    </div>
+
     <button
       (click)="handleAddToCart()"
       [disabled]="!canAddToCart()"

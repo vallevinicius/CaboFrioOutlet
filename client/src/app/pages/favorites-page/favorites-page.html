@@ -1,0 +1,36 @@
+<div class="flex min-h-screen flex-col bg-white">
+  <div class="sticky top-0 z-50">
+    <app-navbar
+      [activeCategory]="activeCategory()"
+      (categoryChange)="handleCategoryChange($event)"
+      [searchQuery]="searchQuery()"
+      (searchChange)="searchQuery.set($event)"
+    />
+  </div>
+
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+    <h1 class="font-display text-3xl font-semibold tracking-tight text-slate-900">Meus favoritos</h1>
+    <p class="mt-2 text-sm text-slate-500">As peças que você salvou para ver depois.</p>
+
+    <div class="mt-8">
+      @if (!loading() && products().length === 0) {
+        <div class="flex flex-col items-center gap-4 py-20 text-center">
+          <lucide-icon [img]="Heart" class="h-12 w-12 text-slate-300" />
+          <p class="text-sm font-medium text-slate-500">Você ainda não favoritou nenhuma peça.</p>
+          <a
+            routerLink="/"
+            fragment="produtos"
+            class="rounded-sm bg-accent px-6 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+          >
+            Ver produtos
+          </a>
+        </div>
+      } @else {
+        <app-product-grid [products]="products()" [loading]="loading()" />
+      }
+    </div>
+  </main>
+
+  <app-footer />
+  <app-cart-drawer />
+</div>

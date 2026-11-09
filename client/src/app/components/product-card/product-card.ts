@@ -4,6 +4,7 @@ import { LucideAngularModule, Plus } from 'lucide-angular';
 import { Product } from '../../types/product';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { FavoriteButton } from '../favorite-button/favorite-button';
 import { ImageLightbox } from '../image-lightbox/image-lightbox';
 
 function formatPrice(value: number): string {
@@ -12,7 +13,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-card',
-  imports: [LucideAngularModule, RouterLink, ImageLightbox],
+  imports: [LucideAngularModule, RouterLink, ImageLightbox, FavoriteButton],
   templateUrl: './product-card.html',
 })
 export class ProductCard {

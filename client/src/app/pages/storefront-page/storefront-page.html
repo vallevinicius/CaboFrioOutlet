@@ -23,7 +23,30 @@
       />
     </div>
 
-    <app-product-grid [products]="filteredProducts()" [loading]="loading()" />
+    <app-product-toolbar
+      [sizeOptions]="sizeOptions()"
+      [brandOptions]="brands()"
+      [resultCount]="filteredProducts().length"
+      [(sort)]="sort"
+      [(brand)]="activeBrand"
+      [(sizes)]="sizes"
+      [(priceMin)]="priceMin"
+      [(priceMax)]="priceMax"
+    />
+
+    <app-product-grid [products]="visibleProducts()" [loading]="loading()" />
+
+    @if (hasMore()) {
+      <div class="mt-10 flex justify-center">
+        <button
+          type="button"
+          (click)="loadMore()"
+          class="rounded-sm border border-slate-900 px-8 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+        >
+          Carregar mais
+        </button>
+      </div>
+    }
   </main>
 
   <app-google-reviews />

@@ -11,7 +11,9 @@ import {
   Truck,
   Instagram,
   ShieldCheck,
+  Heart,
 } from 'lucide-angular';
+import { FavoritesService } from '../../services/favorites.service';
 import { CartService } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
@@ -42,6 +44,8 @@ export class Navbar {
   cartService = inject(CartService);
   private toastService = inject(ToastService);
   settingsService = inject(SettingsService);
+  favoritesService = inject(FavoritesService);
+  readonly Heart = Heart;
   authService = inject(AuthService);
 
   readonly ShoppingBag = ShoppingBag;
