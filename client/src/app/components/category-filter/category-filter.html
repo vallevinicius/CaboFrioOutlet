@@ -8,7 +8,7 @@
         : 'bg-white text-slate-500 border border-slate-300 hover:border-accent hover:text-slate-900'"
     >
       {{ filter.label }}
-      <span class="font-mono tabular-nums" [class]="activeCategory() === filter.value ? 'text-slate-400' : 'text-slate-400'">
+      <span class="font-mono tabular-nums" [class]="activeCategory() === filter.value ? 'text-slate-500' : 'text-slate-500'">
         {{ counts()[filter.value] }}
       </span>
     </button>

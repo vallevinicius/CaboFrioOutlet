@@ -76,6 +76,7 @@ export function sendIndexWithSeo(indexPath: string) {
       // SEO é um extra: se o banco falhar, ainda entregamos o app normalmente.
       console.error('Falha ao montar SEO:', err instanceof Error ? err.message : err);
     }
+    res.setHeader('Cache-Control', 'no-cache');
     res.type('html').send(html);
   };
 }

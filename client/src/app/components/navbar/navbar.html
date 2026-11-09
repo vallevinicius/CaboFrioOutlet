@@ -47,7 +47,7 @@
       <div
         class="flex items-center gap-3 rounded-sm border border-slate-300 bg-slate-50 px-4 py-2.5 transition-colors duration-300 focus-within:border-accent"
       >
-        <lucide-icon [img]="Search" class="h-4 w-4 flex-shrink-0 text-slate-400" />
+        <lucide-icon [img]="Search" class="h-4 w-4 flex-shrink-0 text-slate-500" />
         <input
           type="text"
           [value]="searchQuery()"
@@ -58,7 +58,7 @@
         @if (searchQuery()) {
           <button
             (click)="searchChange.emit('')"
-            class="flex-shrink-0 text-slate-400 transition-colors duration-300 hover:text-slate-900"
+            class="flex-shrink-0 text-slate-500 transition-colors duration-300 hover:text-slate-900"
             aria-label="Limpar busca"
           >
             <lucide-icon [img]="X" class="h-4 w-4" />
@@ -208,7 +208,7 @@
   @if (searchOpen()) {
     <div class="border-t border-slate-200 px-4 py-3 sm:hidden animate-fade-in">
       <div class="mx-auto flex max-w-7xl items-center gap-3">
-        <lucide-icon [img]="Search" class="h-4 w-4 flex-shrink-0 text-slate-400" />
+        <lucide-icon [img]="Search" class="h-4 w-4 flex-shrink-0 text-slate-500" />
         <input
           autofocus
           type="text"
@@ -220,7 +220,7 @@
         @if (searchQuery()) {
           <button
             (click)="searchChange.emit('')"
-            class="flex-shrink-0 text-slate-400 transition-colors duration-300 hover:text-slate-900"
+            class="flex-shrink-0 text-slate-500 transition-colors duration-300 hover:text-slate-900"
             aria-label="Limpar busca"
           >
             <lucide-icon [img]="X" class="h-4 w-4" />

@@ -97,7 +97,7 @@
                         </span>
                         <lucide-icon
                           [img]="expandedOrderId() === order.id ? ChevronUp : ChevronDown"
-                          class="h-4 w-4 text-slate-400"
+                          class="h-4 w-4 text-slate-500"
                         />
                       </div>
                     </button>
@@ -106,7 +106,7 @@
                       <div class="border-t border-slate-100 px-5 py-4">
                         <div class="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
                           <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                               Número do pedido
                             </p>
                             <p class="mt-1 font-mono text-sm font-bold text-slate-900">
@@ -114,7 +114,7 @@
                             </p>
                           </div>
                           <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                               Forma de pagamento
                             </p>
                             <p class="mt-1 text-sm font-semibold text-slate-900">
@@ -125,7 +125,7 @@
                             }
                           </div>
                           <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</p>
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Status</p>
                             <span
                               class="mt-1 inline-block rounded-sm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
                               [class]="statusStyles[order.status]"
@@ -134,7 +134,7 @@
                             </span>
                           </div>
                           <div>
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                               Valor total
                             </p>
                             <p class="mt-1 font-mono text-sm font-bold text-slate-900">
@@ -145,7 +145,7 @@
 
                         @if (order.shippingStreet) {
                           <div class="mb-5">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                               Endereço de entrega
                             </p>
                             <p class="mt-1 text-sm text-slate-700">
@@ -159,7 +159,7 @@
                           </div>
                         }
 
-                        <p class="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Produtos</p>
+                        <p class="mb-3 text-[10px] font-bold uppercase tracking-wider text-slate-500">Produtos</p>
                         <ul class="flex flex-col gap-3">
                           @for (item of order.items; track item.id) {
                             <li class="flex items-center gap-3 text-sm">
@@ -247,7 +247,7 @@
                 <input
                   [value]="authService.user()?.cpf"
                   disabled
-                  class="w-full rounded-sm border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-400"
+                  class="w-full rounded-sm border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500"
                 />
               </div>
               <button
@@ -276,7 +276,7 @@
                   class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
                 />
                 @if (cepLookupState() === 'loading') {
-                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-slate-400">Buscando...</span>
+                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-slate-500">Buscando...</span>
                 }
                 @if (cepLookupState() === 'not-found') {
                   <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-red-500">Não encontrado</span>

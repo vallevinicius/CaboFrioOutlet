@@ -4,6 +4,7 @@ import { LucideAngularModule, Plus } from 'lucide-angular';
 import { Product } from '../../types/product';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { FavoriteButton } from '../favorite-button/favorite-button';
 import { ImageLightbox } from '../image-lightbox/image-lightbox';
 
@@ -19,6 +20,7 @@ function formatPrice(value: number): string {
 export class ProductCard {
   private cartService = inject(CartService);
   private toastService = inject(ToastService);
+  private analytics = inject(AnalyticsService);
 
   readonly Plus = Plus;
   readonly formatPrice = formatPrice;
@@ -62,6 +64,7 @@ export class ProductCard {
     const product = this.product();
     const size = this.selectedSize();
     this.cartService.addToCart(product, size);
+    this.analytics.addToCart(product, size);
     this.toastService.showToast('Produto adicionado!', `${product.name} (Tam. ${size})`);
   }
 

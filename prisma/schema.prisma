@@ -97,6 +97,9 @@ model Settings {
   /// Seção "anos vestindo a cidade" da home. Vazio/nulo = usa o texto padrão do código.
   storyTitle            String  @default("")
   storyBody             String? @db.Text
+  /// Medição (só carrega no navegador após o consentimento do visitante).
+  gaMeasurementId       String  @default("")
+  metaPixelId           String  @default("")
 }
 
 model HeroSlide {

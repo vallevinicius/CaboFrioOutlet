@@ -7,6 +7,7 @@ import { Footer } from '../../components/footer/footer';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { AuthService } from '../../services/auth.service';
 import { SettingsService } from '../../services/settings.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { CheckoutService, PayResult, ShippingOption } from '../../services/checkout.service';
 import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
@@ -44,6 +45,8 @@ export class CheckoutPage implements OnInit, OnDestroy {
   private settingsService = inject(SettingsService);
   private checkoutService = inject(CheckoutService);
   private toastService = inject(ToastService);
+  private analytics = inject(AnalyticsService);
+  private purchaseTracked = false;
   cartService = inject(CartService);
   authService = inject(AuthService);
 
@@ -112,6 +115,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.router.navigateByUrl('/');
       return;
     }
+    this.analytics.beginCheckout(this.cartService.items());
     const user = this.authService.user();
     if (user) {
       this.name.set(user.name);
@@ -355,6 +359,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     // Usa orderStatus (vocabulário normalizado nosso: confirmado/cancelado/pendente)
     // em vez do status cru da Mercado Pago, que já mudou de nome uma vez (approved -> processed).
     if (result.orderStatus === 'confirmado') {
+      this.trackPurchase();
       this.cartService.clearCart();
       this.step.set('sucesso');
     } else if (result.orderStatus === 'cancelado') {
@@ -366,6 +371,14 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
   }
 
+  /** Conta a compra uma única vez, mesmo que o pagamento seja confirmado por mais de um caminho. */
+  private trackPurchase(): void {
+    const order = this.order();
+    if (!order || this.purchaseTracked) return;
+    this.purchaseTracked = true;
+    this.analytics.purchase(order);
+  }
+
   private startPolling(orderId: string): void {
     if (this.pollHandle) clearInterval(this.pollHandle);
     this.pollHandle = setInterval(async () => {
@@ -373,6 +386,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
         const status = await this.checkoutService.getOrderStatus(orderId);
         if (status.status === 'confirmado') {
           if (this.pollHandle) clearInterval(this.pollHandle);
+          this.trackPurchase();
           this.cartService.clearCart();
           this.step.set('sucesso');
         } else if (status.status === 'cancelado') {

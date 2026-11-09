@@ -37,6 +37,8 @@ export class SettingsTab implements OnInit {
   contactEmail = signal('');
   openingHours = signal<OpeningHoursRow[]>([]);
   googlePlaceId = signal('');
+  gaMeasurementId = signal('');
+  metaPixelId = signal('');
   tickerMessages = signal<string[]>([]);
   tickerInput = signal('');
   storyTitle = signal('');
@@ -58,6 +60,8 @@ export class SettingsTab implements OnInit {
     this.contactEmail.set(settings.contactEmail);
     this.openingHours.set(settings.openingHours.map((row) => ({ ...row })));
     this.googlePlaceId.set(settings.googlePlaceId);
+    this.gaMeasurementId.set(settings.gaMeasurementId);
+    this.metaPixelId.set(settings.metaPixelId);
     this.tickerMessages.set([...settings.tickerMessages]);
     this.storyTitle.set(settings.storyTitle);
     this.storyBody.set(settings.storyBody);
@@ -166,6 +170,8 @@ export class SettingsTab implements OnInit {
         contactEmail: this.contactEmail().trim(),
         openingHours: this.openingHours(),
         googlePlaceId: this.googlePlaceId().trim(),
+        gaMeasurementId: this.gaMeasurementId().trim(),
+        metaPixelId: this.metaPixelId().trim(),
         tickerMessages: this.tickerMessages(),
         storyTitle: this.storyTitle().trim(),
         storyBody: this.storyBody().trim(),

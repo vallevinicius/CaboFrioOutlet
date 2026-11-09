@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `Settings` ADD COLUMN `gaMeasurementId` VARCHAR(191) NOT NULL DEFAULT '',
+    ADD COLUMN `metaPixelId` VARCHAR(191) NOT NULL DEFAULT '';
+

@@ -75,7 +75,7 @@
                 </p>
                 <button
                   (click)="cartService.removeFromCart(item.product.id, item.selectedSize)"
-                  class="flex-shrink-0 text-slate-400 transition-colors duration-300 hover:text-red-500"
+                  class="flex-shrink-0 text-slate-500 transition-colors duration-300 hover:text-red-500"
                   aria-label="Remover item"
                 >
                   <lucide-icon [img]="Trash2" class="h-4 w-4" />
@@ -87,7 +87,7 @@
                 <div class="flex items-center gap-1 rounded-sm border border-slate-300 px-1">
                   <button
                     (click)="cartService.updateQuantity(item.product.id, item.selectedSize, item.quantity - 1)"
-                    class="flex h-7 w-7 items-center justify-center text-slate-400 transition-colors duration-300 hover:text-slate-900"
+                    class="flex h-7 w-7 items-center justify-center text-slate-500 transition-colors duration-300 hover:text-slate-900"
                     aria-label="Diminuir quantidade"
                   >
                     <lucide-icon [img]="Minus" class="h-3.5 w-3.5" />
@@ -97,7 +97,7 @@
                   </span>
                   <button
                     (click)="cartService.updateQuantity(item.product.id, item.selectedSize, item.quantity + 1)"
-                    class="flex h-7 w-7 items-center justify-center text-slate-400 transition-colors duration-300 hover:text-slate-900"
+                    class="flex h-7 w-7 items-center justify-center text-slate-500 transition-colors duration-300 hover:text-slate-900"
                     aria-label="Aumentar quantidade"
                   >
                     <lucide-icon [img]="Plus" class="h-3.5 w-3.5" />
