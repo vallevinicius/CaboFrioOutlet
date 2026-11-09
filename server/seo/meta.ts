@@ -207,7 +207,8 @@ interface PageMeta {
 function resolvePageMeta(ctx: SeoContext): PageMeta {
   const { baseUrl, path, settings, product } = ctx;
   const store = settings.storeName;
-  const logo = absoluteUrl(baseUrl, '/Logo%20Preto.png');
+  // Imagem de prévia (1200x630) usada quando a página não tem foto própria.
+  const logo = absoluteUrl(baseUrl, '/og-default.jpg');
   const noindex = NOINDEX_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
 
   if (product) {

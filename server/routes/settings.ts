@@ -18,6 +18,8 @@ import {
   parseTickerMessages,
 } from '../utils/home-content';
 
+import { normalizeGaId, normalizeMetaPixelId } from '../utils/analytics';
+
 export const settingsRouter = Router();
 
 function parseJsonArray(raw: string): string[] {
@@ -45,6 +47,8 @@ function serialize(settings: {
   tickerMessages: string | null;
   storyTitle: string;
   storyBody: string | null;
+  gaMeasurementId: string;
+  metaPixelId: string;
 }) {
   return {
     storeName: settings.storeName,
@@ -62,6 +66,8 @@ function serialize(settings: {
     tickerMessages: parseTickerMessages(settings.tickerMessages),
     storyTitle: settings.storyTitle || DEFAULT_STORY_TITLE,
     storyBody: settings.storyBody || DEFAULT_STORY_BODY,
+    gaMeasurementId: settings.gaMeasurementId,
+    metaPixelId: settings.metaPixelId,
   };
 }
 
@@ -91,6 +97,8 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     tickerMessages,
     storyTitle,
     storyBody,
+    gaMeasurementId,
+    metaPixelId,
   } = req.body as {
     storeName?: string;
     freeShippingThreshold?: number;
@@ -107,6 +115,8 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     tickerMessages?: unknown;
     storyTitle?: unknown;
     storyBody?: unknown;
+    gaMeasurementId?: unknown;
+    metaPixelId?: unknown;
   };
 
   const contact: {
@@ -117,7 +127,19 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     tickerMessages?: string;
     storyTitle?: string;
     storyBody?: string | null;
+    gaMeasurementId?: string;
+    metaPixelId?: string;
   } = {};
+  if (gaMeasurementId !== undefined) {
+    const value = normalizeGaId(gaMeasurementId);
+    if (value === null) return res.status(400).json({ error: 'ID do Google Analytics inválido (formato G-XXXXXXXXXX).' });
+    contact.gaMeasurementId = value;
+  }
+  if (metaPixelId !== undefined) {
+    const value = normalizeMetaPixelId(metaPixelId);
+    if (value === null) return res.status(400).json({ error: 'ID do Pixel da Meta inválido (somente números).' });
+    contact.metaPixelId = value;
+  }
   if (tickerMessages !== undefined) {
     const value = normalizeTickerMessages(tickerMessages);
     if (value === null) return res.status(400).json({ error: 'Mensagens da faixa inválidas (até 8, com até 60 caracteres).' });

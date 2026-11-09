@@ -64,7 +64,7 @@ describe('buildSeoHead', () => {
     const head = buildSeoHead(ctx());
     expect(head).toContain('<title>Cabo Frio Outlet | Moda urbana em Cabo Frio</title>');
     expect(head).toContain(`<link rel="canonical" href="${BASE}">`);
-    expect(head).toContain('property="og:image" content="https://loja.com.br/Logo%20Preto.png"');
+    expect(head).toContain('property="og:image" content="https://loja.com.br/og-default.jpg"');
     expect(head).toContain('"@type":"ClothingStore"');
     expect(head).toContain('"telephone":"+5522999991234"');
     expect(head).toContain('"openingHoursSpecification"');
