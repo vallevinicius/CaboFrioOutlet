@@ -14,6 +14,7 @@ import { ProductGrid } from '../../components/product-grid/product-grid';
 import { BrandBanner } from '../../components/brand-banner/brand-banner';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
 import { Footer } from '../../components/footer/footer';
+import { GoogleReviews } from '../../components/google-reviews/google-reviews';
 import { StoreLocation } from '../../components/store-location/store-location';
 
 type CategoryOrAll = ProductCategory | 'todos';
@@ -33,6 +34,7 @@ const VALID_CATEGORIES: readonly ProductCategory[] = ['camisas', 'calças', 'ber
     CartDrawer,
     Footer,
     StoreLocation,
+    GoogleReviews,
   ],
   templateUrl: './storefront-page.html',
 })

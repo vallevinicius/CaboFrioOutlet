@@ -1,0 +1,50 @@
+@if (visible() && data(); as d) {
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8" aria-labelledby="avaliacoes-titulo">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 id="avaliacoes-titulo" class="font-display text-3xl font-semibold tracking-tight text-slate-900">
+          Quem compra, recomenda
+        </h2>
+        <div class="mt-3 flex items-center gap-3">
+          <span class="font-display text-3xl font-semibold text-slate-900">{{ ratingLabel() }}</span>
+          <div class="flex" aria-hidden="true">
+            @for (s of stars; track s) {
+              <lucide-icon [img]="Star" class="h-5 w-5 text-accent" [class.fill-current]="s <= (d.rating ?? 0) + 0.25" />
+            }
+          </div>
+          <span class="text-sm text-slate-500">{{ d.total }} avaliações no Google</span>
+        </div>
+      </div>
+      @if (d.mapsUrl) {
+        <a
+          [href]="d.mapsUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sm font-semibold text-slate-900 underline decoration-accent decoration-2 underline-offset-4 hover:text-slate-600"
+        >
+          Ver todas no Google
+        </a>
+      }
+    </div>
+
+    <ul class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      @for (review of d.reviews; track $index) {
+        <li class="flex flex-col rounded-sm border border-slate-200 bg-white p-6">
+          <div class="flex" [attr.aria-label]="review.rating + ' de 5 estrelas'">
+            @for (s of stars; track s) {
+              <lucide-icon [img]="Star" class="h-4 w-4 text-accent" [class.fill-current]="s <= review.rating" />
+            }
+          </div>
+          <p class="mt-3 line-clamp-5 flex-1 text-sm leading-relaxed text-slate-600">“{{ review.text }}”</p>
+          <p class="mt-4 text-sm font-semibold text-slate-900">
+            {{ review.author }}
+            @if (review.relativeTime) {
+              <span class="font-normal text-slate-400"> · {{ review.relativeTime }}</span>
+            }
+          </p>
+        </li>
+      }
+    </ul>
+    <p class="mt-4 text-xs text-slate-400">Avaliações publicadas no Google.</p>
+  </section>
+}

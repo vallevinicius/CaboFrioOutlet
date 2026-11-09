@@ -1,3 +1,8 @@
+export interface OpeningHoursRow {
+  label: string;
+  hours: string;
+}
+
 export interface StoreSettings {
   storeName: string;
   freeShippingThreshold: number;
@@ -7,6 +12,11 @@ export interface StoreSettings {
   melhorEnvioSandbox: boolean;
   announcementMessages: string[];
   brands: string[];
+  /** Somente dígitos, com DDI (ex: 5522999991234). Vazio = não configurado. */
+  whatsapp: string;
+  contactEmail: string;
+  openingHours: OpeningHoursRow[];
+  googlePlaceId: string;
 }
 
 export const DEFAULT_SETTINGS: StoreSettings = {
@@ -22,4 +32,11 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     'Novidades toda semana',
   ],
   brands: ['Nike', 'Adidas', 'High'],
+  whatsapp: '',
+  contactEmail: '',
+  openingHours: [
+    { label: 'Segunda a sábado', hours: '09h às 19h' },
+    { label: 'Domingo', hours: '09h às 14h' },
+  ],
+  googlePlaceId: '',
 };

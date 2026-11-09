@@ -4,6 +4,8 @@ import { SettingsService } from '../../../../services/settings.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { formatCep } from '../../../../utils/cep';
+import { formatPhone } from '../../../../utils/phone';
+import { OpeningHoursRow } from '../../../../types/settings';
 
 @Component({
   selector: 'app-settings-tab',
@@ -28,6 +30,10 @@ export class SettingsTab implements OnInit {
   messageInput = signal('');
   brands = signal<string[]>([]);
   brandInput = signal('');
+  whatsapp = signal('');
+  contactEmail = signal('');
+  openingHours = signal<OpeningHoursRow[]>([]);
+  googlePlaceId = signal('');
   saving = signal(false);
 
   ngOnInit(): void {
@@ -40,6 +46,27 @@ export class SettingsTab implements OnInit {
     this.hasMelhorEnvioToken.set(settings.hasMelhorEnvioToken);
     this.messages.set(settings.announcementMessages);
     this.brands.set(settings.brands);
+    // O número é salvo com DDI 55; no campo mostramos só DDD + número.
+    this.whatsapp.set(formatPhone(settings.whatsapp.replace(/^55/, '')));
+    this.contactEmail.set(settings.contactEmail);
+    this.openingHours.set(settings.openingHours.map((row) => ({ ...row })));
+    this.googlePlaceId.set(settings.googlePlaceId);
+  }
+
+  onWhatsappInput(value: string): void {
+    this.whatsapp.set(formatPhone(value));
+  }
+
+  addHoursRow(): void {
+    this.openingHours.update((prev) => [...prev, { label: '', hours: '' }]);
+  }
+
+  removeHoursRow(index: number): void {
+    this.openingHours.update((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  updateHoursRow(index: number, field: keyof OpeningHoursRow, value: string): void {
+    this.openingHours.update((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
   }
 
   onOriginCepInput(value: string): void {
@@ -102,6 +129,10 @@ export class SettingsTab implements OnInit {
         melhorEnvioSandbox: this.melhorEnvioSandbox(),
         announcementMessages: this.messages(),
         brands: this.brands(),
+        whatsapp: this.whatsapp().replace(/\D/g, ''),
+        contactEmail: this.contactEmail().trim(),
+        openingHours: this.openingHours(),
+        googlePlaceId: this.googlePlaceId().trim(),
       });
       this.melhorEnvioToken.set('');
       this.toastService.showToast('Configurações salvas!', 'As alterações já estão valendo na loja.');

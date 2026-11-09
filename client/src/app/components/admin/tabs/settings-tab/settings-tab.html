@@ -95,6 +95,96 @@
       </p>
     </div>
 
+    <div class="rounded-lg border border-slate-200 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+        Contato e atendimento
+      </p>
+      <div class="flex flex-col gap-4 sm:flex-row">
+        <div class="flex-1">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+            WhatsApp
+          </label>
+          <input
+            [value]="whatsapp()"
+            (input)="onWhatsappInput($any($event.target).value)"
+            inputmode="tel"
+            placeholder="(22) 99999-9999"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          />
+          <p class="mt-1.5 text-xs text-slate-400">
+            Ativa o botão flutuante de WhatsApp. Deixe em branco para ocultá-lo.
+          </p>
+        </div>
+        <div class="flex-1">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+            E-mail de contato
+          </label>
+          <input
+            [value]="contactEmail()"
+            (input)="contactEmail.set($any($event.target).value)"
+            type="email"
+            placeholder="contato@sualoja.com.br"
+            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          />
+          <p class="mt-1.5 text-xs text-slate-400">Aparece na página de Contato.</p>
+        </div>
+      </div>
+
+      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Horário de funcionamento
+      </label>
+      <div class="flex flex-col gap-2">
+        @for (row of openingHours(); track $index) {
+          <div class="flex gap-2">
+            <input
+              [value]="row.label"
+              (input)="updateHoursRow($index, 'label', $any($event.target).value)"
+              placeholder="Ex: Segunda a sábado"
+              aria-label="Dias"
+              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            />
+            <input
+              [value]="row.hours"
+              (input)="updateHoursRow($index, 'hours', $any($event.target).value)"
+              placeholder="Ex: 09h às 19h"
+              aria-label="Horário"
+              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            />
+            <button
+              type="button"
+              (click)="removeHoursRow($index)"
+              aria-label="Remover horário"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-400 hover:border-slate-900 hover:text-slate-900"
+            >
+              <lucide-icon [img]="X" class="h-4 w-4" />
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          (click)="addHoursRow()"
+          class="flex items-center gap-1.5 self-start text-sm font-semibold text-slate-900 hover:underline"
+        >
+          <lucide-icon [img]="Plus" class="h-4 w-4" />
+          Adicionar horário
+        </button>
+      </div>
+      <p class="mt-2 text-xs text-slate-400">Aparece no rodapé, na página inicial e na página de Contato.</p>
+
+      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Place ID do Google (avaliações)
+      </label>
+      <input
+        [value]="googlePlaceId()"
+        (input)="googlePlaceId.set($any($event.target).value)"
+        placeholder="ChIJ..."
+        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+      />
+      <p class="mt-1.5 text-xs text-slate-400">
+        Identificador da loja no Google. Com ele e a chave da API configurada no servidor, as avaliações aparecem na página inicial.
+      </p>
+    </div>
+
     <div>
       <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
         Mensagens da barra de anúncio

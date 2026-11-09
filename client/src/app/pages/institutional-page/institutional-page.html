@@ -87,7 +87,7 @@
               </div>
             }
             @case ('location') {
-              <app-store-location variant="card" />
+              <app-store-location variant="card" [showMap]="!!block.map" [showDetails]="!!block.details" />
             }
           }
         }

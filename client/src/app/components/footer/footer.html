@@ -25,6 +25,14 @@
           <span>{{ store.addressLines[0] }}, {{ store.addressLines[1] }} · {{ store.addressLines[2] }}</span>
         </a>
 
+        @if (hours().length > 0) {
+          <ul class="mt-3 flex flex-col gap-0.5 text-xs">
+            @for (row of hours(); track $index) {
+              <li><span class="font-semibold text-slate-700">{{ row.label }}:</span> {{ row.hours }}</li>
+            }
+          </ul>
+        }
+
         <div class="mt-5 flex items-center gap-3">
           <a
             [href]="instagramUrl"

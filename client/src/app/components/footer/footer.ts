@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Instagram, ArrowRight, MapPin } from 'lucide-angular';
 import { ToastService } from '../../services/toast.service';
@@ -23,6 +23,7 @@ export class Footer {
   readonly currentYear = new Date().getFullYear();
   readonly instagramUrl = STORE_INFO.instagramUrl;
   readonly store = STORE_INFO;
+  readonly hours = computed(() => this.settingsService.settings().openingHours);
 
   email = signal('');
 
