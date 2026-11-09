@@ -5,11 +5,20 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../services/product.service';
 import { SettingsService } from '../../services/settings.service';
 import { ProductCategory } from '../../types/product';
+import {
+  DEFAULT_FILTERS,
+  PAGE_SIZE,
+  SortKey,
+  availableSizes,
+  filterProducts,
+  sortProducts,
+} from '../../utils/product-list';
 import { Navbar } from '../../components/navbar/navbar';
 import { AnnouncementBar } from '../../components/announcement-bar/announcement-bar';
 import { Hero } from '../../components/hero/hero';
 import { BrandShowcase } from '../../components/brand-showcase/brand-showcase';
 import { CategoryFilter } from '../../components/category-filter/category-filter';
+import { ProductToolbar } from '../../components/product-toolbar/product-toolbar';
 import { ProductGrid } from '../../components/product-grid/product-grid';
 import { BrandBanner } from '../../components/brand-banner/brand-banner';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
@@ -30,6 +39,7 @@ const VALID_CATEGORIES: readonly ProductCategory[] = ['camisas', 'calças', 'ber
     BrandShowcase,
     CategoryFilter,
     ProductGrid,
+    ProductToolbar,
     BrandBanner,
     CartDrawer,
     Footer,
@@ -51,6 +61,11 @@ export class StorefrontPage {
   activeCategory = signal<CategoryOrAll>('todos');
   activeBrand = signal<string>('todos');
   searchQuery = signal('');
+  sort = signal<SortKey>('relevancia');
+  sizes = signal<string[]>([]);
+  priceMin = signal<number | null>(null);
+  priceMax = signal<number | null>(null);
+  visibleCount = signal(PAGE_SIZE);
 
   constructor() {
     // Links de categoria do rodapé: /?categoria=camisas
@@ -62,24 +77,47 @@ export class StorefrontPage {
     });
 
     effect(() => {
+      // Qualquer mudança de filtro volta para a primeira página.
+      this.activeCategory();
+      this.activeBrand();
+      this.sizes();
+      this.priceMin();
+      this.priceMax();
+      this.searchQuery();
+      this.sort();
+      this.visibleCount.set(PAGE_SIZE);
+    });
+
+    effect(() => {
       this.titleService.setTitle(this.settingsService.settings().storeName);
     });
   }
 
-  readonly filteredProducts = computed(() => {
-    const products = this.products();
-    const category = this.activeCategory();
-    const brand = this.activeBrand();
-    let list = category === 'todos' ? products : products.filter((p) => p.category === category);
-    if (brand !== 'todos') {
-      list = list.filter((p) => p.brand === brand);
-    }
-    const query = this.searchQuery().trim().toLowerCase();
-    if (query) {
-      list = list.filter((p) => p.name.toLowerCase().includes(query));
-    }
-    return list;
-  });
+  readonly brands = computed(() => this.settingsService.settings().brands);
+  readonly sizeOptions = computed(() => availableSizes(this.products()));
+
+  readonly filteredProducts = computed(() =>
+    sortProducts(
+      filterProducts(this.products(), {
+        ...DEFAULT_FILTERS,
+        category: this.activeCategory(),
+        brand: this.activeBrand(),
+        sizes: this.sizes(),
+        priceMin: this.priceMin(),
+        priceMax: this.priceMax(),
+        query: this.searchQuery(),
+        sort: this.sort(),
+      }),
+      this.sort(),
+    ),
+  );
+
+  readonly visibleProducts = computed(() => this.filteredProducts().slice(0, this.visibleCount()));
+  readonly hasMore = computed(() => this.filteredProducts().length > this.visibleCount());
+
+  loadMore(): void {
+    this.visibleCount.update((n) => n + PAGE_SIZE);
+  }
 
   readonly categoryCounts = computed(() => {
     const products = this.products();

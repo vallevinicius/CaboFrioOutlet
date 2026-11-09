@@ -76,6 +76,19 @@
         <lucide-icon [img]="searchOpen() ? X : Search" class="h-5 w-5 text-slate-900" />
       </button>
 
+      <a
+        routerLink="/favoritos"
+        class="relative flex h-10 w-10 items-center justify-center rounded-sm transition-colors duration-300 hover:bg-slate-100"
+        [attr.aria-label]="'Favoritos (' + favoritesService.count() + ')'"
+      >
+        <lucide-icon [img]="Heart" class="h-5 w-5 text-slate-900" />
+        @if (favoritesService.count() > 0) {
+          <span class="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-black">
+            {{ favoritesService.count() }}
+          </span>
+        }
+      </a>
+
       @if (authService.isAdmin()) {
         <a
           routerLink="/admin"

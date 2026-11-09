@@ -38,6 +38,41 @@
     </div>
 
     <div>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Fotos adicionais
+      </label>
+      <div class="flex flex-wrap items-center gap-3">
+        @for (img of extraImages(); track img; let i = $index) {
+          <div class="relative h-20 w-16 overflow-hidden rounded-lg border border-slate-200">
+            <img [src]="img" alt="" class="h-full w-full object-cover" />
+            <button
+              type="button"
+              (click)="removeExtraImage(i)"
+              aria-label="Remover foto"
+              class="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/80 text-white hover:bg-slate-900"
+            >
+              <lucide-icon [img]="X" class="h-3 w-3" />
+            </button>
+          </div>
+        }
+        @if (extraImages().length < maxExtraImages) {
+          <label class="flex h-20 w-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 transition-colors duration-300 hover:border-slate-900 hover:text-slate-900">
+            <lucide-icon [img]="Plus" class="h-5 w-5" />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              class="hidden"
+              (change)="handleExtraFilesChange($event)"
+              [disabled]="uploading()"
+            />
+          </label>
+        }
+      </div>
+      <p class="mt-1.5 text-xs text-slate-400">Até {{ maxExtraImages }} fotos além da principal. Aparecem na galeria da página do produto.</p>
+    </div>
+
+    <div>
       <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Nome</label>
       <input
         [value]="name()"
