@@ -20,7 +20,10 @@ import { BrandShowcase } from '../../components/brand-showcase/brand-showcase';
 import { CategoryFilter } from '../../components/category-filter/category-filter';
 import { ProductToolbar } from '../../components/product-toolbar/product-toolbar';
 import { ProductGrid } from '../../components/product-grid/product-grid';
-import { BrandBanner } from '../../components/brand-banner/brand-banner';
+import { Ticker } from '../../components/ticker/ticker';
+import { CategoryTiles } from '../../components/category-tiles/category-tiles';
+import { NewArrivals } from '../../components/new-arrivals/new-arrivals';
+import { BrandStory } from '../../components/brand-story/brand-story';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
 import { Footer } from '../../components/footer/footer';
 import { GoogleReviews } from '../../components/google-reviews/google-reviews';
@@ -40,7 +43,10 @@ const VALID_CATEGORIES: readonly ProductCategory[] = ['camisas', 'calças', 'ber
     CategoryFilter,
     ProductGrid,
     ProductToolbar,
-    BrandBanner,
+    Ticker,
+    CategoryTiles,
+    NewArrivals,
+    BrandStory,
     CartDrawer,
     Footer,
     StoreLocation,
@@ -91,6 +97,27 @@ export class StorefrontPage {
     effect(() => {
       this.titleService.setTitle(this.settingsService.settings().storeName);
     });
+  }
+
+  /** Peças marcadas como novas e com estoque, para a faixa "Chegou agora". */
+  readonly newArrivals = computed(() =>
+    this.products()
+      .filter((p) => p.isNew && Object.values(p.stock).some((q) => q > 0))
+      .slice(0, 10),
+  );
+
+  selectCategory(category: ProductCategory): void {
+    this.activeCategory.set(category);
+    this.scrollToProducts();
+  }
+
+  selectBrand(brand: string): void {
+    this.activeBrand.set(brand);
+    this.scrollToProducts();
+  }
+
+  private scrollToProducts(): void {
+    document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   readonly brands = computed(() => this.settingsService.settings().brands);

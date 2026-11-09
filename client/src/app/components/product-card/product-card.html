@@ -5,10 +5,19 @@
       [alt]="product().name"
       loading="lazy"
       (click)="openLightbox($event)"
-      class="h-full w-full cursor-zoom-in object-cover transition-transform duration-500 group-hover:scale-110"
+      class="h-full w-full cursor-zoom-in object-cover transition-all duration-500 group-hover:scale-105"
       [class.opacity-50]="isOutOfStock()"
       [class.grayscale]="isOutOfStock()"
     />
+    @if (product().images?.[0]; as second) {
+      <img
+        [src]="second"
+        alt=""
+        loading="lazy"
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      />
+    }
 
     <div class="absolute top-3 left-3 flex flex-col gap-1.5">
       @if (isOutOfStock()) {
@@ -22,7 +31,7 @@
           </span>
         }
         @if (hasDiscount()) {
-          <span class="rounded-sm bg-accent px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-black">
+          <span class="rounded-sm bg-tag px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wide text-white">
             -{{ product().discountPercent }}%
           </span>
         }

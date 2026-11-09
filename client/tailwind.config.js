@@ -13,12 +13,15 @@ export default {
           DEFAULT: '#FFC700',
           hover: '#E6B400',
         },
+        // Vermelho de etiqueta de promoção — usado só em descontos.
+        tag: '#E5322D',
       },
       animation: {
         'slide-in': 'slide-in 0.3s ease-out',
         'fade-in': 'fade-in 0.2s ease-out',
         'toast-in': 'toast-in 0.3s ease-out',
-        marquee: 'marquee 24s linear infinite',
+        marquee: 'marquee 32s linear infinite',
+        rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
       },
       keyframes: {
         'slide-in': {
@@ -31,6 +34,10 @@ export default {
         },
         'toast-in': {
           '0%': { transform: 'translateY(-16px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        rise: {
+          '0%': { transform: 'translateY(28px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
         marquee: {

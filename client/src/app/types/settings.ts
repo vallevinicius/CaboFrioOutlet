@@ -17,6 +17,11 @@ export interface StoreSettings {
   contactEmail: string;
   openingHours: OpeningHoursRow[];
   googlePlaceId: string;
+  /** Frases da faixa amarela da home. Vazio = faixa oculta. */
+  tickerMessages: string[];
+  storyTitle: string;
+  /** Parágrafos separados por linha em branco. */
+  storyBody: string;
 }
 
 export const DEFAULT_SETTINGS: StoreSettings = {
@@ -39,4 +44,13 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     { label: 'Domingo', hours: '09h às 14h' },
   ],
   googlePlaceId: '',
+  tickerMessages: [
+    'Multimarcas',
+    '10 anos em Cabo Frio',
+    'Roupa de rua com preço de outlet',
+    'Troca grátis em 30 dias',
+  ],
+  storyTitle: '10 anos vestindo Cabo Frio',
+  storyBody:
+    'A Cabo Frio Outlet começou como loja de bairro e cresceu junto com os clientes. Hoje reunimos as marcas que a rua usa, com preço de outlet e atendimento de quem entende do assunto.\n\nCompre pelo site ou passe na loja para experimentar as peças e levar o look na hora.',
 };
