@@ -16,6 +16,15 @@
           Vestuário urbano para quem vive a rua com atitude.
         </p>
 
+        <a
+          routerLink="/"
+          fragment="venha-nos-conhecer"
+          class="mt-4 flex max-w-xs items-start gap-2 text-sm transition-colors duration-300 hover:text-slate-900"
+        >
+          <lucide-icon [img]="MapPin" class="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <span>{{ store.addressLines[0] }}, {{ store.addressLines[1] }} · {{ store.addressLines[2] }}</span>
+        </a>
+
         <div class="mt-5 flex items-center gap-3">
           <a
             [href]="instagramUrl"
@@ -35,8 +44,13 @@
           <ul class="mt-4 flex flex-col gap-2.5 text-sm">
             @for (link of col.links; track link) {
               <li>
-                <a href="#" class="transition-colors duration-300 hover:text-slate-900">
-                  {{ link }}
+                <a
+                  [routerLink]="link.path"
+                  [queryParams]="link.category ? { categoria: link.category } : null"
+                  [fragment]="link.category ? 'produtos' : undefined"
+                  class="transition-colors duration-300 hover:text-slate-900"
+                >
+                  {{ link.label }}
                 </a>
               </li>
             }
