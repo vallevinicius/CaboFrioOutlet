@@ -4,6 +4,7 @@ import { HeroSlide, HeroSlideInput } from '../../../types/hero-slide';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
 import { ApiError } from '../../../services/api-error';
+import { bannerImageHint } from '../../../utils/image-hint';
 
 @Component({
   selector: 'app-banner-form',
@@ -47,6 +48,7 @@ export class BannerForm implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    await this.warnIfImageIsWeak(file);
     this.uploading.set(true);
     try {
       const formData = new FormData();
@@ -58,6 +60,18 @@ export class BannerForm implements OnInit {
     } finally {
       this.uploading.set(false);
       input.value = '';
+    }
+  }
+
+  /** Mede a foto escolhida e avisa (sem bloquear) se ela não for boa para o banner. */
+  private async warnIfImageIsWeak(file: File): Promise<void> {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const hint = bannerImageHint(bitmap.width, bitmap.height);
+      bitmap.close();
+      if (hint) this.toastService.showToast('Dica para o banner', hint);
+    } catch {
+      // formato que o navegador não lê: o servidor valida o envio
     }
   }
 

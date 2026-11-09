@@ -5,6 +5,7 @@ import { ToastService } from '../../services/toast.service';
 import { SettingsService, splitStoreName } from '../../services/settings.service';
 import { FOOTER_COLUMNS } from '../../data/footer-links';
 import { STORE_INFO } from '../../data/store-info';
+import { AnalyticsService } from '../../services/analytics.service';
 
 @Component({
   selector: 'app-footer',
@@ -14,6 +15,7 @@ import { STORE_INFO } from '../../data/store-info';
 export class Footer {
   private toastService = inject(ToastService);
   settingsService = inject(SettingsService);
+  analytics = inject(AnalyticsService);
 
   readonly Instagram = Instagram;
   readonly ArrowRight = ArrowRight;

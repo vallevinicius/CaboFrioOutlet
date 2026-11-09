@@ -10,9 +10,9 @@
 
   <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
     <div class="mb-8 flex items-center gap-2 text-xs font-bold uppercase tracking-wide">
-      <span [class]="step() === 'dados' ? 'text-slate-900' : 'text-slate-400'">1. Seus dados</span>
+      <span [class]="step() === 'dados' ? 'text-slate-900' : 'text-slate-500'">1. Seus dados</span>
       <span class="h-px w-8 bg-slate-300"></span>
-      <span [class]="step() !== 'dados' ? 'text-slate-900' : 'text-slate-400'">2. Pagamento</span>
+      <span [class]="step() !== 'dados' ? 'text-slate-900' : 'text-slate-500'">2. Pagamento</span>
     </div>
 
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
@@ -45,7 +45,7 @@
                   required
                   class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
                 />
-                <p class="mt-1 text-[11px] text-slate-400">Usado para enviar a confirmação do pagamento.</p>
+                <p class="mt-1 text-[11px] text-slate-500">Usado para enviar a confirmação do pagamento.</p>
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -58,7 +58,7 @@
                   required
                   class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
                 />
-                <p class="mt-1 text-[11px] text-slate-400">Exigido pelo Mercado Pago para processar o pagamento.</p>
+                <p class="mt-1 text-[11px] text-slate-500">Exigido pelo Mercado Pago para processar o pagamento.</p>
               </div>
 
               <p class="mt-2 text-xs font-bold uppercase tracking-wider text-slate-500">Endereço de entrega</p>
@@ -73,7 +73,7 @@
                   class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-accent focus:outline-none"
                 />
                 @if (cepLookupState() === 'loading') {
-                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-slate-400">Buscando...</span>
+                  <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-slate-500">Buscando...</span>
                 }
                 @if (cepLookupState() === 'not-found') {
                   <span class="absolute right-3 top-9 font-mono text-[10px] uppercase text-red-500">Não encontrado</span>
@@ -236,7 +236,7 @@
               } @else {
                 <p class="text-sm text-slate-500">Estamos confirmando seu pagamento...</p>
               }
-              <p class="mt-4 text-center text-xs text-slate-400">
+              <p class="mt-4 text-center text-xs text-slate-500">
                 Esta página vai atualizar automaticamente assim que o pagamento for confirmado.
               </p>
             </div>

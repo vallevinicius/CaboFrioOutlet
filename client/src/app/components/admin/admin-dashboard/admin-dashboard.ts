@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, LogOut } from 'lucide-angular';
 import { SettingsService, splitStoreName, storeInitials } from '../../../services/settings.service';
 import { AuthService } from '../../../services/auth.service';
+import { OverviewTab } from '../tabs/overview-tab/overview-tab';
 import { BannersTab } from '../tabs/banners-tab/banners-tab';
 import { ProductsTab } from '../tabs/products-tab/products-tab';
 import { StockTab } from '../tabs/stock-tab/stock-tab';
@@ -10,9 +11,10 @@ import { OrdersTab } from '../tabs/orders-tab/orders-tab';
 import { CustomersTab } from '../tabs/customers-tab/customers-tab';
 import { SettingsTab } from '../tabs/settings-tab/settings-tab';
 
-type TabKey = 'banners' | 'produtos' | 'estoque' | 'pedidos' | 'clientes' | 'configuracoes';
+type TabKey = 'inicio' | 'banners' | 'produtos' | 'estoque' | 'pedidos' | 'clientes' | 'configuracoes';
 
 const TABS: { key: TabKey; label: string }[] = [
+  { key: 'inicio', label: 'Visão geral' },
   { key: 'banners', label: 'Banners' },
   { key: 'produtos', label: 'Produtos' },
   { key: 'estoque', label: 'Estoque' },
@@ -23,7 +25,7 @@ const TABS: { key: TabKey; label: string }[] = [
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, LucideAngularModule, BannersTab, ProductsTab, StockTab, OrdersTab, CustomersTab, SettingsTab],
+  imports: [RouterLink, LucideAngularModule, OverviewTab, BannersTab, ProductsTab, StockTab, OrdersTab, CustomersTab, SettingsTab],
   templateUrl: './admin-dashboard.html',
 })
 export class AdminDashboard {
@@ -37,7 +39,7 @@ export class AdminDashboard {
 
   readonly wordmark = computed(() => splitStoreName(this.settingsService.settings().storeName));
 
-  activeTab = signal<TabKey>('produtos');
+  activeTab = signal<TabKey>('inicio');
 
   logout(): void {
     this.authService.logout();

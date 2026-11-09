@@ -73,6 +73,11 @@
         <a routerLink="/admin" class="text-slate-600 transition-colors duration-300 hover:text-slate-300">
           Admin
         </a>
+        @if (analytics.configured()) {
+          <button type="button" (click)="analytics.reset()" class="ml-2 underline underline-offset-2 transition-colors duration-300 hover:text-white">
+            Preferências de cookies
+          </button>
+        }
       </p>
 
       <form (submit)="handleSubscribe($event)" class="flex w-full max-w-xs items-center gap-2 sm:w-auto">

@@ -22,6 +22,8 @@ export interface StoreSettings {
   storyTitle: string;
   /** Parágrafos separados por linha em branco. */
   storyBody: string;
+  gaMeasurementId: string;
+  metaPixelId: string;
 }
 
 export const DEFAULT_SETTINGS: StoreSettings = {
@@ -51,6 +53,8 @@ export const DEFAULT_SETTINGS: StoreSettings = {
     'Troca grátis em 30 dias',
   ],
   storyTitle: '10 anos vestindo Cabo Frio',
+  gaMeasurementId: '',
+  metaPixelId: '',
   storyBody:
     'A Cabo Frio Outlet começou como loja de bairro e cresceu junto com os clientes. Hoje reunimos as marcas que a rua usa, com preço de outlet e atendimento de quem entende do assunto.\n\nCompre pelo site ou passe na loja para experimentar as peças e levar o look na hora.',
 };
