@@ -40,7 +40,7 @@
 
   <div class="mx-auto flex h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
     <a routerLink="/" class="flex flex-shrink-0 items-center gap-2.5 text-slate-900">
-      <img src="Logo Preto.png" alt="Logo Preto" class="h-10 w-16 rounded-lg" />
+      <img src="Logo Preto.png" [alt]="settingsService.settings().storeName + ' — página inicial'" class="h-10 w-16 rounded-lg" />
     </a>
 
     <div class="hidden flex-1 sm:block">

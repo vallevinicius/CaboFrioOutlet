@@ -13,6 +13,7 @@ import { heroSlidesRouter } from './routes/hero-slides';
 import { checkoutRouter } from './routes/checkout';
 import { shippingRouter } from './routes/shipping';
 import { reviewsRouter } from './routes/reviews';
+import { seoRouter, sendIndexWithSeo } from './seo/routes';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -36,17 +37,16 @@ app.use('/api/reviews', reviewsRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+app.use(seoRouter);
+
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
 
 // Serve o build do Angular (client/dist/client/browser) e faz fallback de SPA
 // para qualquer rota que não seja /api ou /uploads.
 const clientDist = path.join(__dirname, '..', 'client', 'dist', 'client', 'browser');
-app.use(express.static(clientDist));
-app.get(/^(?!\/api|\/uploads).*/, (_req, res) => {
-  res.sendFile(path.join(clientDist, 'index.html'), (err) => {
-    if (err) res.status(404).send('Build do client não encontrado. Rode "npm run build" primeiro.');
-  });
-});
+// index: false — o index.html passa por sendIndexWithSeo para receber as tags de SEO da rota.
+app.use(express.static(clientDist, { index: false }));
+app.get(/^(?!\/api|\/uploads).*/, sendIndexWithSeo(path.join(clientDist, 'index.html')));
 
 const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   console.error(err);
