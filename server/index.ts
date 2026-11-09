@@ -13,6 +13,7 @@ import { heroSlidesRouter } from './routes/hero-slides';
 import { checkoutRouter } from './routes/checkout';
 import { shippingRouter } from './routes/shipping';
 import { reviewsRouter } from './routes/reviews';
+import { favoritesRouter } from './routes/favorites';
 import { seoRouter, sendIndexWithSeo } from './seo/routes';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,6 +35,7 @@ app.use('/api/hero-slides', heroSlidesRouter);
 app.use('/api/checkout', checkoutRouter);
 app.use('/api/shipping', shippingRouter);
 app.use('/api/reviews', reviewsRouter);
+app.use('/api/favorites', favoritesRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

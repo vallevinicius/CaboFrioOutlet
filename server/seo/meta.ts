@@ -65,7 +65,7 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
 };
 
 /** Rotas que não devem ser indexadas (área privada ou transacional). */
-export const NOINDEX_PREFIXES = ['/admin', '/checkout', '/minha-conta'];
+export const NOINDEX_PREFIXES = ['/admin', '/checkout', '/minha-conta', '/favoritos'];
 
 export function escapeHtml(value: string): string {
   return value
@@ -276,6 +276,7 @@ export function buildRobotsTxt(baseUrl: string): string {
     'Disallow: /admin',
     'Disallow: /checkout',
     'Disallow: /minha-conta',
+    'Disallow: /favoritos',
     'Disallow: /api/',
     '',
     `Sitemap: ${baseUrl}/sitemap.xml`,

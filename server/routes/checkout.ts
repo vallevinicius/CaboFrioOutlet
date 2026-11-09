@@ -3,6 +3,7 @@ import { prisma } from '../db';
 import { optionalAuth } from '../middleware/auth';
 import { MP_PUBLIC_KEY, mpFetch } from '../services/mercadopago';
 import { restoreStockForOrder } from '../services/stock';
+import { notifyOrderConfirmed } from '../services/order-notifications';
 
 export const checkoutRouter = Router();
 
@@ -74,6 +75,10 @@ async function applyPaymentResult(orderId: string, payment: OrderPaymentInfo) {
       where: { id: orderId, status: 'pendente' },
       data: { status: 'confirmado', paymentId, paymentMethod, paymentStatus: status, installments },
     });
+    if (updated.count > 0) {
+      // Só na transição pendente → confirmado: webhook repetido não duplica o e-mail.
+      void notifyOrderConfirmed(orderId);
+    }
     if (updated.count === 0) {
       // Já processado antes (ex: webhook chegou depois da resposta direta) — apenas garante os dados de pagamento.
       await prisma.order.update({
