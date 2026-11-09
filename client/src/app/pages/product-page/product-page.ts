@@ -10,6 +10,7 @@ import { ImageLightbox } from '../../components/image-lightbox/image-lightbox';
 import { ProductService } from '../../services/product.service';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
+import { SeoService } from '../../services/seo.service';
 import { SettingsService } from '../../services/settings.service';
 import { ProductCategory } from '../../types/product';
 
@@ -32,6 +33,7 @@ export class ProductPage {
   private toastService = inject(ToastService);
   private titleService = inject(Title);
   private settingsService = inject(SettingsService);
+  private seo = inject(SeoService);
 
   readonly Plus = Plus;
   readonly ChevronRight = ChevronRight;
@@ -83,6 +85,7 @@ export class ProductPage {
       const product = this.product();
       if (product) {
         this.titleService.setTitle(`${product.name} | ${this.settingsService.settings().storeName}`);
+        this.seo.setDescription(`${product.name}. ${product.description}`);
       }
     });
   }
