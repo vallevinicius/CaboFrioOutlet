@@ -1,45 +1,45 @@
-<footer class="border-t border-slate-200 bg-white text-slate-500">
-  <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+<footer class="relative overflow-hidden bg-black text-slate-400">
+  <div class="mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6 lg:px-8">
     <div class="grid grid-cols-2 gap-10 sm:grid-cols-3 lg:grid-cols-5">
       <div class="col-span-2 lg:col-span-2">
         <div class="flex items-center gap-1.5">
           @if (splitStoreName(settingsService.settings().storeName).lead) {
-            <span class="font-display text-lg font-semibold uppercase tracking-tight text-slate-900">
+            <span class="font-display text-xl font-semibold uppercase tracking-tight text-white">
               {{ splitStoreName(settingsService.settings().storeName).lead }}
             </span>
           }
-          <span class="font-display text-lg font-semibold uppercase tracking-tight bg-accent px-1 text-black">
+          <span class="bg-accent px-1.5 font-display text-xl font-semibold uppercase tracking-tight text-black">
             {{ splitStoreName(settingsService.settings().storeName).accent }}
           </span>
         </div>
-        <p class="mt-3 max-w-xs text-sm">
+        <p class="mt-4 max-w-xs text-sm leading-relaxed">
           Vestuário urbano para quem vive a rua com atitude.
         </p>
 
         <a
           routerLink="/"
           fragment="venha-nos-conhecer"
-          class="mt-4 flex max-w-xs items-start gap-2 text-sm transition-colors duration-300 hover:text-slate-900"
+          class="mt-5 flex max-w-xs items-start gap-2 text-sm transition-colors duration-300 hover:text-white"
         >
-          <lucide-icon [img]="MapPin" class="mt-0.5 h-4 w-4 flex-shrink-0" />
+          <lucide-icon [img]="MapPin" class="mt-0.5 h-4 w-4 flex-shrink-0 text-accent" />
           <span>{{ store.addressLines[0] }}, {{ store.addressLines[1] }} · {{ store.addressLines[2] }}</span>
         </a>
 
         @if (hours().length > 0) {
           <ul class="mt-3 flex flex-col gap-0.5 text-xs">
             @for (row of hours(); track $index) {
-              <li><span class="font-semibold text-slate-700">{{ row.label }}:</span> {{ row.hours }}</li>
+              <li><span class="font-semibold text-slate-200">{{ row.label }}:</span> {{ row.hours }}</li>
             }
           </ul>
         }
 
-        <div class="mt-5 flex items-center gap-3">
+        <div class="mt-6 flex items-center gap-3">
           <a
             [href]="instagramUrl"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
-            class="flex h-9 w-9 items-center justify-center rounded-sm bg-slate-100 text-slate-700 transition-colors duration-300 hover:bg-accent hover:text-black"
+            class="flex h-10 w-10 items-center justify-center rounded-sm bg-white/10 text-white transition-colors duration-300 hover:bg-accent hover:text-black"
           >
             <lucide-icon [img]="Instagram" class="h-4 w-4" />
           </a>
@@ -48,7 +48,7 @@
 
       @for (col of linkColumns; track col.title) {
         <div>
-          <h4 class="font-mono text-xs font-bold uppercase tracking-wider text-slate-900">{{ col.title }}</h4>
+          <h4 class="font-display text-base font-semibold uppercase tracking-wide text-white">{{ col.title }}</h4>
           <ul class="mt-4 flex flex-col gap-2.5 text-sm">
             @for (link of col.links; track link) {
               <li>
@@ -56,7 +56,7 @@
                   [routerLink]="link.path"
                   [queryParams]="link.category ? { categoria: link.category } : null"
                   [fragment]="link.category ? 'produtos' : undefined"
-                  class="transition-colors duration-300 hover:text-slate-900"
+                  class="transition-colors duration-300 hover:text-accent"
                 >
                   {{ link.label }}
                 </a>
@@ -67,31 +67,41 @@
       }
     </div>
 
-    <div class="mt-12 flex flex-col gap-6 border-t border-slate-200 pt-8 sm:flex-row sm:items-center sm:justify-between">
+    <div class="mt-12 flex flex-col gap-6 border-t border-white/15 pt-8 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-xs">
         © {{ currentYear }} {{ settingsService.settings().storeName }}. Todos os direitos reservados.
-        <a routerLink="/admin" class="text-slate-400 transition-colors duration-300 hover:text-slate-600">
+        <a routerLink="/admin" class="text-slate-600 transition-colors duration-300 hover:text-slate-300">
           Admin
         </a>
       </p>
 
       <form (submit)="handleSubscribe($event)" class="flex w-full max-w-xs items-center gap-2 sm:w-auto">
+        <label class="sr-only" for="newsletter-email">Seu e-mail</label>
         <input
+          id="newsletter-email"
           type="email"
           [value]="email()"
           (input)="email.set($any($event.target).value)"
           placeholder="Seu e-mail"
           required
-          class="w-full rounded-sm border border-slate-300 bg-white px-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
+          class="w-full rounded-sm border border-white/25 bg-transparent px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-accent focus:outline-none"
         />
         <button
           type="submit"
           aria-label="Inscrever-se na newsletter"
-          class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-sm bg-accent text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+          class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-sm bg-accent text-black transition-colors duration-300 hover:bg-white"
         >
-          <lucide-icon [img]="ArrowRight" class="h-3.5 w-3.5" />
+          <lucide-icon [img]="ArrowRight" class="h-4 w-4" />
         </button>
       </form>
     </div>
   </div>
+
+  <!-- Nome gigante, cortado na base -->
+  <p
+    class="pointer-events-none select-none whitespace-nowrap pb-0 text-center font-display text-[17vw] font-bold uppercase leading-[0.78] tracking-tight text-white/[0.07]"
+    aria-hidden="true"
+  >
+    {{ settingsService.settings().storeName }}
+  </p>
 </footer>

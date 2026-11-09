@@ -9,6 +9,15 @@ import {
   parseOpeningHours,
 } from '../utils/contact';
 
+import {
+  DEFAULT_STORY_BODY,
+  DEFAULT_STORY_TITLE,
+  normalizeStoryBody,
+  normalizeStoryTitle,
+  normalizeTickerMessages,
+  parseTickerMessages,
+} from '../utils/home-content';
+
 export const settingsRouter = Router();
 
 function parseJsonArray(raw: string): string[] {
@@ -33,6 +42,9 @@ function serialize(settings: {
   contactEmail: string;
   openingHours: string | null;
   googlePlaceId: string;
+  tickerMessages: string | null;
+  storyTitle: string;
+  storyBody: string | null;
 }) {
   return {
     storeName: settings.storeName,
@@ -47,6 +59,9 @@ function serialize(settings: {
     contactEmail: settings.contactEmail,
     openingHours: parseOpeningHours(settings.openingHours),
     googlePlaceId: settings.googlePlaceId,
+    tickerMessages: parseTickerMessages(settings.tickerMessages),
+    storyTitle: settings.storyTitle || DEFAULT_STORY_TITLE,
+    storyBody: settings.storyBody || DEFAULT_STORY_BODY,
   };
 }
 
@@ -73,6 +88,9 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     contactEmail,
     openingHours,
     googlePlaceId,
+    tickerMessages,
+    storyTitle,
+    storyBody,
   } = req.body as {
     storeName?: string;
     freeShippingThreshold?: number;
@@ -86,9 +104,35 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     contactEmail?: string;
     openingHours?: unknown;
     googlePlaceId?: string;
+    tickerMessages?: unknown;
+    storyTitle?: unknown;
+    storyBody?: unknown;
   };
 
-  const contact: { whatsapp?: string; contactEmail?: string; openingHours?: string; googlePlaceId?: string } = {};
+  const contact: {
+    whatsapp?: string;
+    contactEmail?: string;
+    openingHours?: string;
+    googlePlaceId?: string;
+    tickerMessages?: string;
+    storyTitle?: string;
+    storyBody?: string | null;
+  } = {};
+  if (tickerMessages !== undefined) {
+    const value = normalizeTickerMessages(tickerMessages);
+    if (value === null) return res.status(400).json({ error: 'Mensagens da faixa inválidas (até 8, com até 60 caracteres).' });
+    contact.tickerMessages = JSON.stringify(value);
+  }
+  if (storyTitle !== undefined) {
+    const value = normalizeStoryTitle(storyTitle);
+    if (value === null) return res.status(400).json({ error: 'Título da história inválido (até 80 caracteres).' });
+    contact.storyTitle = value;
+  }
+  if (storyBody !== undefined) {
+    const value = normalizeStoryBody(storyBody);
+    if (value === null) return res.status(400).json({ error: 'Texto da história inválido (até 1200 caracteres).' });
+    contact.storyBody = value === '' ? null : value;
+  }
   if (typeof whatsapp === 'string') {
     const value = normalizeWhatsapp(whatsapp);
     if (value === null) return res.status(400).json({ error: 'WhatsApp inválido. Use DDD + número.' });

@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { LucideAngularModule, Plus, X } from 'lucide-angular';
+import { LucideAngularModule, Plus, X, ArrowUp, ArrowDown } from 'lucide-angular';
 import { SettingsService } from '../../../../services/settings.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { formatCep } from '../../../../utils/cep';
 import { formatPhone } from '../../../../utils/phone';
+import { moveItem } from '../../../../utils/text';
 import { OpeningHoursRow } from '../../../../types/settings';
 
 @Component({
@@ -18,6 +19,8 @@ export class SettingsTab implements OnInit {
 
   readonly Plus = Plus;
   readonly X = X;
+  readonly ArrowUp = ArrowUp;
+  readonly ArrowDown = ArrowDown;
 
   storeName = signal('');
   threshold = signal('');
@@ -34,6 +37,10 @@ export class SettingsTab implements OnInit {
   contactEmail = signal('');
   openingHours = signal<OpeningHoursRow[]>([]);
   googlePlaceId = signal('');
+  tickerMessages = signal<string[]>([]);
+  tickerInput = signal('');
+  storyTitle = signal('');
+  storyBody = signal('');
   saving = signal(false);
 
   ngOnInit(): void {
@@ -51,6 +58,32 @@ export class SettingsTab implements OnInit {
     this.contactEmail.set(settings.contactEmail);
     this.openingHours.set(settings.openingHours.map((row) => ({ ...row })));
     this.googlePlaceId.set(settings.googlePlaceId);
+    this.tickerMessages.set([...settings.tickerMessages]);
+    this.storyTitle.set(settings.storyTitle);
+    this.storyBody.set(settings.storyBody);
+  }
+
+  addTickerMessage(): void {
+    const value = this.tickerInput().trim();
+    if (value && !this.tickerMessages().includes(value)) {
+      this.tickerMessages.update((prev) => [...prev, value]);
+    }
+    this.tickerInput.set('');
+  }
+
+  removeTickerMessage(index: number): void {
+    this.tickerMessages.update((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  moveTickerMessage(index: number, direction: -1 | 1): void {
+    this.tickerMessages.update((prev) => moveItem(prev, index, direction));
+  }
+
+  onTickerKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.addTickerMessage();
+    }
   }
 
   onWhatsappInput(value: string): void {
@@ -133,6 +166,9 @@ export class SettingsTab implements OnInit {
         contactEmail: this.contactEmail().trim(),
         openingHours: this.openingHours(),
         googlePlaceId: this.googlePlaceId().trim(),
+        tickerMessages: this.tickerMessages(),
+        storyTitle: this.storyTitle().trim(),
+        storyBody: this.storyBody().trim(),
       });
       this.melhorEnvioToken.set('');
       this.toastService.showToast('Configurações salvas!', 'As alterações já estão valendo na loja.');

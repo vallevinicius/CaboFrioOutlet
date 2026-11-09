@@ -1,0 +1,30 @@
+<section class="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8" aria-labelledby="historia-titulo">
+  <div class="relative">
+    <img
+      src="placeholders/loja.jpg"
+      alt="Araras com roupas dentro de uma loja de moda"
+      loading="lazy"
+      class="aspect-[4/5] w-full rounded-sm object-cover"
+    />
+    <!-- O número é o assunto: ocupa a quina da foto -->
+    <span
+      class="absolute -bottom-6 -right-2 font-display text-[9rem] font-bold leading-none text-accent drop-shadow-[0_3px_0_#000] sm:text-[12rem]"
+      aria-hidden="true"
+    >{{ store.yearsInBusiness }}</span>
+  </div>
+
+  <div>
+    <h2 id="historia-titulo" class="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight text-black sm:text-6xl">
+      {{ title() }}
+    </h2>
+    @for (paragraph of paragraphs(); track $index) {
+      <p class="mt-6 max-w-md whitespace-pre-line text-base leading-relaxed text-slate-600">{{ paragraph }}</p>
+    }
+    <a
+      routerLink="/sobre-nos"
+      class="mt-8 inline-block rounded-sm bg-black px-8 py-4 text-sm font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:bg-accent hover:text-black"
+    >
+      Conheça nossa história
+    </a>
+  </div>
+</section>

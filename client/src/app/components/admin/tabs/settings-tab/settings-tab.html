@@ -185,6 +185,94 @@
       </p>
     </div>
 
+    <div class="rounded-lg border border-slate-200 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Página inicial</p>
+
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Frases da faixa amarela
+      </label>
+      <div class="flex gap-2">
+        <input
+          [value]="tickerInput()"
+          (input)="tickerInput.set($any($event.target).value)"
+          (keydown)="onTickerKeydown($event)"
+          maxlength="60"
+          placeholder="Ex: Multimarcas"
+          class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        />
+        <button
+          type="button"
+          (click)="addTickerMessage()"
+          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-900 transition-colors duration-300 hover:border-slate-900"
+          aria-label="Adicionar frase"
+        >
+          <lucide-icon [img]="Plus" class="h-4 w-4" />
+        </button>
+      </div>
+      <p class="mt-1.5 text-xs text-slate-400">
+        Rolam na faixa amarela abaixo do banner (até 8, com até 60 caracteres). Sem nenhuma frase, a faixa some.
+      </p>
+      @if (tickerMessages().length > 0) {
+        <ul class="mt-3 flex flex-col gap-2">
+          @for (msg of tickerMessages(); track msg; let i = $index; let first = $first; let last = $last) {
+            <li class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-4 pr-2 text-sm text-slate-700">
+              <span class="flex-1">{{ msg }}</span>
+              <button
+                type="button"
+                (click)="moveTickerMessage(i, -1)"
+                [disabled]="first"
+                aria-label="Subir frase"
+                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900 disabled:opacity-30"
+              >
+                <lucide-icon [img]="ArrowUp" class="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                (click)="moveTickerMessage(i, 1)"
+                [disabled]="last"
+                aria-label="Descer frase"
+                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900 disabled:opacity-30"
+              >
+                <lucide-icon [img]="ArrowDown" class="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                (click)="removeTickerMessage(i)"
+                aria-label="Remover frase"
+                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900"
+              >
+                <lucide-icon [img]="X" class="h-4 w-4" />
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      <label class="mb-2 mt-6 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Título da seção da história
+      </label>
+      <input
+        [value]="storyTitle()"
+        (input)="storyTitle.set($any($event.target).value)"
+        maxlength="80"
+        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+      />
+
+      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Texto da seção da história
+      </label>
+      <textarea
+        [value]="storyBody()"
+        (input)="storyBody.set($any($event.target).value)"
+        rows="6"
+        maxlength="1200"
+        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+      ></textarea>
+      <p class="mt-1.5 text-xs text-slate-400">
+        Deixe uma linha em branco entre os parágrafos. Se apagar tudo, volta ao texto padrão.
+      </p>
+    </div>
+
     <div>
       <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
         Mensagens da barra de anúncio

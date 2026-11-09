@@ -34,10 +34,28 @@
     border-radius: 9999px;
   }
 
+  /* Contorno do texto (nome gigante do rodapé, marcas) */
+  .text-outline {
+    -webkit-text-stroke: 1.5px currentColor;
+    color: transparent;
+  }
+
   .bg-grid-lines {
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 44px 44px;
+  }
+}
+
+/* Respeita quem prefere menos movimento: sem faixa rolando, sem entrada animada. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
