@@ -1,11 +1,103 @@
-node_modules
-dist
-dist-ssr
-*.local
-.DS_Store
-.env
-.env.local
+# ── Dependências ──────────────────────────────
+node_modules/
+jspm_packages/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Uploads
+# ── Build / saída ─────────────────────────────
+dist/
+dist-ssr/
+build/
+out/
+tmp/
+temp/
+*.tsbuildinfo
+
+# ── Angular ───────────────────────────────────
+.angular/
+client/.angular/
+client/dist/
+.sass-cache/
+/connect.lock
+/libpeerconnection.log
+testem.log
+/typings
+
+# ── Ambiente e segredos ───────────────────────
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+*.crt
+
+# ── Banco de dados local (Prisma / SQLite) ────
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+prisma/*.db
+prisma/*.db-journal
+
+# ── Uploads (conteúdo de usuário) ─────────────
 uploads/*
 !uploads/.gitkeep
+
+# ── Logs ──────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ── Testes / cobertura ────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ── Caches de ferramentas ─────────────────────
+.cache/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.vite/
+.turbo/
+.npm/
+.node_repl_history
+*.tgz
+
+# ── Editores / IDEs ───────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# ── Sistema operacional ───────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Claude Code (configuração local) ──────────
+.claude/settings.local.json
