@@ -92,6 +92,11 @@ model Settings {
   /// JSON: [{ label, hours }]. Nulo = usa o horário padrão definido no código.
   openingHours          String? @db.Text
   googlePlaceId         String  @default("")
+  /// JSON: string[] da faixa amarela da home. Nulo = usa o texto padrão do código.
+  tickerMessages        String? @db.Text
+  /// Seção "anos vestindo a cidade" da home. Vazio/nulo = usa o texto padrão do código.
+  storyTitle            String  @default("")
+  storyBody             String? @db.Text
 }
 
 model HeroSlide {
