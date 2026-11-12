@@ -1,5 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ProductCategory } from '../../types/product';
+import { pathForCategory } from '../../data/categories';
 
 interface Tile {
   value: ProductCategory;
@@ -19,10 +21,11 @@ const TILES: Tile[] = [
 
 @Component({
   selector: 'app-category-tiles',
+  imports: [RouterLink],
   templateUrl: './category-tiles.html',
 })
 export class CategoryTiles {
   counts = input.required<Record<string, number>>();
-  selectCategory = output<ProductCategory>();
   readonly tiles = TILES;
+  readonly pathFor = pathForCategory;
 }

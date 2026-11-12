@@ -1,11 +1,6 @@
 <div class="flex min-h-screen flex-col bg-white">
   <div class="sticky top-0 z-50">
-    <app-navbar
-      [activeCategory]="activeCategory()"
-      (categoryChange)="handleCategoryChange()"
-      [searchQuery]="searchQuery()"
-      (searchChange)="searchQuery.set($event)"
-    />
+    <app-navbar />
   </div>
 
   <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
@@ -13,7 +8,7 @@
       <nav class="mb-6 flex items-center gap-1.5 text-xs font-medium text-slate-500">
         <a routerLink="/" class="hover:text-slate-900">Início</a>
         <lucide-icon [img]="ChevronRight" class="h-3.5 w-3.5" />
-        <span class="capitalize">{{ product.category }}</span>
+        <a [routerLink]="categoryPath()" class="capitalize hover:text-slate-900">{{ product.category }}</a>
         <lucide-icon [img]="ChevronRight" class="h-3.5 w-3.5" />
         <span class="truncate text-slate-900">{{ product.name }}</span>
       </nav>

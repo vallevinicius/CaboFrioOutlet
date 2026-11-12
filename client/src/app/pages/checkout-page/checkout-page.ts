@@ -12,11 +12,9 @@ import { CheckoutService, PayResult, ShippingOption } from '../../services/check
 import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
-import { ProductCategory } from '../../types/product';
 import { isValidCpf, normalizeCpf, formatCpf } from '../../utils/cpf';
 import { formatCep } from '../../utils/cep';
 
-type CategoryOrAll = ProductCategory | 'todos';
 type Step = 'dados' | 'pagamento' | 'aguardando' | 'sucesso' | 'recusado';
 
 const MP_SCRIPT_ID = 'mercadopago-sdk';
@@ -58,9 +56,6 @@ export class CheckoutPage implements OnInit, OnDestroy {
   readonly formatPrice = formatPrice;
   readonly getDiscountedPrice = getDiscountedPrice;
 
-  // navbar precisa desses inputs, mas essa página não filtra produtos
-  activeCategory = signal<CategoryOrAll>('todos');
-  searchQuery = signal('');
 
   step = signal<Step>('dados');
   submittingOrder = signal(false);
@@ -200,9 +195,6 @@ export class CheckoutPage implements OnInit, OnDestroy {
     this.selectedShippingOptionId.set(id);
   }
 
-  handleCategoryChange(): void {
-    this.router.navigateByUrl('/');
-  }
 
   async handleDadosSubmit(event: Event): Promise<void> {
     event.preventDefault();

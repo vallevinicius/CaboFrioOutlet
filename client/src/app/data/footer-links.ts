@@ -1,11 +1,9 @@
-import { ProductCategory } from '../types/product';
+import { CATEGORY_PAGES, ALL_PRODUCTS_PATH } from './categories';
 
 export interface FooterLink {
   label: string;
   /** Rota interna. */
   path: string;
-  /** Categoria da vitrine a filtrar ao abrir `path`. */
-  category?: ProductCategory;
 }
 
 export interface FooterColumn {
@@ -34,10 +32,8 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: 'Categorias',
     links: [
-      { label: 'Camisas', path: '/', category: 'camisas' },
-      { label: 'Calças', path: '/', category: 'calças' },
-      { label: 'Bermudas', path: '/', category: 'bermudas' },
-      { label: 'Bonés', path: '/', category: 'bonés' },
+      ...CATEGORY_PAGES.map((c) => ({ label: c.label, path: c.path })),
+      { label: 'Todos os produtos', path: ALL_PRODUCTS_PATH },
     ],
   },
 ];

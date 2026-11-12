@@ -51,13 +51,13 @@
         <input
           type="text"
           [value]="searchQuery()"
-          (input)="searchChange.emit($any($event.target).value)"
+          (input)="onSearchInput($any($event.target).value)"
           placeholder="Olá, o que você procura?"
           class="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
         />
         @if (searchQuery()) {
           <button
-            (click)="searchChange.emit('')"
+            (click)="clearSearch()"
             class="flex-shrink-0 text-slate-500 transition-colors duration-300 hover:text-slate-900"
             aria-label="Limpar busca"
           >
@@ -213,13 +213,13 @@
           autofocus
           type="text"
           [value]="searchQuery()"
-          (input)="searchChange.emit($any($event.target).value)"
+          (input)="onSearchInput($any($event.target).value)"
           placeholder="Buscar produtos..."
           class="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
         />
         @if (searchQuery()) {
           <button
-            (click)="searchChange.emit('')"
+            (click)="clearSearch()"
             class="flex-shrink-0 text-slate-500 transition-colors duration-300 hover:text-slate-900"
             aria-label="Limpar busca"
           >
@@ -230,37 +230,33 @@
     </div>
   }
 
-  <nav class="hidden border-t border-slate-200 md:block">
+  <nav class="hidden border-t border-slate-200 md:block" aria-label="Principal">
     <div class="mx-auto flex h-12 max-w-7xl items-center justify-center gap-8 px-4 sm:px-6 lg:px-8">
-      <button
-        (click)="handleHomeClick()"
+      <a
+        routerLink="/"
         class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-        [class]="
-          activeCategory() === 'todos' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-900'
-        "
+        [class]="isHome() ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+        [attr.aria-current]="isHome() ? 'page' : null"
       >
         Início
         <span
           class="absolute -bottom-0.5 left-0 h-0.5 bg-accent transition-all duration-300"
-          [class]="activeCategory() === 'todos' ? 'w-full' : 'w-0 group-hover:w-full'"
+          [class]="isHome() ? 'w-full' : 'w-0 group-hover:w-full'"
         ></span>
-      </button>
+      </a>
       @for (cat of categories; track cat.value) {
-        <button
-          (click)="handleCategoryClick(cat.value)"
+        <a
+          [routerLink]="cat.path"
           class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="
-            activeCategory() === cat.value
-              ? 'text-slate-900'
-              : 'text-slate-500 hover:text-slate-900'
-          "
+          [class]="activeCategory() === cat.value ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+          [attr.aria-current]="activeCategory() === cat.value ? 'page' : null"
         >
           {{ cat.label }}
           <span
             class="absolute -bottom-0.5 left-0 h-0.5 bg-accent transition-all duration-300"
             [class]="activeCategory() === cat.value ? 'w-full' : 'w-0 group-hover:w-full'"
           ></span>
-        </button>
+        </a>
       }
       <a
         routerLink="/atacado"
@@ -275,28 +271,28 @@
   </nav>
 
   @if (mobileMenuOpen()) {
-    <nav class="flex flex-col border-t border-slate-200 bg-white md:hidden animate-fade-in">
-      <button
-        (click)="handleHomeClick()"
+    <nav class="flex flex-col border-t border-slate-200 bg-white md:hidden animate-fade-in" aria-label="Principal">
+      <a
+        routerLink="/"
+        (click)="closeMobileMenu()"
         class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-        [class]="activeCategory() === 'todos' ? 'bg-slate-100 text-slate-900' : 'text-slate-500'"
+        [class]="isHome() ? 'bg-slate-100 text-slate-900' : 'text-slate-600'"
       >
         Início
-      </button>
+      </a>
       @for (cat of categories; track cat.value) {
-        <button
-          (click)="handleCategoryClick(cat.value)"
+        <a
+          [routerLink]="cat.path"
+          (click)="closeMobileMenu()"
           class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="
-            activeCategory() === cat.value ? 'bg-slate-100 text-slate-900' : 'text-slate-500'
-          "
+          [class]="activeCategory() === cat.value ? 'bg-slate-100 text-slate-900' : 'text-slate-600'"
         >
           {{ cat.label }}
-        </button>
+        </a>
       }
       <a
         routerLink="/atacado"
-        (click)="mobileMenuOpen.set(false)"
+        (click)="closeMobileMenu()"
         class="px-6 py-3 text-left text-sm font-bold uppercase tracking-wide text-black"
       >
         <span class="rounded-sm bg-accent px-2 py-0.5">Atacado{{ wholesaleBadge() ? ' · ' + wholesaleBadge() : '' }}</span>

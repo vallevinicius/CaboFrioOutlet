@@ -16,10 +16,8 @@ import { ToastService } from '../../services/toast.service';
 import { SeoService } from '../../services/seo.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { SettingsService } from '../../services/settings.service';
-import { ProductCategory } from '../../types/product';
+import { pathForCategory } from '../../data/categories';
 import { lowStockLabel, relatedProducts } from '../../utils/product-list';
-
-type CategoryOrAll = ProductCategory | 'todos';
 
 function formatPrice(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -57,9 +55,6 @@ export class ProductPage {
   readonly formatPrice = formatPrice;
   readonly getDiscountedPrice = getDiscountedPrice;
 
-  // navbar precisa desses inputs, mas essa página não filtra produtos
-  activeCategory = signal<CategoryOrAll>('todos');
-  searchQuery = signal('');
 
   lightboxOpen = signal(false);
   sizeGuideOpen = signal(false);
@@ -84,6 +79,8 @@ export class ProductPage {
     return product ? [product.image, ...(product.images ?? [])] : [];
   });
   readonly activeImage = computed(() => this.gallery()[this.selectedImageIndex()] ?? this.gallery()[0] ?? '');
+
+  readonly categoryPath = computed(() => pathForCategory(this.product()?.category ?? ''));
 
   readonly related = computed(() => {
     const product = this.product();
@@ -157,7 +154,4 @@ export class ProductPage {
     this.toastService.showToast('Produto adicionado!', `${product.name} (Tam. ${size})`);
   }
 
-  handleCategoryChange(): void {
-    this.router.navigateByUrl('/');
-  }
 }
