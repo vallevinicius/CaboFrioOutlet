@@ -46,6 +46,26 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
     title: 'Contato',
     description: 'Endereço, horário de funcionamento, WhatsApp e e-mail da Cabo Frio Outlet, no Centro de Cabo Frio.',
   },
+  '/produtos': {
+    title: 'Todos os produtos',
+    description: 'Todas as peças da Cabo Frio Outlet: camisas, calças, bermudas e bonés com preço de outlet.',
+  },
+  '/camisas': {
+    title: 'Camisas',
+    description: 'Camisas e camisetas urbanas em Cabo Frio: básicas, oversized e estampadas, com preço de outlet.',
+  },
+  '/calcas': {
+    title: 'Calças',
+    description: 'Calças jeans, de sarja e modelos urbanos em Cabo Frio, com preço de outlet.',
+  },
+  '/bermudas': {
+    title: 'Bermudas',
+    description: 'Bermudas urbanas e confortáveis em Cabo Frio, com preço de outlet.',
+  },
+  '/bones': {
+    title: 'Bonés',
+    description: 'Bonés de aba curva, aba reta e trucker em Cabo Frio, com preço de outlet.',
+  },
   '/atacado': {
     title: 'Atacado',
     description: 'Compre moda urbana no atacado em Cabo Frio: camisas, calças, bermudas e bonés. Peça um orçamento para a sua loja.',
@@ -67,6 +87,9 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
     description: 'Tabelas de medidas de camisas, calças, bermudas e bonés para escolher o tamanho certo.',
   },
 };
+
+/** Páginas de listagem de produtos: mais importantes para buscadores que as institucionais. */
+export const LISTING_PATHS = ['/produtos', '/camisas', '/calcas', '/bermudas', '/bones'];
 
 /** Rotas que não devem ser indexadas (área privada ou transacional). */
 export const NOINDEX_PREFIXES = ['/admin', '/checkout', '/minha-conta', '/favoritos'];
@@ -292,7 +315,7 @@ export function buildRobotsTxt(baseUrl: string): string {
 export function buildSitemapXml(baseUrl: string, products: { id: string; updatedAt: Date }[]): string {
   const urls = [
     { loc: `${baseUrl}/`, priority: '1.0' },
-    ...Object.keys(PAGE_META).map((p) => ({ loc: `${baseUrl}${p}`, priority: '0.5' })),
+    ...Object.keys(PAGE_META).map((p) => ({ loc: `${baseUrl}${p}`, priority: LISTING_PATHS.includes(p) ? '0.8' : '0.5' })),
     ...products.map((p) => ({
       loc: `${baseUrl}/produto/${p.id}`,
       lastmod: p.updatedAt.toISOString().slice(0, 10),

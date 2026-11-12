@@ -19,7 +19,6 @@ import { ApiService } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
-import { ProductCategory } from '../../types/product';
 import {
   formatInstallments,
   formatOrderDate,
@@ -31,7 +30,6 @@ import {
 import { formatPhone } from '../../utils/phone';
 import { formatCep } from '../../utils/cep';
 
-type CategoryOrAll = ProductCategory | 'todos';
 type Section = 'pedidos' | 'dados' | 'enderecos';
 
 interface ViaCepResponse {
@@ -68,9 +66,6 @@ export class AccountPage implements OnInit {
   readonly formatPaymentMethod = formatPaymentMethod;
   readonly formatInstallments = formatInstallments;
 
-  // navbar precisa desses inputs, mas essa página não filtra produtos
-  activeCategory = signal<CategoryOrAll>('todos');
-  searchQuery = signal('');
 
   section = signal<Section>('pedidos');
 
@@ -186,9 +181,6 @@ export class AccountPage implements OnInit {
     }
   }
 
-  handleCategoryChange(): void {
-    this.router.navigateByUrl('/');
-  }
 
   handleLogout(): void {
     this.authService.logout();

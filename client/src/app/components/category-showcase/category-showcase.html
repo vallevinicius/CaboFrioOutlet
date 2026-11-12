@@ -1,0 +1,34 @@
+@if (!loading() && sections().length > 0) {
+  <div class="mx-auto flex w-full max-w-7xl flex-col gap-16 px-4 py-16 sm:px-6 lg:px-8">
+    @for (section of sections(); track section.page.value) {
+      <section [attr.aria-labelledby]="'prev-' + section.page.slug">
+        <div class="mb-6 flex items-end justify-between gap-4">
+          <h2 [id]="'prev-' + section.page.slug" class="font-display text-4xl font-bold uppercase leading-none tracking-tight text-black sm:text-5xl">
+            {{ section.page.label }}
+          </h2>
+          <a
+            [routerLink]="section.page.path"
+            class="flex-shrink-0 text-sm font-semibold text-slate-900 underline decoration-accent decoration-2 underline-offset-4 hover:text-slate-600"
+          >
+            Ver todas
+            <span class="sr-only"> as peças de {{ section.page.label }}</span>
+          </a>
+        </div>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          @for (product of section.items; track product.id) {
+            <app-product-card [product]="product" />
+          }
+        </div>
+      </section>
+    }
+
+    <div class="text-center">
+      <a
+        [routerLink]="allPath"
+        class="inline-block rounded-sm border-2 border-black px-8 py-4 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-black hover:text-white"
+      >
+        Ver todos os produtos
+      </a>
+    </div>
+  </div>
+}

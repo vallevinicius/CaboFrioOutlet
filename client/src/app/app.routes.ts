@@ -9,6 +9,8 @@ import { InstitutionalPage } from './pages/institutional-page/institutional-page
 import { INSTITUTIONAL_PAGES } from './data/institutional-pages';
 import { FavoritesPage } from './pages/favorites-page/favorites-page';
 import { WholesalePage } from './pages/wholesale-page/wholesale-page';
+import { ListingPage } from './pages/listing-page/listing-page';
+import { CATEGORY_PAGES, ALL_PRODUCTS_PATH } from './data/categories';
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 
@@ -20,6 +22,8 @@ export const routes: Routes = [
   { path: 'atacado', component: WholesalePage },
   { path: 'produto/:id', component: ProductPage },
   { path: 'admin', component: AdminPage, canActivate: [adminGuard] },
+  { path: ALL_PRODUCTS_PATH.slice(1), component: ListingPage },
+  ...CATEGORY_PAGES.map((c) => ({ path: c.slug, component: ListingPage, data: { slug: c.slug } })),
   ...INSTITUTIONAL_PAGES.map((page) => ({
     path: page.slug,
     component: InstitutionalPage,

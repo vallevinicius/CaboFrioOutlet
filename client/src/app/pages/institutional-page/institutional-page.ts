@@ -7,10 +7,7 @@ import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
 import { StoreLocation } from '../../components/store-location/store-location';
 import { SeoService } from '../../services/seo.service';
 import { SettingsService } from '../../services/settings.service';
-import { ProductCategory } from '../../types/product';
 import { findInstitutionalPage } from '../../data/institutional-pages';
-
-type CategoryOrAll = ProductCategory | 'todos';
 
 @Component({
   selector: 'app-institutional-page',
@@ -26,8 +23,6 @@ export class InstitutionalPage {
 
   readonly page = findInstitutionalPage(this.route.snapshot.data['slug']);
 
-  activeCategory = signal<CategoryOrAll>('todos');
-  searchQuery = signal('');
 
   constructor() {
     const title = this.page?.title ?? 'Página';
@@ -35,10 +30,4 @@ export class InstitutionalPage {
     if (this.page) this.seo.setDescription(this.page.intro);
   }
 
-  handleCategoryChange(category: CategoryOrAll): void {
-    this.router.navigate(['/'], {
-      queryParams: category === 'todos' ? {} : { categoria: category },
-      fragment: 'produtos',
-    });
-  }
 }

@@ -9,9 +9,6 @@ import { ProductGrid } from '../../components/product-grid/product-grid';
 import { FavoritesService } from '../../services/favorites.service';
 import { ProductService } from '../../services/product.service';
 import { SettingsService } from '../../services/settings.service';
-import { ProductCategory } from '../../types/product';
-
-type CategoryOrAll = ProductCategory | 'todos';
 
 @Component({
   selector: 'app-favorites-page',
@@ -26,8 +23,6 @@ export class FavoritesPage {
   readonly Heart = Heart;
   readonly loading = this.productService.loading;
 
-  activeCategory = signal<CategoryOrAll>('todos');
-  searchQuery = signal('');
 
   /** Mantém a ordem dos favoritos (mais recentes primeiro) e ignora produtos que não existem mais. */
   readonly products = computed(() => {
@@ -39,10 +34,4 @@ export class FavoritesPage {
     inject(Title).setTitle(`Favoritos | ${inject(SettingsService).settings().storeName}`);
   }
 
-  handleCategoryChange(category: CategoryOrAll): void {
-    this.router.navigate(['/'], {
-      queryParams: category === 'todos' ? {} : { categoria: category },
-      fragment: 'produtos',
-    });
-  }
 }

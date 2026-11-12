@@ -8,7 +8,7 @@ describe('páginas institucionais', () => {
     // /atacado tem página própria (formulário), fora do conteúdo institucional estático.
     const PAGES_WITH_OWN_COMPONENT = ['/atacado'];
     const internal = FOOTER_COLUMNS.flatMap((c) => c.links)
-      .filter((l) => !l.category)
+      .filter((l) => !['/camisas', '/calcas', '/bermudas', '/bones', '/produtos'].includes(l.path))
       .filter((l) => !PAGES_WITH_OWN_COMPONENT.includes(l.path));
     expect(internal.length).toBe(6);
     for (const link of internal) {
@@ -41,10 +41,10 @@ describe('páginas institucionais', () => {
     expect(links.some((l) => l.path === '/atacado')).toBe(true);
   });
 
-  it('categorias do rodapé apontam para a home com a categoria da vitrine', () => {
+  it('categorias do rodapé apontam para as páginas de cada categoria e para todos os produtos', () => {
     const cats = FOOTER_COLUMNS.find((c) => c.title === 'Categorias')!.links;
-    expect(cats.map((l) => l.category)).toEqual(['camisas', 'calças', 'bermudas', 'bonés']);
-    expect(cats.every((l) => l.path === '/')).toBe(true);
+    expect(cats.map((l) => l.path)).toEqual(['/camisas', '/calcas', '/bermudas', '/bones', '/produtos']);
+    expect(cats.map((l) => l.label)).toEqual(['Camisas', 'Calças', 'Bermudas', 'Bonés', 'Todos os produtos']);
   });
 
   it('link do mapa codifica o endereço da loja', () => {

@@ -1,4 +1,5 @@
-import { Component, inject, output } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { SettingsService } from '../../services/settings.service';
 
 @Component({
@@ -8,10 +9,9 @@ import { SettingsService } from '../../services/settings.service';
 export class BrandShowcase {
   settingsService = inject(SettingsService);
 
-  selectBrand = output<string>();
+  private router = inject(Router);
 
-  handleClick(label: string): void {
-    this.selectBrand.emit(label);
-    document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' });
+  handleClick(brand: string): void {
+    this.router.navigate(['/produtos'], { queryParams: { marca: brand } });
   }
 }

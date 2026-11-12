@@ -79,6 +79,14 @@ describe('buildSeoHead', () => {
     expect(head).toContain(`href="${BASE}/trocas-e-devolucoes"`);
     expect(head).not.toContain('ClothingStore');
   });
+  it('página de categoria usa título, descrição e canonical próprios', () => {
+    const head = buildSeoHead(ctx({ path: '/calcas' }));
+    expect(head).toContain('<title>Calças | Cabo Frio Outlet</title>');
+    expect(head).toContain('Calças jeans');
+    expect(head).toContain(`href="${BASE}/calcas"`);
+    expect(head).not.toContain('noindex');
+    expect(head).not.toContain('ClothingStore');
+  });
   it('produto: og:type product, preço com desconto e disponibilidade', () => {
     const head = buildSeoHead(ctx({ path: '/produto/abc123', product }));
     expect(head).toContain('property="og:type" content="product"');
@@ -152,6 +160,9 @@ describe('robots e sitemap', () => {
     const xml = buildSitemapXml(BASE, [{ id: 'p1', updatedAt: new Date('2026-11-01T10:00:00Z') }]);
     expect(xml).toContain(`<loc>${BASE}/</loc>`);
     expect(xml).toContain(`<loc>${BASE}/sobre-nos</loc>`);
+    for (const slug of ['camisas', 'calcas', 'bermudas', 'bones', 'produtos']) {
+      expect(xml).toContain(`<loc>${BASE}/${slug}</loc><priority>0.8</priority>`);
+    }
     expect(xml).toContain(`<loc>${BASE}/produto/p1</loc><lastmod>2026-11-01</lastmod>`);
     expect(xml).not.toContain('/admin');
     expect(xml).not.toContain('/checkout');

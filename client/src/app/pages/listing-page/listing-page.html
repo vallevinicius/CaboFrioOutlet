@@ -1,0 +1,82 @@
+<div class="flex min-h-screen flex-col bg-white">
+  <div class="sticky top-0 z-50">
+    <app-navbar />
+  </div>
+
+  <header class="border-b border-slate-200 bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <nav aria-label="Você está aqui" class="mb-4 flex items-center gap-1.5 text-xs font-medium text-slate-600">
+        <a routerLink="/" class="hover:text-slate-900">Início</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-slate-900" aria-current="page">{{ title() }}</span>
+      </nav>
+      <h1 class="font-display text-5xl font-bold uppercase leading-none tracking-tight text-black sm:text-7xl">
+        {{ title() }}
+      </h1>
+      <p class="mt-3 max-w-xl text-base text-slate-600">{{ intro() }}</p>
+
+      <!-- Troca rápida entre as páginas de categoria -->
+      <ul class="mt-6 flex flex-wrap gap-2" aria-label="Categorias">
+        <li>
+          <a
+            [routerLink]="allPath"
+            class="block rounded-sm border px-4 py-2 text-sm font-semibold transition-colors duration-300"
+            [class]="!category() ? 'border-black bg-black text-white' : 'border-slate-300 text-slate-600 hover:border-black hover:text-black'"
+            [attr.aria-current]="!category() ? 'page' : null"
+          >
+            Tudo
+          </a>
+        </li>
+        @for (c of categories; track c.value) {
+          <li>
+            <a
+              [routerLink]="c.path"
+              class="block rounded-sm border px-4 py-2 text-sm font-semibold transition-colors duration-300"
+              [class]="category()?.value === c.value ? 'border-black bg-black text-white' : 'border-slate-300 text-slate-600 hover:border-black hover:text-black'"
+              [attr.aria-current]="category()?.value === c.value ? 'page' : null"
+            >
+              {{ c.label }}
+            </a>
+          </li>
+        }
+      </ul>
+    </div>
+  </header>
+
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
+    @if (search.query()) {
+      <p class="mb-4 text-sm text-slate-600">
+        Resultados para <strong class="text-slate-900">“{{ search.query() }}”</strong>
+        <button type="button" (click)="clearSearch()" class="ml-2 underline underline-offset-4 hover:text-slate-900">Limpar busca</button>
+      </p>
+    }
+
+    <app-product-toolbar
+      [sizeOptions]="sizeOptions()"
+      [brandOptions]="brands()"
+      [resultCount]="filtered().length"
+      [(sort)]="sort"
+      [(brand)]="brand"
+      [(sizes)]="sizes"
+      [(priceMin)]="priceMin"
+      [(priceMax)]="priceMax"
+    />
+
+    <app-product-grid [products]="visible()" [loading]="loading()" />
+
+    @if (hasMore()) {
+      <div class="mt-10 flex justify-center">
+        <button
+          type="button"
+          (click)="loadMore()"
+          class="rounded-sm border border-slate-900 px-8 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+        >
+          Carregar mais
+        </button>
+      </div>
+    }
+  </main>
+
+  <app-footer />
+  <app-cart-drawer />
+</div>

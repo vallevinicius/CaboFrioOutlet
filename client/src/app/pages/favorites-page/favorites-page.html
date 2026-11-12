@@ -1,11 +1,6 @@
 <div class="flex min-h-screen flex-col bg-white">
   <div class="sticky top-0 z-50">
-    <app-navbar
-      [activeCategory]="activeCategory()"
-      (categoryChange)="handleCategoryChange($event)"
-      [searchQuery]="searchQuery()"
-      (searchChange)="searchQuery.set($event)"
-    />
+    <app-navbar />
   </div>
 
   <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
@@ -18,8 +13,7 @@
           <lucide-icon [img]="Heart" class="h-12 w-12 text-slate-300" />
           <p class="text-sm font-medium text-slate-500">Você ainda não favoritou nenhuma peça.</p>
           <a
-            routerLink="/"
-            fragment="produtos"
+            routerLink="/produtos"
             class="rounded-sm bg-accent px-6 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-slate-900 hover:text-white"
           >
             Ver produtos

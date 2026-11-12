@@ -1,5 +1,7 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter, map } from 'rxjs';
 import {
   LucideAngularModule,
   ShoppingBag,
@@ -19,18 +21,10 @@ import { ToastService } from '../../services/toast.service';
 import { AuthService } from '../../services/auth.service';
 import { ApiError } from '../../services/api-error';
 import { SettingsService, splitStoreName, storeInitials } from '../../services/settings.service';
-import { ProductCategory } from '../../types/product';
+import { SearchService } from '../../services/search.service';
+import { ALL_PRODUCTS_PATH, CATEGORY_PAGES, categoryByPath } from '../../data/categories';
 import { formatPercent, maxDiscount } from '../../utils/wholesale-pricing';
 import { RegisterModal } from '../register-modal/register-modal';
-
-type CategoryOrAll = ProductCategory | 'todos';
-
-const CATEGORIES: { label: string; value: ProductCategory }[] = [
-  { label: 'Camisas', value: 'camisas' },
-  { label: 'Calças', value: 'calças' },
-  { label: 'Bermudas', value: 'bermudas' },
-  { label: 'Bonés', value: 'bonés' },
-];
 
 const WHATSAPP_URL = 'https://wa.me/5522992198824';
 const INSTAGRAM_URL = 'https://www.instagram.com/cabofrio.outlet';
@@ -58,16 +52,27 @@ export class Navbar {
   readonly Truck = Truck;
   readonly Instagram = Instagram;
   readonly ShieldCheck = ShieldCheck;
-  readonly categories = CATEGORIES;
+  readonly categories = CATEGORY_PAGES;
   readonly storeInitials = storeInitials;
   readonly whatsappUrl = WHATSAPP_URL;
   readonly instagramUrl = INSTAGRAM_URL;
   readonly correiosTrackingUrl = CORREIOS_TRACKING_URL;
 
-  activeCategory = input.required<CategoryOrAll>();
-  categoryChange = output<CategoryOrAll>();
-  searchQuery = input.required<string>();
-  searchChange = output<string>();
+  private router = inject(Router);
+  private search = inject(SearchService);
+
+  readonly searchQuery = this.search.query;
+
+  /** Caminho atual (sem query/hash), para destacar a página em que o cliente está. */
+  private currentPath = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects.split(/[?#]/)[0]),
+    ),
+    { initialValue: this.router.url.split(/[?#]/)[0] },
+  );
+  readonly isHome = computed(() => this.currentPath() === '/');
+  readonly activeCategory = computed(() => categoryByPath(this.currentPath())?.value ?? null);
 
   /** Ex.: "até 15% off" — vem das faixas de atacado do admin. */
   readonly wholesaleBadge = computed(() => {
@@ -88,21 +93,27 @@ export class Navbar {
 
   readonly wordmark = computed(() => splitStoreName(this.settingsService.settings().storeName));
 
-  handleCategoryClick(category: CategoryOrAll): void {
-    this.categoryChange.emit(category);
+  closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
-    document.getElementById('produtos')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  handleHomeClick(): void {
-    this.categoryChange.emit('todos');
-    this.mobileMenuOpen.set(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  /** Nas páginas de listagem a busca filtra ali mesmo; nas demais, leva para /produtos com o termo. */
+  onSearchInput(value: string): void {
+    this.search.set(value);
+    const path = this.currentPath();
+    const onListing = path === ALL_PRODUCTS_PATH || categoryByPath(path) !== undefined;
+    if (!onListing && value.trim() !== '') {
+      this.router.navigate([ALL_PRODUCTS_PATH], { queryParams: { busca: value } });
+    }
+  }
+
+  clearSearch(): void {
+    this.search.clear();
   }
 
   toggleSearch(): void {
     const willOpen = !this.searchOpen();
-    if (!willOpen) this.searchChange.emit('');
+    if (!willOpen) this.clearSearch();
     this.searchOpen.set(willOpen);
   }
 
