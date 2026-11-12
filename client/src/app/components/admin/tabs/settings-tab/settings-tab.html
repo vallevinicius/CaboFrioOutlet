@@ -274,6 +274,76 @@
     </div>
 
     <div class="rounded-lg border border-slate-200 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Atacado</p>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Pedido mínimo (peças)
+      </label>
+      <input
+        [value]="wholesaleMinPieces()"
+        (input)="wholesaleMinPieces.set($any($event.target).value)"
+        inputmode="numeric"
+        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none sm:max-w-[10rem]"
+      />
+      <p class="mb-2 mt-5 text-xs font-bold uppercase tracking-wider text-slate-500">Desconto por quantidade</p>
+      <div class="flex flex-col gap-2">
+        @for (tier of wholesaleTiers(); track $index) {
+          <div class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+            <span>A partir de</span>
+            <input
+              [value]="tier.minPieces"
+              (input)="updateTier($index, 'minPieces', $any($event.target).value)"
+              inputmode="numeric"
+              aria-label="Quantidade de peças da faixa"
+              class="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+            />
+            <span>peças:</span>
+            <input
+              [value]="tier.discountPercent"
+              (input)="updateTier($index, 'discountPercent', $any($event.target).value)"
+              inputmode="decimal"
+              aria-label="Percentual de desconto da faixa"
+              class="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+            />
+            <span>% de desconto</span>
+            <button
+              type="button"
+              (click)="removeTier($index)"
+              aria-label="Remover faixa"
+              class="flex h-8 w-8 items-center justify-center rounded text-slate-400 hover:text-slate-900"
+            >
+              <lucide-icon [img]="X" class="h-4 w-4" />
+            </button>
+          </div>
+        }
+        <button
+          type="button"
+          (click)="addTier()"
+          class="flex items-center gap-1.5 self-start text-sm font-semibold text-slate-900 hover:underline"
+        >
+          <lucide-icon [img]="Plus" class="h-4 w-4" />
+          Adicionar faixa
+        </button>
+      </div>
+      <p class="mt-1.5 text-xs text-slate-400">
+        O desconto vale para todas as peças do pedido de atacado, pela quantidade total de peças. Quanto mais peças, maior o desconto (até 90%). Soma com a promoção que o produto já tiver. Sem nenhuma faixa, o atacado não dá desconto automático.
+      </p>
+
+      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        Condições do atacado
+      </label>
+      <textarea
+        [value]="wholesaleNotes()"
+        (input)="wholesaleNotes.set($any($event.target).value)"
+        rows="4"
+        maxlength="1500"
+        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+      ></textarea>
+      <p class="mt-1.5 text-xs text-slate-400">
+        Uma condição por linha. Aparecem na página /atacado. Se apagar tudo, volta ao texto padrão. Os pedidos de orçamento chegam na aba Atacado e, se houver e-mail de contato e Resend configurados, também por e-mail.
+      </p>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 p-4">
       <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Medição e anúncios</p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <div class="flex-1">

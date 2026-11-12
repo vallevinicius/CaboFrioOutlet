@@ -5,7 +5,11 @@ import { STORE_INFO, STORE_MAPS_URL } from './store-info';
 
 describe('páginas institucionais', () => {
   it('toda rota institucional do rodapé tem conteúdo correspondente', () => {
-    const internal = FOOTER_COLUMNS.flatMap((c) => c.links).filter((l) => !l.category);
+    // /atacado tem página própria (formulário), fora do conteúdo institucional estático.
+    const PAGES_WITH_OWN_COMPONENT = ['/atacado'];
+    const internal = FOOTER_COLUMNS.flatMap((c) => c.links)
+      .filter((l) => !l.category)
+      .filter((l) => !PAGES_WITH_OWN_COMPONENT.includes(l.path));
     expect(internal.length).toBe(6);
     for (const link of internal) {
       expect(findInstitutionalPage(link.path.slice(1)), link.path).toBeDefined();
@@ -30,6 +34,11 @@ describe('páginas institucionais', () => {
     const about = findInstitutionalPage('sobre-nos')!;
     expect(JSON.stringify(about)).toContain('10 anos');
     expect(about.blocks.some((b) => b.type === 'location')).toBe(true);
+  });
+
+  it('o rodapé aponta para a página de atacado', () => {
+    const links = FOOTER_COLUMNS.flatMap((c) => c.links);
+    expect(links.some((l) => l.path === '/atacado')).toBe(true);
   });
 
   it('categorias do rodapé apontam para a home com a categoria da vitrine', () => {

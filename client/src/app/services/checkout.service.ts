@@ -15,6 +15,8 @@ export interface ShippingAddressInput {
 export interface CreateOrderInput {
   customerName: string;
   customerContact: string;
+  /** Pedido de atacado: o servidor confere o mínimo e define o desconto. */
+  wholesale?: boolean;
   items: { productId: string; size: string; quantity: number }[];
   shippingAddress: ShippingAddressInput;
   shippingOptionId?: number;

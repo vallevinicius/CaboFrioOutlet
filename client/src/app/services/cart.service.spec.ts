@@ -1,3 +1,5 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Product } from '../types/product';
@@ -27,7 +29,7 @@ describe('CartService', () => {
   let cart: CartService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     cart = TestBed.inject(CartService);
   });
 
@@ -87,5 +89,63 @@ describe('CartService', () => {
     expect(cart.isCartOpen()).toBe(true);
     cart.closeCart();
     expect(cart.isCartOpen()).toBe(false);
+  });
+});
+
+describe('CartService: modo atacado', () => {
+  let cart: CartService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    cart = TestBed.inject(CartService);
+  });
+
+  it('compra normal NUNCA recebe desconto por quantidade, mesmo com 30 peças', () => {
+    cart.addToCart(camisa, 'M');
+    cart.updateQuantity('p1', 'M', 30);
+    expect(cart.wholesale()).toBe(false);
+    expect(cart.wholesalePercent()).toBe(0);
+    expect(cart.totalPrice()).toBe(3000);
+  });
+
+  it('modo atacado aplica a faixa pela quantidade total (padrão: 10→5%, 20→10%)', () => {
+    cart.startWholesale([{ product: camisa, selectedSize: 'M', quantity: 10 }]);
+    expect(cart.wholesale()).toBe(true);
+    expect(cart.wholesalePercent()).toBe(5);
+    expect(cart.unitPrice(cart.items()[0])).toBe(95);
+    expect(cart.totalPrice()).toBe(950);
+    cart.updateQuantity('p1', 'M', 20);
+    expect(cart.wholesalePercent()).toBe(10);
+    expect(cart.totalPrice()).toBe(1800);
+  });
+
+  it('abaixo do mínimo não há desconto e o pedido não atinge o mínimo', () => {
+    cart.startWholesale([{ product: camisa, selectedSize: 'M', quantity: 4 }]);
+    expect(cart.meetsWholesaleMin()).toBe(false);
+    expect(cart.wholesalePercent()).toBe(0);
+    expect(cart.nextWholesaleTier()?.minPieces).toBe(10);
+  });
+
+  it('a promoção do produto e o desconto de atacado se somam (sobre o preço já promocional)', () => {
+    cart.startWholesale([{ product: bone, selectedSize: 'M', quantity: 10 }]); // 40 com -5%
+    expect(cart.unitPrice(cart.items()[0])).toBe(38);
+  });
+
+  it('sair do modo atacado ou limpar o carrinho remove o desconto', () => {
+    cart.startWholesale([{ product: camisa, selectedSize: 'M', quantity: 10 }]);
+    cart.leaveWholesale();
+    expect(cart.totalPrice()).toBe(1000);
+    cart.startWholesale([{ product: camisa, selectedSize: 'M', quantity: 10 }]);
+    cart.clearCart();
+    expect(cart.wholesale()).toBe(false);
+    expect(cart.items()).toEqual([]);
+  });
+
+  it('ignora linhas com quantidade zero ao iniciar o atacado', () => {
+    cart.startWholesale([
+      { product: camisa, selectedSize: 'M', quantity: 0 },
+      { product: bone, selectedSize: 'M', quantity: 10 },
+    ]);
+    expect(cart.items()).toHaveLength(1);
   });
 });

@@ -37,6 +37,10 @@ export class SettingsTab implements OnInit {
   contactEmail = signal('');
   openingHours = signal<OpeningHoursRow[]>([]);
   googlePlaceId = signal('');
+  wholesaleMinPieces = signal('10');
+  wholesaleNotes = signal('');
+  /** Texto digitado; convertido para número só ao salvar. */
+  wholesaleTiers = signal<{ minPieces: string; discountPercent: string }[]>([]);
   gaMeasurementId = signal('');
   metaPixelId = signal('');
   tickerMessages = signal<string[]>([]);
@@ -60,11 +64,26 @@ export class SettingsTab implements OnInit {
     this.contactEmail.set(settings.contactEmail);
     this.openingHours.set(settings.openingHours.map((row) => ({ ...row })));
     this.googlePlaceId.set(settings.googlePlaceId);
+    this.wholesaleMinPieces.set(String(settings.wholesaleMinPieces));
+    this.wholesaleNotes.set(settings.wholesaleNotes);
+    this.wholesaleTiers.set(settings.wholesaleTiers.map((t) => ({ minPieces: String(t.minPieces), discountPercent: String(t.discountPercent) })));
     this.gaMeasurementId.set(settings.gaMeasurementId);
     this.metaPixelId.set(settings.metaPixelId);
     this.tickerMessages.set([...settings.tickerMessages]);
     this.storyTitle.set(settings.storyTitle);
     this.storyBody.set(settings.storyBody);
+  }
+
+  addTier(): void {
+    this.wholesaleTiers.update((prev) => [...prev, { minPieces: '', discountPercent: '' }]);
+  }
+
+  removeTier(index: number): void {
+    this.wholesaleTiers.update((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  updateTier(index: number, field: 'minPieces' | 'discountPercent', value: string): void {
+    this.wholesaleTiers.update((prev) => prev.map((t, i) => (i === index ? { ...t, [field]: value } : t)));
   }
 
   addTickerMessage(): void {
@@ -170,6 +189,11 @@ export class SettingsTab implements OnInit {
         contactEmail: this.contactEmail().trim(),
         openingHours: this.openingHours(),
         googlePlaceId: this.googlePlaceId().trim(),
+        wholesaleMinPieces: Math.max(1, parseInt(this.wholesaleMinPieces(), 10) || current.wholesaleMinPieces),
+        wholesaleNotes: this.wholesaleNotes().trim(),
+        wholesaleTiers: this.wholesaleTiers()
+          .filter((t) => t.minPieces.trim() !== '' || t.discountPercent.trim() !== '')
+          .map((t) => ({ minPieces: Number(t.minPieces), discountPercent: Number(t.discountPercent.replace(',', '.')) })),
         gaMeasurementId: this.gaMeasurementId().trim(),
         metaPixelId: this.metaPixelId().trim(),
         tickerMessages: this.tickerMessages(),

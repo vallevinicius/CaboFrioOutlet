@@ -18,6 +18,7 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
     title: 'Institucional',
     links: [
       { label: 'Sobre nós', path: '/sobre-nos' },
+      { label: 'Atacado', path: '/atacado' },
       { label: 'Contato', path: '/contato' },
       { label: 'Trabalhe conosco', path: '/trabalhe-conosco' },
     ],

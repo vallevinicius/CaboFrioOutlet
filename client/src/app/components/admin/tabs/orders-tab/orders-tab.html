@@ -29,6 +29,11 @@
             <div>
               <p class="text-sm font-bold text-slate-900">
                 #{{ order.id.slice(-6).toUpperCase() }} · {{ order.customerName }}
+                @if (order.isWholesale) {
+                  <span class="ml-2 rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-black">
+                    Atacado{{ order.wholesaleDiscountPercent ? ' −' + order.wholesaleDiscountPercent + '%' : '' }}
+                  </span>
+                }
               </p>
               <p class="mt-0.5 text-xs text-slate-500">
                 {{ formatDate(order.createdAt) }} · {{ order.customerContact }}

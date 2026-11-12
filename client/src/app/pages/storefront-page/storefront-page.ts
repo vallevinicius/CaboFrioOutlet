@@ -23,6 +23,7 @@ import { ProductGrid } from '../../components/product-grid/product-grid';
 import { Ticker } from '../../components/ticker/ticker';
 import { CategoryTiles } from '../../components/category-tiles/category-tiles';
 import { NewArrivals } from '../../components/new-arrivals/new-arrivals';
+import { WholesaleBanner } from '../../components/wholesale-banner/wholesale-banner';
 import { BrandStory } from '../../components/brand-story/brand-story';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
 import { Footer } from '../../components/footer/footer';
@@ -47,6 +48,7 @@ const VALID_CATEGORIES: readonly ProductCategory[] = ['camisas', 'calças', 'ber
     CategoryTiles,
     NewArrivals,
     BrandStory,
+    WholesaleBanner,
     CartDrawer,
     Footer,
     StoreLocation,

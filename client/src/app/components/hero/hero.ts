@@ -1,8 +1,10 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
-import { LucideAngularModule, ChevronLeft, ChevronRight, Truck, RefreshCcw, CreditCard } from 'lucide-angular';
+import { LucideAngularModule, ChevronLeft, ChevronRight, Truck, RefreshCcw, CreditCard, Store } from 'lucide-angular';
+import { RouterLink } from '@angular/router';
 import { HeroSlideService } from '../../services/hero-slide.service';
 import { SettingsService } from '../../services/settings.service';
 import { STORE_INFO } from '../../data/store-info';
+import { formatPercent, maxDiscount } from '../../utils/wholesale-pricing';
 
 interface DisplaySlide {
   id: string;
@@ -41,7 +43,7 @@ const INTRO_MS = 1600;
 
 @Component({
   selector: 'app-hero',
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, RouterLink],
   templateUrl: './hero.html',
 })
 export class Hero implements OnDestroy {
@@ -80,10 +82,12 @@ export class Hero implements OnDestroy {
   readonly trustItems = computed(() => {
     const { freeShippingThreshold } = this.settingsService.settings();
     const threshold = freeShippingThreshold.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+    const top = maxDiscount(this.settingsService.settings().wholesaleTiers);
     return [
-      { icon: Truck, label: `Frete grátis acima de ${threshold}` },
-      { icon: RefreshCcw, label: 'Troca grátis em 30 dias' },
-      { icon: CreditCard, label: 'Até 3x sem juros' },
+      { icon: Truck, label: `Frete grátis acima de ${threshold}`, link: null as string | null },
+      { icon: RefreshCcw, label: 'Troca grátis em 30 dias', link: null as string | null },
+      { icon: CreditCard, label: 'Até 3x sem juros', link: null as string | null },
+      ...(top > 0 ? [{ icon: Store, label: `Atacado com até ${formatPercent(top)}% off`, link: '/atacado' as string | null }] : []),
     ];
   });
 

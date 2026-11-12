@@ -57,7 +57,11 @@
           @for (item of trustItems(); track item.label) {
             <li class="flex items-center gap-2 text-sm font-medium text-slate-600">
               <lucide-icon [img]="item.icon" class="h-4 w-4 text-black" />
-              {{ item.label }}
+              @if (item.link) {
+                <a [routerLink]="item.link" class="font-bold text-black underline decoration-accent decoration-2 underline-offset-4 hover:text-slate-600">{{ item.label }}</a>
+              } @else {
+                {{ item.label }}
+              }
             </li>
           }
         </ul>

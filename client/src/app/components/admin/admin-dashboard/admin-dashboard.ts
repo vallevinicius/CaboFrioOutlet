@@ -7,11 +7,12 @@ import { OverviewTab } from '../tabs/overview-tab/overview-tab';
 import { BannersTab } from '../tabs/banners-tab/banners-tab';
 import { ProductsTab } from '../tabs/products-tab/products-tab';
 import { StockTab } from '../tabs/stock-tab/stock-tab';
+import { WholesaleTab } from '../tabs/wholesale-tab/wholesale-tab';
 import { OrdersTab } from '../tabs/orders-tab/orders-tab';
 import { CustomersTab } from '../tabs/customers-tab/customers-tab';
 import { SettingsTab } from '../tabs/settings-tab/settings-tab';
 
-type TabKey = 'inicio' | 'banners' | 'produtos' | 'estoque' | 'pedidos' | 'clientes' | 'configuracoes';
+type TabKey = 'inicio' | 'banners' | 'produtos' | 'estoque' | 'pedidos' | 'atacado' | 'clientes' | 'configuracoes';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'inicio', label: 'Visão geral' },
@@ -19,13 +20,14 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'produtos', label: 'Produtos' },
   { key: 'estoque', label: 'Estoque' },
   { key: 'pedidos', label: 'Pedidos' },
+  { key: 'atacado', label: 'Atacado' },
   { key: 'clientes', label: 'Clientes' },
   { key: 'configuracoes', label: 'Configurações' },
 ];
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, LucideAngularModule, OverviewTab, BannersTab, ProductsTab, StockTab, OrdersTab, CustomersTab, SettingsTab],
+  imports: [RouterLink, LucideAngularModule, OverviewTab, BannersTab, ProductsTab, StockTab, OrdersTab, WholesaleTab, CustomersTab, SettingsTab],
   templateUrl: './admin-dashboard.html',
 })
 export class AdminDashboard {

@@ -8,6 +8,7 @@ import { NotFoundPage } from './pages/not-found-page/not-found-page';
 import { InstitutionalPage } from './pages/institutional-page/institutional-page';
 import { INSTITUTIONAL_PAGES } from './data/institutional-pages';
 import { FavoritesPage } from './pages/favorites-page/favorites-page';
+import { WholesalePage } from './pages/wholesale-page/wholesale-page';
 import { adminGuard } from './guards/admin.guard';
 import { authGuard } from './guards/auth.guard';
 
@@ -16,6 +17,7 @@ export const routes: Routes = [
   { path: 'minha-conta', component: AccountPage, canActivate: [authGuard] },
   { path: 'checkout', component: CheckoutPage },
   { path: 'favoritos', component: FavoritesPage },
+  { path: 'atacado', component: WholesalePage },
   { path: 'produto/:id', component: ProductPage },
   { path: 'admin', component: AdminPage, canActivate: [adminGuard] },
   ...INSTITUTIONAL_PAGES.map((page) => ({

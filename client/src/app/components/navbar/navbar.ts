@@ -20,6 +20,7 @@ import { AuthService } from '../../services/auth.service';
 import { ApiError } from '../../services/api-error';
 import { SettingsService, splitStoreName, storeInitials } from '../../services/settings.service';
 import { ProductCategory } from '../../types/product';
+import { formatPercent, maxDiscount } from '../../utils/wholesale-pricing';
 import { RegisterModal } from '../register-modal/register-modal';
 
 type CategoryOrAll = ProductCategory | 'todos';
@@ -67,6 +68,12 @@ export class Navbar {
   categoryChange = output<CategoryOrAll>();
   searchQuery = input.required<string>();
   searchChange = output<string>();
+
+  /** Ex.: "até 15% off" — vem das faixas de atacado do admin. */
+  readonly wholesaleBadge = computed(() => {
+    const top = maxDiscount(this.settingsService.settings().wholesaleTiers);
+    return top > 0 ? `até ${formatPercent(top)}% off` : '';
+  });
 
   mobileMenuOpen = signal(false);
   searchOpen = signal(false);

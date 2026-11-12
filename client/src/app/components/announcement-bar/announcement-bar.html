@@ -2,7 +2,11 @@
   <div class="flex w-max animate-marquee whitespace-nowrap hover:[animation-play-state:paused]">
     @for (msg of loop(); track $index) {
       <span class="flex flex-shrink-0 items-center gap-3 px-6 font-mono text-[11px] font-bold uppercase tracking-widest text-black sm:text-xs">
-        {{ msg }}
+        @if (msg.link) {
+          <a [routerLink]="msg.link" class="underline decoration-2 underline-offset-4 hover:no-underline">{{ msg.text }}</a>
+        } @else {
+          {{ msg.text }}
+        }
         <span class="h-1 w-1 flex-shrink-0 rounded-full bg-black"></span>
       </span>
     }
