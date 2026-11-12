@@ -115,6 +115,12 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.router.navigateByUrl('/');
       return;
     }
+    // Pedido de atacado abaixo do mínimo volta para a página de Atacado para completar as peças.
+    if (this.cartService.wholesale() && !this.cartService.meetsWholesaleMin()) {
+      this.toastService.showToast('Faltam peças no pedido de atacado', `O mínimo é de ${this.settingsService.settings().wholesaleMinPieces} peças.`);
+      this.router.navigateByUrl('/atacado');
+      return;
+    }
     this.analytics.beginCheckout(this.cartService.items());
     const user = this.authService.user();
     if (user) {
@@ -240,6 +246,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
       const order = await this.checkoutService.createOrder({
         customerName: name,
         customerContact: email,
+        wholesale: this.cartService.wholesale() || undefined,
         items: this.cartService.items().map((item) => ({
           productId: item.product.id,
           size: item.selectedSize,

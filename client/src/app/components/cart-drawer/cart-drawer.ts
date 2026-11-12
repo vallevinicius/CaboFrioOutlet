@@ -18,7 +18,7 @@ function formatPrice(value: number): string {
 export class CartDrawer {
   cartService = inject(CartService);
   private router = inject(Router);
-  private settingsService = inject(SettingsService);
+  settingsService = inject(SettingsService);
 
   readonly X = X;
   readonly Minus = Minus;

@@ -1,0 +1,99 @@
+<div>
+  <div class="mb-8">
+    <h1 class="text-2xl font-black tracking-tight text-slate-900">Atacado</h1>
+    <p class="mt-1 text-sm text-slate-500">
+      Pedidos de orçamento enviados pelo site.
+      @if (!loading() && !error()) {
+        <span class="font-semibold text-slate-900">{{ pending() }}</span> aguardando resposta.
+      }
+    </p>
+  </div>
+
+  @if (error()) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">{{ error() }}</p>
+  } @else if (loading()) {
+    <p class="py-12 text-center text-sm text-slate-500">Carregando...</p>
+  } @else if (quotes().length === 0) {
+    <p class="rounded-lg border border-slate-200 px-4 py-10 text-center text-sm text-slate-500">
+      Nenhum pedido de orçamento ainda. Eles aparecem aqui quando alguém preencher o formulário em /atacado.
+    </p>
+  } @else {
+    <ul class="flex flex-col gap-4">
+      @for (q of quotes(); track q.id) {
+        <li class="rounded-2xl border p-5" [class]="q.handled ? 'border-slate-200 bg-slate-50' : 'border-slate-900 bg-white'">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p class="text-base font-bold text-slate-900">
+                {{ q.name }}
+                @if (q.company) { <span class="font-normal text-slate-500"> · {{ q.company }}</span> }
+              </p>
+              <p class="mt-0.5 text-xs text-slate-500">
+                {{ formatDate(q.createdAt) }} · {{ q.city }}/{{ q.state }}
+                @if (q.cnpj) { · CNPJ {{ formatCnpj(q.cnpj) }} }
+              </p>
+            </div>
+            <span
+              class="rounded-full px-3 py-1 text-xs font-bold"
+              [class]="q.handled ? 'bg-slate-200 text-slate-600' : 'bg-accent text-black'"
+            >
+              {{ q.handled ? 'Atendido' : 'Novo' }}
+            </span>
+          </div>
+
+          <dl class="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            <div><dt class="inline text-slate-500">E-mail: </dt><dd class="inline text-slate-900">{{ q.email }}</dd></div>
+            <div><dt class="inline text-slate-500">WhatsApp: </dt><dd class="inline text-slate-900">+{{ q.phone }}</dd></div>
+            <div>
+              <dt class="inline text-slate-500">Interesse: </dt>
+              <dd class="inline text-slate-900">{{ q.interests.length ? q.interests.join(', ') : 'Não informado' }}</dd>
+            </div>
+            <div>
+              <dt class="inline text-slate-500">Quantidade estimada: </dt>
+              <dd class="inline text-slate-900">{{ q.estimatedPieces ? q.estimatedPieces + ' peças' : '—' }}</dd>
+            </div>
+          </dl>
+
+          @if (q.items.length > 0) {
+            <div class="mt-4 rounded-lg border border-slate-200 bg-white">
+              <p class="border-b border-slate-200 px-4 py-2 text-xs font-bold text-slate-700">
+                Peças escolhidas{{ q.discountPercent ? ' (desconto de ' + q.discountPercent + '%)' : '' }}
+              </p>
+              <ul class="divide-y divide-slate-100">
+                @for (item of q.items; track item.productId + item.size) {
+                  <li class="flex items-center justify-between gap-3 px-4 py-2 text-sm">
+                    <span class="min-w-0 truncate text-slate-900">{{ item.name }} <span class="text-slate-500">· {{ item.size }} × {{ item.quantity }}</span></span>
+                    <span class="flex-shrink-0 text-slate-700">{{ money(item.unitPrice * item.quantity) }}</span>
+                  </li>
+                }
+              </ul>
+              <p class="flex justify-between border-t border-slate-200 px-4 py-2 text-sm font-bold text-slate-900">
+                <span>Total estimado</span><span>{{ money(q.estimatedTotal ?? 0) }}</span>
+              </p>
+            </div>
+          }
+
+          @if (q.message) {
+            <p class="mt-4 whitespace-pre-line rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-700">{{ q.message }}</p>
+          }
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            @if (whatsapp(q); as wa) {
+              <a [href]="wa" target="_blank" rel="noopener noreferrer"
+                class="flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white hover:bg-slate-700">
+                <lucide-icon [img]="MessageCircle" class="h-3.5 w-3.5" /> WhatsApp
+              </a>
+            }
+            <a [href]="'mailto:' + q.email"
+              class="flex items-center gap-1.5 rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-900 hover:border-slate-900">
+              <lucide-icon [img]="Mail" class="h-3.5 w-3.5" /> E-mail
+            </a>
+            <button type="button" (click)="toggleHandled(q)"
+              class="rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-900 hover:border-slate-900">
+              {{ q.handled ? 'Reabrir' : 'Marcar como atendido' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -56,6 +56,11 @@ const ProductInput = registry.register(
 
 const OpeningHours = z.object({ label: z.string().openapi({ example: 'Segunda a sábado' }), hours: z.string().openapi({ example: '09h às 19h' }) });
 
+const Tier = z.object({
+  minPieces: z.number().int().min(1).openapi({ example: 10 }),
+  discountPercent: z.number().gt(0).max(90).openapi({ example: 5 }),
+});
+
 const Settings = registry.register(
   'Configuracoes',
   z.object({
@@ -76,6 +81,9 @@ const Settings = registry.register(
     storyBody: z.string(),
     gaMeasurementId: z.string().openapi({ example: 'G-XXXXXXXXXX' }),
     metaPixelId: z.string(),
+    wholesaleMinPieces: z.number().int().openapi({ description: 'Pedido mínimo do atacado, em peças', example: 10 }),
+    wholesaleNotes: z.string().openapi({ description: 'Condições do atacado, uma por linha' }),
+    wholesaleTiers: z.array(Tier).openapi({ description: 'Desconto por quantidade total de peças, em ordem crescente' }),
   }),
 );
 
@@ -100,6 +108,9 @@ const SettingsUpdate = registry.register(
       storyBody: z.string().max(1200),
       gaMeasurementId: z.string().openapi({ example: 'G-XXXXXXXXXX' }),
       metaPixelId: z.string().openapi({ example: '1234567890' }),
+      wholesaleMinPieces: z.number().int().min(1).max(10000),
+      wholesaleNotes: z.string().max(1500),
+      wholesaleTiers: z.array(Tier).max(8).openapi({ description: 'Quantidades únicas e desconto sempre crescente (até 90%).' }),
     })
     .partial(),
 );
@@ -154,6 +165,8 @@ const Order = registry.register(
     paymentStatus: z.string().nullable(),
     paymentMethod: z.string().nullable(),
     installments: z.number().int().nullable(),
+    isWholesale: z.boolean().openapi({ description: 'Pedido feito pela página de atacado' }),
+    wholesaleDiscountPercent: z.number().nullable().openapi({ description: 'Desconto por quantidade aplicado pelo servidor' }),
   }),
 );
 
@@ -177,6 +190,9 @@ const OrderCreate = registry.register(
       .openapi({ description: 'Os preços NÃO são enviados: o servidor usa o catálogo.' }),
     shippingAddress: ShippingAddress,
     shippingOptionId: z.number().int().optional(),
+    wholesale: z.boolean().optional().openapi({
+      description: 'Marca o pedido como atacado: o servidor exige o mínimo de peças e define o desconto pela quantidade. O percentual nunca é aceito do cliente.',
+    }),
   }),
 );
 
@@ -251,6 +267,50 @@ const Overview = registry.register(
       lowStock: z.number().int(),
       items: z.array(z.object({ productId: Id, name: z.string(), size: z.string(), stock: z.number().int() })),
     }),
+  }),
+);
+
+const WholesaleQuoteInput = registry.register(
+  'AtacadoPedidoEntrada',
+  z.object({
+    name: z.string().min(2).max(80).openapi({ example: 'Nome do lojista' }),
+    company: z.string().max(80).optional(),
+    cnpj: z.string().optional().openapi({ description: 'Opcional; se vier, os dígitos verificadores são conferidos.', example: '00.000.000/0000-00' }),
+    phone: z.string().openapi({ description: 'DDD + número', example: '(22) 99999-9999' }),
+    email: z.string().openapi({ example: 'lojista@exemplo.com' }),
+    city: z.string().max(60),
+    state: z.string().length(2).openapi({ example: 'RJ' }),
+    interests: z.array(Category).optional(),
+    estimatedPieces: z.number().int().min(1).max(100000).optional(),
+    message: z.string().max(1000).optional(),
+    items: z
+      .array(z.object({ productId: Id, size: z.string(), quantity: z.number().int().min(1) }))
+      .max(200)
+      .optional()
+      .openapi({ description: 'Peças escolhidas no site. Preços e desconto são calculados pelo servidor.' }),
+    consent: z.literal(true).openapi({ description: 'Aceite para ser contatado (LGPD). Obrigatório.' }),
+    website: z.string().optional().openapi({ description: 'Campo-isca anti-robô: deixe vazio.' }),
+  }),
+);
+const WholesaleQuote = registry.register(
+  'AtacadoPedido',
+  z.object({
+    id: Id,
+    createdAt: z.string().datetime(),
+    name: z.string(),
+    company: z.string(),
+    cnpj: z.string(),
+    phone: z.string(),
+    email: z.string(),
+    city: z.string(),
+    state: z.string(),
+    interests: z.array(Category),
+    estimatedPieces: z.number().int().nullable(),
+    message: z.string(),
+    items: z.array(z.object({ productId: Id, name: z.string(), size: z.string(), quantity: z.number().int(), unitPrice: z.number() })),
+    estimatedTotal: z.number().nullable(),
+    discountPercent: z.number().nullable(),
+    handled: z.boolean(),
   }),
 );
 
@@ -399,6 +459,10 @@ doc({ method: 'put', path: '/api/favorites/{productId}', tag: 'Favoritos', summa
 doc({ method: 'delete', path: '/api/favorites/{productId}', tag: 'Favoritos', summary: 'Remove dos favoritos', access: 'auth', params: productIdParam, ok: { status: 204, description: 'Removido' }, errors: [400] });
 
 doc({ method: 'get', path: '/api/reviews', tag: 'Avaliações', summary: 'Avaliações do Google (cache de 6 h)', ok: { schema: ReviewsResponse, description: 'Vazio quando não configurado' } });
+
+doc({ method: 'post', path: '/api/wholesale/quotes', tag: 'Atacado', summary: 'Envia um pedido de orçamento de atacado', body: WholesaleQuoteInput, ok: { status: 201, schema: z.object({ ok: z.literal(true) }), description: 'Pedido recebido' }, errors: [400, 429] });
+doc({ method: 'get', path: '/api/wholesale/quotes', tag: 'Atacado', summary: 'Lista os pedidos de orçamento (dados pessoais)', access: 'admin', ok: { schema: z.array(WholesaleQuote), description: 'Pendentes primeiro, até 200' } });
+doc({ method: 'patch', path: '/api/wholesale/quotes/{id}', tag: 'Atacado', summary: 'Marca um pedido como atendido ou pendente', access: 'admin', params: idParam, body: z.object({ handled: z.boolean() }), ok: { schema: WholesaleQuote, description: 'Pedido atualizado' }, errors: [400, 404] });
 
 doc({ method: 'get', path: '/api/reports/overview', tag: 'Relatórios', summary: 'Vendas e estoque baixo', access: 'admin', query: z.object({ days: z.enum(['7', '30', '90']).optional().openapi({ description: 'Padrão 30' }) }), ok: { schema: Overview, description: 'Resumo do período' } });
 

@@ -19,6 +19,8 @@ export interface Order {
   items: OrderItem[];
   total: number;
   shippingCost: number;
+  isWholesale?: boolean;
+  wholesaleDiscountPercent?: number | null;
   shippingService?: string | null;
   shippingCep?: string | null;
   shippingStreet?: string | null;

@@ -46,6 +46,10 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
     title: 'Contato',
     description: 'Endereço, horário de funcionamento, WhatsApp e e-mail da Cabo Frio Outlet, no Centro de Cabo Frio.',
   },
+  '/atacado': {
+    title: 'Atacado',
+    description: 'Compre moda urbana no atacado em Cabo Frio: camisas, calças, bermudas e bonés. Peça um orçamento para a sua loja.',
+  },
   '/trabalhe-conosco': {
     title: 'Trabalhe conosco',
     description: 'Quer fazer parte do time da Cabo Frio Outlet? Veja como se candidatar.',

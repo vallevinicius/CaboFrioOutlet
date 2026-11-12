@@ -62,6 +62,9 @@ model Order {
   items           OrderItem[]
   user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId          String?
+  /// Pedido feito pela página de atacado (desconto por quantidade aplicado pelo servidor).
+  isWholesale     Boolean     @default(false)
+  wholesaleDiscountPercent Float?
 }
 
 model OrderItem {
@@ -100,6 +103,12 @@ model Settings {
   /// Medição (só carrega no navegador após o consentimento do visitante).
   gaMeasurementId       String  @default("")
   metaPixelId           String  @default("")
+  /// Pedido mínimo do atacado, em peças.
+  wholesaleMinPieces    Int     @default(10)
+  /// Condições do atacado, uma por linha. Nulo = texto padrão do código.
+  wholesaleNotes        String? @db.Text
+  /// JSON: [{ minPieces, discountPercent }]. Nulo = faixas padrão do código.
+  wholesaleTiers        String? @db.Text
 }
 
 model HeroSlide {
@@ -155,4 +164,27 @@ model Favorite {
 
   @@unique([userId, productId])
   @@index([userId])
+}
+
+/// Pedido de orçamento de atacado enviado pelo formulário público.
+model WholesaleQuote {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  name          String
+  company       String   @default("")
+  cnpj          String   @default("")
+  phone         String
+  email         String
+  city          String
+  state         String
+  interests     String   @default("")
+  estimatedPieces Int?
+  message       String?  @db.Text
+  /// Peças escolhidas no site: [{ productId, name, size, quantity, unitPrice }]. Preços calculados pelo servidor.
+  items         Json?
+  estimatedTotal Float?
+  discountPercent Float?
+  handled       Boolean  @default(false)
+
+  @@index([handled, createdAt])
 }

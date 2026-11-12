@@ -262,6 +262,15 @@
           ></span>
         </button>
       }
+      <a
+        routerLink="/atacado"
+        class="flex items-center gap-2 rounded-sm bg-accent px-3 py-1 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-black hover:text-white"
+      >
+        Atacado
+        @if (wholesaleBadge()) {
+          <span class="rounded-sm bg-black px-1.5 py-0.5 text-[10px] leading-none text-accent">{{ wholesaleBadge() }}</span>
+        }
+      </a>
     </div>
   </nav>
 
@@ -285,6 +294,13 @@
           {{ cat.label }}
         </button>
       }
+      <a
+        routerLink="/atacado"
+        (click)="mobileMenuOpen.set(false)"
+        class="px-6 py-3 text-left text-sm font-bold uppercase tracking-wide text-black"
+      >
+        <span class="rounded-sm bg-accent px-2 py-0.5">Atacado{{ wholesaleBadge() ? ' · ' + wholesaleBadge() : '' }}</span>
+      </a>
     </nav>
   }
 </header>

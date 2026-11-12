@@ -19,6 +19,8 @@ import {
 } from '../utils/home-content';
 
 import { normalizeGaId, normalizeMetaPixelId } from '../utils/analytics';
+import { normalizeTiers, parseTiers } from '../utils/wholesale-pricing';
+import { DEFAULT_WHOLESALE_NOTES, normalizeMinPieces, normalizeWholesaleNotes } from '../utils/wholesale';
 
 export const settingsRouter = Router();
 
@@ -49,6 +51,9 @@ function serialize(settings: {
   storyBody: string | null;
   gaMeasurementId: string;
   metaPixelId: string;
+  wholesaleMinPieces: number;
+  wholesaleNotes: string | null;
+  wholesaleTiers: string | null;
 }) {
   return {
     storeName: settings.storeName,
@@ -68,6 +73,9 @@ function serialize(settings: {
     storyBody: settings.storyBody || DEFAULT_STORY_BODY,
     gaMeasurementId: settings.gaMeasurementId,
     metaPixelId: settings.metaPixelId,
+    wholesaleMinPieces: settings.wholesaleMinPieces,
+    wholesaleNotes: settings.wholesaleNotes || DEFAULT_WHOLESALE_NOTES,
+    wholesaleTiers: parseTiers(settings.wholesaleTiers),
   };
 }
 
@@ -99,6 +107,9 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     storyBody,
     gaMeasurementId,
     metaPixelId,
+    wholesaleMinPieces,
+    wholesaleNotes,
+    wholesaleTiers,
   } = req.body as {
     storeName?: string;
     freeShippingThreshold?: number;
@@ -117,6 +128,9 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     storyBody?: unknown;
     gaMeasurementId?: unknown;
     metaPixelId?: unknown;
+    wholesaleMinPieces?: unknown;
+    wholesaleNotes?: unknown;
+    wholesaleTiers?: unknown;
   };
 
   const contact: {
@@ -129,7 +143,27 @@ settingsRouter.put('/', requireAdmin, async (req, res) => {
     storyBody?: string | null;
     gaMeasurementId?: string;
     metaPixelId?: string;
+    wholesaleMinPieces?: number;
+    wholesaleNotes?: string | null;
+    wholesaleTiers?: string;
   } = {};
+  if (wholesaleTiers !== undefined) {
+    const value = normalizeTiers(wholesaleTiers);
+    if (value === null) {
+      return res.status(400).json({ error: 'Faixas de desconto inválidas: quantidades únicas e desconto sempre crescente (de 0 a 90%).' });
+    }
+    contact.wholesaleTiers = JSON.stringify(value);
+  }
+  if (wholesaleMinPieces !== undefined) {
+    const value = normalizeMinPieces(wholesaleMinPieces);
+    if (value === null) return res.status(400).json({ error: 'Pedido mínimo inválido (número inteiro de 1 a 10000).' });
+    contact.wholesaleMinPieces = value;
+  }
+  if (wholesaleNotes !== undefined) {
+    const value = normalizeWholesaleNotes(wholesaleNotes);
+    if (value === null) return res.status(400).json({ error: 'Condições do atacado inválidas (até 1500 caracteres).' });
+    contact.wholesaleNotes = value === '' ? null : value;
+  }
   if (gaMeasurementId !== undefined) {
     const value = normalizeGaId(gaMeasurementId);
     if (value === null) return res.status(400).json({ error: 'ID do Google Analytics inválido (formato G-XXXXXXXXXX).' });

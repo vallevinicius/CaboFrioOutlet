@@ -31,7 +31,7 @@ const product = { id: 'p1', name: 'Camisa', price: 100, discountPercent: 10, ima
 beforeEach(() => {
   mockReset(prisma());
   prisma().$transaction.mockImplementation((async (cb: (tx: unknown) => unknown) => cb(prisma())) as never);
-  prisma().settings.upsert.mockResolvedValue({ id: 1, freeShippingThreshold: 299, shippingFee: 19.9 } as never);
+  prisma().settings.upsert.mockResolvedValue({ id: 1, freeShippingThreshold: 299, shippingFee: 19.9, wholesaleMinPieces: 10, wholesaleTiers: null } as never);
 });
 
 describe('POST /api/orders: validação', () => {
@@ -99,6 +99,84 @@ describe('POST /api/orders: preço e estoque', () => {
     expect((prisma().order.create.mock.calls[0][0].data as { userId?: string }).userId).toBeUndefined();
     await request(app).post('/api/orders').set('Authorization', tokenFor('user-A')).send(body()).expect(201);
     expect((prisma().order.create.mock.calls[1][0].data as { userId?: string }).userId).toBe('user-A');
+  });
+});
+
+describe('POST /api/orders: atacado', () => {
+  const wholesaleBody = (qty: number, over: object = {}) =>
+    body({ wholesale: true, items: [{ productId: 'p1', size: 'M', quantity: qty }], ...over });
+
+  function arrange() {
+    prisma().product.findUnique.mockResolvedValue({ ...product, discountPercent: null, price: 100 } as never);
+    prisma().productSize.findUnique.mockResolvedValue({ id: 's1', stock: 1000 } as never);
+    prisma().order.create.mockResolvedValue({ id: 'ord1' } as never);
+    prisma().order.update.mockImplementation((async (args: { data: object }) => ({ id: 'ord1', ...args.data, items: [] })) as never);
+  }
+  const created = () =>
+    prisma().order.create.mock.calls[0][0].data as {
+      isWholesale: boolean;
+      wholesaleDiscountPercent: number | null;
+      total: number;
+      items: { create: { unitPrice: number }[] };
+    };
+
+  it('abaixo do mínimo (10 peças) é recusado e nada é reservado', async () => {
+    arrange();
+    const res = await request(app).post('/api/orders').send(wholesaleBody(9)).expect(400);
+    expect(res.body.error).toContain('10 peças');
+    expect(prisma().$transaction).not.toHaveBeenCalled();
+  });
+
+  it('no mínimo aplica a primeira faixa (5%) e marca o pedido como atacado', async () => {
+    arrange();
+    await request(app).post('/api/orders').send(wholesaleBody(10)).expect(201);
+    expect(created()).toMatchObject({ isWholesale: true, wholesaleDiscountPercent: 5 });
+    expect(created().items.create[0].unitPrice).toBe(95);
+    expect(created().total).toBe(950);
+  });
+
+  it('mais peças, mais desconto (20 peças = 10%; 50 = 15%)', async () => {
+    arrange();
+    await request(app).post('/api/orders').send(wholesaleBody(20)).expect(201);
+    expect(created().wholesaleDiscountPercent).toBe(10);
+    mockReset(prisma());
+    prisma().$transaction.mockImplementation((async (cb: (tx: unknown) => unknown) => cb(prisma())) as never);
+    prisma().settings.upsert.mockResolvedValue({ id: 1, freeShippingThreshold: 299, shippingFee: 19.9, wholesaleMinPieces: 10, wholesaleTiers: null } as never);
+    arrange();
+    await request(app).post('/api/orders').send(wholesaleBody(50)).expect(201);
+    expect(created().wholesaleDiscountPercent).toBe(15);
+    expect(created().items.create[0].unitPrice).toBe(85);
+  });
+
+  it('usa as faixas editadas no admin, não as padrão', async () => {
+    prisma().settings.upsert.mockResolvedValue({
+      id: 1, freeShippingThreshold: 299, shippingFee: 19.9, wholesaleMinPieces: 5,
+      wholesaleTiers: JSON.stringify([{ minPieces: 5, discountPercent: 20 }]),
+    } as never);
+    arrange();
+    await request(app).post('/api/orders').send(wholesaleBody(5)).expect(201);
+    expect(created().wholesaleDiscountPercent).toBe(20);
+    expect(created().items.create[0].unitPrice).toBe(80);
+  });
+
+  it('o cliente não consegue definir o desconto: percentual enviado é ignorado', async () => {
+    arrange();
+    await request(app).post('/api/orders').send(wholesaleBody(10, { wholesaleDiscountPercent: 90, discountPercent: 90 })).expect(201);
+    expect(created().wholesaleDiscountPercent).toBe(5);
+    expect(created().items.create[0].unitPrice).toBe(95);
+  });
+
+  it('sem a marca de atacado, a quantidade NÃO gera desconto (compra normal da loja)', async () => {
+    arrange();
+    await request(app).post('/api/orders').send(body({ items: [{ productId: 'p1', size: 'M', quantity: 30 }] })).expect(201);
+    expect(created()).toMatchObject({ isWholesale: false, wholesaleDiscountPercent: null });
+    expect(created().items.create[0].unitPrice).toBe(100);
+  });
+
+  it('quantidade quebrada ou negativa é recusada antes de mexer no estoque', async () => {
+    await request(app).post('/api/orders').send(wholesaleBody(10.5)).expect(400);
+    await request(app).post('/api/orders').send(wholesaleBody(-10)).expect(400);
+    expect(prisma().$transaction).not.toHaveBeenCalled();
   });
 });
 
