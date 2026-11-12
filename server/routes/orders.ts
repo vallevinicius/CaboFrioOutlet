@@ -4,6 +4,7 @@ import { prisma } from '../db';
 import { requireAdmin, requireAuth, optionalAuth } from '../middleware/auth';
 import { expireStaleOrders } from '../services/stock';
 import { calculateShippingOptions, ShippingPackageInput } from '../services/melhor-envio';
+import { discountedUnitPrice, parseTiers, tierFor } from '../utils/wholesale-pricing';
 
 export const ordersRouter = Router();
 
@@ -49,12 +50,13 @@ ordersRouter.get('/mine', requireAuth, async (req, res) => {
 // pelo cliente) e baixa o estoque de forma atômica — se faltar estoque, tudo é revertido.
 // Aceita tanto clientes logados (o pedido fica vinculado à conta) quanto visitantes.
 ordersRouter.post('/', optionalAuth, async (req, res) => {
-  const { customerName, customerContact, items, shippingAddress, shippingOptionId } = req.body as {
+  const { customerName, customerContact, items, shippingAddress, shippingOptionId, wholesale } = req.body as {
     customerName?: string;
     customerContact?: string;
     items?: OrderItemInput[];
     shippingAddress?: ShippingAddressInput;
     shippingOptionId?: number;
+    wholesale?: boolean;
   };
 
   if (!customerName?.trim() || !customerContact?.trim() || !Array.isArray(items) || items.length === 0) {
@@ -71,6 +73,29 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
   ) {
     return res.status(400).json({ error: 'Preencha o endereço de entrega completo.' });
   }
+
+  // Formato dos itens validado antes de mexer em estoque (quantidade inteira e positiva).
+  const shapeOk = items.every(
+    (i) => i && typeof i.productId === 'string' && typeof i.size === 'string' && Number.isInteger(i.quantity) && i.quantity > 0,
+  );
+  if (!shapeOk) {
+    return res.status(400).json({ error: 'Item de pedido inválido.' });
+  }
+
+  const settings = await prisma.settings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: { id: 1, announcementMessages: '[]', brands: '[]' },
+  });
+
+  // Pedido de atacado: o servidor confere o mínimo e define o desconto pela quantidade
+  // total de peças. O cliente só diz que é atacado, nunca o percentual.
+  const isWholesale = wholesale === true;
+  const pieces = items.reduce((sum, i) => sum + i.quantity, 0);
+  if (isWholesale && pieces < settings.wholesaleMinPieces) {
+    return res.status(400).json({ error: `O pedido de atacado precisa de pelo menos ${settings.wholesaleMinPieces} peças.` });
+  }
+  const wholesalePercent = isWholesale ? (tierFor(parseTiers(settings.wholesaleTiers), pieces)?.discountPercent ?? 0) : 0;
 
   try {
     const { order, subtotal, packages } = await prisma.$transaction(async (tx) => {
@@ -101,9 +126,10 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
           data: { stock: { decrement: quantity } },
         });
 
-        const unitPrice = product.discountPercent
+        const basePrice = product.discountPercent
           ? product.price * (1 - product.discountPercent / 100)
           : product.price;
+        const unitPrice = wholesalePercent > 0 ? discountedUnitPrice(basePrice, wholesalePercent) : basePrice;
         subtotal += unitPrice * quantity;
 
         orderItemsData.push({
@@ -133,6 +159,8 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
           status: 'pendente',
           items: { create: orderItemsData },
           userId: req.user?.sub,
+          isWholesale,
+          wholesaleDiscountPercent: isWholesale && wholesalePercent > 0 ? wholesalePercent : null,
           shippingCep: cepDigits,
           shippingStreet: shippingAddress.street!.trim(),
           shippingNumber: shippingAddress.number!.trim(),
@@ -149,12 +177,6 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
     // Calculada fora da transação: é uma chamada de rede pra Melhor Envio, não
     // deve segurar o lock do banco. Se falhar, cai no frete fixo — nunca deixa
     // o pedido travado por causa da integração de frete.
-    const settings = await prisma.settings.upsert({
-      where: { id: 1 },
-      update: {},
-      create: { id: 1, announcementMessages: '[]', brands: '[]' },
-    });
-
     let shippingCost = subtotal >= settings.freeShippingThreshold ? 0 : settings.shippingFee;
     let shippingService: string | null = 'Frete padrão';
 

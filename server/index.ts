@@ -16,6 +16,7 @@ import { shippingRouter } from './routes/shipping';
 import { reviewsRouter } from './routes/reviews';
 import { favoritesRouter } from './routes/favorites';
 import { reportsRouter } from './routes/reports';
+import { wholesaleRouter } from './routes/wholesale';
 import { mountApiDocs } from './openapi/docs';
 import { seoRouter, sendIndexWithSeo } from './seo/routes';
 import { corsOrigin, createRateLimiter, securityHeaders, staticCacheControl } from './middleware/security';
@@ -50,6 +51,9 @@ app.use('/api/shipping', shippingRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/reports', reportsRouter);
+// Formulário público de atacado: no máximo 5 pedidos por hora por IP (só no POST).
+app.post('/api/wholesale/quotes', createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
+app.use('/api/wholesale', wholesaleRouter);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 mountApiDocs(app, process.env.NODE_ENV);

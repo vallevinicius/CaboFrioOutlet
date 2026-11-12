@@ -21,6 +21,7 @@ import { settingsRouter } from '../routes/settings';
 import { shippingRouter } from '../routes/shipping';
 import { uploadRouter } from '../routes/upload';
 import { usersRouter } from '../routes/users';
+import { wholesaleRouter } from '../routes/wholesale';
 import { seoRouter } from '../seo/routes';
 import { mountApiDocs } from './docs';
 import { buildOpenApiDocument } from './spec';
@@ -38,6 +39,7 @@ const MOUNTS: [string, Router][] = [
   ['/api/reviews', reviewsRouter],
   ['/api/favorites', favoritesRouter],
   ['/api/reports', reportsRouter],
+  ['/api/wholesale', wholesaleRouter],
   ['', seoRouter],
 ];
 
@@ -70,7 +72,7 @@ function documentedRoutes(): Set<string> {
 
 describe('OpenAPI: cobertura', () => {
   it('o inventário de rotas reais não está vazio (guarda contra falso positivo)', () => {
-    expect(realRoutes().size).toBeGreaterThanOrEqual(35);
+    expect(realRoutes().size).toBeGreaterThanOrEqual(38);
     expect(realRoutes().has('POST /api/auth/login')).toBe(true);
     expect(realRoutes().has('PUT /api/products/{id}/stock')).toBe(true);
   });
@@ -111,6 +113,7 @@ describe('OpenAPI: qualidade do documento', () => {
       'GET /api/favorites',
       'POST /api/upload',
       'GET /api/users',
+      'GET /api/wholesale/quotes',
     ];
     for (const key of protectedKeys) {
       const found = ops.find((o) => o.key === key);
@@ -146,6 +149,28 @@ describe('OpenAPI: qualidade do documento', () => {
     const schemas = doc.components?.schemas as Record<string, { properties: Record<string, { items?: { properties?: Record<string, unknown> } }> }>;
     const itemProps = Object.keys(schemas['PedidoEntrada'].properties['items'].items?.properties ?? {});
     expect(itemProps.sort()).toEqual(['productId', 'quantity', 'size']);
+  });
+});
+
+describe('OpenAPI: atacado', () => {
+  const schemas = doc.components?.schemas as Record<string, { properties: Record<string, unknown> }>;
+
+  it('o pedido aceita só a marca "wholesale": percentual de desconto nunca vem do cliente', () => {
+    const props = Object.keys(schemas['PedidoEntrada'].properties);
+    expect(props).toContain('wholesale');
+    expect(props).not.toContain('wholesaleDiscountPercent');
+    expect(props).not.toContain('discountPercent');
+  });
+
+  it('o orçamento recebe só produto/tamanho/quantidade (preço e total são calculados no servidor)', () => {
+    const items = schemas['AtacadoPedidoEntrada'].properties['items'] as { items: { properties: Record<string, unknown> } };
+    expect(Object.keys(items.items.properties).sort()).toEqual(['productId', 'quantity', 'size']);
+    expect(Object.keys(schemas['AtacadoPedidoEntrada'].properties)).not.toContain('estimatedTotal');
+  });
+
+  it('as faixas de desconto são documentadas na leitura e na escrita das configurações', () => {
+    expect(Object.keys(schemas['Configuracoes'].properties)).toContain('wholesaleTiers');
+    expect(Object.keys(schemas['ConfiguracoesEntrada'].properties)).toContain('wholesaleTiers');
   });
 });
 
