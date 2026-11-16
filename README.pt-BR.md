@@ -2,7 +2,7 @@
 
 # Cabo Frio Outlet
 
-**E-commerce de moda urbana: loja em Angular, API Express, Mercado Pago e Melhor Envio.**
+**Loja virtual da Cabo Frio Outlet: vitrine em Angular, API Express, Mercado Pago e Melhor Envio.**
 
 🇺🇸 [Read in English](README.md)
 

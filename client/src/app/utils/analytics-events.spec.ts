@@ -11,7 +11,7 @@ import {
 const camisa: TrackItem = { id: 'p1', name: 'Camisa', price: 89.9, quantity: 2, category: 'camisas', brand: 'Nike', size: 'M' };
 const bone: TrackItem = { id: 'p2', name: 'Boné', price: 50, quantity: 1 };
 
-describe('eventos de e-commerce', () => {
+describe('eventos de compra', () => {
   it('view_item / ViewContent', () => {
     const e = buildViewItem(camisa);
     expect(e.ga.name).toBe('view_item');
