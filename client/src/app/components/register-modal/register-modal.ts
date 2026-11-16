@@ -31,6 +31,7 @@ export class RegisterModal {
   name = signal('');
   email = signal('');
   password = signal('');
+  showPassword = signal(false);
   cpf = signal('');
   phone = signal('');
   cep = signal('');

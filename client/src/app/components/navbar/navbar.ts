@@ -90,6 +90,7 @@ export class Navbar {
 
   loginEmail = signal('');
   loginPassword = signal('');
+  showPassword = signal(false);
 
   readonly wordmark = computed(() => splitStoreName(this.settingsService.settings().storeName));
 
