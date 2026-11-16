@@ -32,5 +32,8 @@ export interface Order {
   status: OrderStatus;
   userId?: string | null;
   paymentMethod?: string | null;
+  paymentStatus?: string | null;
+  /** Motivo informado pelo Mercado Pago (ex.: cc_rejected_other_reason). */
+  paymentStatusDetail?: string | null;
   installments?: number | null;
 }

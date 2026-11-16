@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
 import { appWith } from '../test/helpers.js';
 
@@ -133,6 +133,71 @@ describe('POST /pay: resultado do pagamento', () => {
   });
 });
 
+describe('POST /pay: motivo da recusa', () => {
+  const rejected = (detail: string) => ({
+    ok: false,
+    status: 402,
+    body: { data: { id: 'mp1', status: 'failed', transactions: { payments: [{ id: 'pay1', status: 'failed', status_detail: detail, payment_method: { type: 'credit_card', installments: 1 } }] } } },
+  });
+  const pay = () =>
+    request(app)
+      .post('/api/checkout/pay')
+      .send({ orderId: 'ord1', payment_method_id: 'master', selectedPaymentMethod: 'credit_card', token: 'tok-secreto-123', payer: { email: 'cliente@exemplo.com' } });
+
+  beforeEach(() => {
+    prisma().order.findUnique.mockResolvedValue(pendingOrder as never);
+    prisma().order.updateMany.mockResolvedValue({ count: 1 } as never);
+  });
+  afterEach(() => vi.restoreAllMocks()); // os espiões de console não vazam para outros testes
+
+  it('grava o motivo no pedido e devolve ao front', async () => {
+    mpFetch.mockResolvedValue(rejected('cc_rejected_other_reason'));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await pay().expect(200);
+    expect(prisma().order.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'cancelado', paymentStatusDetail: 'cc_rejected_other_reason' }) }),
+    );
+    expect(res.body.statusDetail).toBe('cc_rejected_other_reason');
+    expect(res.body.orderStatus).toBeDefined();
+  });
+
+  it('registra a recusa no log com pedido, pagamento e motivo, sem token nem e-mail do cliente', async () => {
+    mpFetch.mockResolvedValue(rejected('cc_rejected_insufficient_amount'));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await pay().expect(200);
+    const logged = JSON.stringify(warn.mock.calls);
+    expect(logged).toContain('cc_rejected_insufficient_amount');
+    expect(logged).toContain('ord1');
+    expect(logged).toContain('pay1');
+    expect(logged).not.toContain('tok-secreto-123');
+    expect(logged).not.toContain('cliente@exemplo.com');
+  });
+
+  it('aprovado também guarda o detalhe (accredited) e não polui o log de recusas', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    mpFetch.mockResolvedValue({
+      ok: true, status: 201,
+      body: { id: 'mp1', status: 'processed', transactions: { payments: [{ id: 'pay1', status: 'processed', status_detail: 'accredited', payment_method: { type: 'credit_card', installments: 1 } }] } },
+    });
+    await pay().expect(200);
+    expect(prisma().order.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'confirmado', paymentStatusDetail: 'accredited' }) }),
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('erro da API sem pedido na resposta (400): registra o motivo técnico no log, sem dados do cliente', async () => {
+    mpFetch.mockResolvedValue({ ok: false, status: 400, body: { errors: [{ code: '3000', message: 'Cartão inválido' }] } });
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    await pay().expect(400);
+    const logged = JSON.stringify(error.mock.calls);
+    expect(logged).toContain('Cartão inválido');
+    expect(logged).toContain('ord1');
+    expect(logged).not.toContain('tok-secreto-123');
+    expect(logged).not.toContain('cliente@exemplo.com');
+  });
+});
+
 describe('webhook e status', () => {
   it('webhook aplica o resultado do pagamento e sempre responde 200', async () => {
     mpFetch.mockResolvedValue({ ok: true, status: 200, body: { external_reference: 'ord1', ...mpApproved('processed').body } });
@@ -152,8 +217,9 @@ describe('webhook e status', () => {
   it('status do pedido: 404 se não existir e só campos públicos se existir', async () => {
     prisma().order.findUnique.mockResolvedValueOnce(null as never);
     await request(app).get('/api/checkout/orders/zzz/status').expect(404);
-    prisma().order.findUnique.mockResolvedValueOnce({ id: 'ord1', status: 'pendente', paymentStatus: null, total: 10 } as never);
+    prisma().order.findUnique.mockResolvedValueOnce({ id: 'ord1', status: 'pendente', paymentStatus: null, paymentStatusDetail: null, total: 10 } as never);
     const res = await request(app).get('/api/checkout/orders/ord1/status').expect(200);
-    expect(Object.keys(res.body).sort()).toEqual(['id', 'paymentStatus', 'status', 'total']);
+    // paymentStatusDetail entrou de propósito: o checkout mostra o motivo da recusa quando o resultado chega pelo polling.
+    expect(Object.keys(res.body).sort()).toEqual(['id', 'paymentStatus', 'paymentStatusDetail', 'status', 'total']);
   });
 });

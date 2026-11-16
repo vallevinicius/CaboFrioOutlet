@@ -65,6 +65,8 @@ model Order {
   paymentId       String?
   paymentMethod   String?
   paymentStatus   String?
+  /// Motivo informado pelo Mercado Pago (ex.: cc_rejected_other_reason, accredited).
+  paymentStatusDetail String?
   installments    Int?
   createdAt       DateTime    @default(now())
   items           OrderItem[]

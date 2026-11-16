@@ -69,11 +69,12 @@ async function applyPaymentResult(orderId: string, payment: OrderPaymentInfo) {
   const status = payment.status ?? 'processing';
   const paymentMethod = payment.payment_method?.type ?? null;
   const installments = payment.payment_method?.installments ?? null;
+  const paymentStatusDetail = payment.status_detail ?? null;
 
   if (status === 'processed') {
     const updated = await prisma.order.updateMany({
       where: { id: orderId, status: 'pendente' },
-      data: { status: 'confirmado', paymentId, paymentMethod, paymentStatus: status, installments },
+      data: { status: 'confirmado', paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
     });
     if (updated.count > 0) {
       // Só na transição pendente → confirmado: webhook repetido não duplica o e-mail.
@@ -83,22 +84,24 @@ async function applyPaymentResult(orderId: string, payment: OrderPaymentInfo) {
       // Já processado antes (ex: webhook chegou depois da resposta direta) — apenas garante os dados de pagamento.
       await prisma.order.update({
         where: { id: orderId },
-        data: { paymentId, paymentMethod, paymentStatus: status, installments },
+        data: { paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
       });
     }
   } else if (status === 'failed' || status === 'cancelled') {
     const updated = await prisma.order.updateMany({
       where: { id: orderId, status: 'pendente' },
-      data: { status: 'cancelado', paymentId, paymentMethod, paymentStatus: status, installments },
+      data: { status: 'cancelado', paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
     });
     if (updated.count > 0) {
       await restoreStockForOrder(orderId);
+      // Só IDs e o motivo: nunca token do cartão, e-mail ou documento do cliente.
+      console.warn('[pagamento] recusado', JSON.stringify({ orderId, paymentId, status, statusDetail: paymentStatusDetail, method: paymentMethod, installments }));
     }
   } else {
     // processing / action_required (ex: Pix aguardando pagamento) — mantém o pedido como pendente.
     await prisma.order.update({
       where: { id: orderId },
-      data: { paymentId, paymentMethod, paymentStatus: status, installments },
+      data: { paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
     });
   }
 
@@ -168,8 +171,9 @@ checkoutRouter.post('/pay', optionalAuth, async (req, res) => {
     : (result.body as MpOrderErrorResponse).data;
 
   if (!orderData) {
-    const errorMessage =
-      (result.body as MpOrderErrorResponse).errors?.[0]?.message ?? 'Erro ao processar o pagamento.';
+    const apiErrors = (result.body as MpOrderErrorResponse).errors;
+    const errorMessage = apiErrors?.[0]?.message ?? 'Erro ao processar o pagamento.';
+    console.error('[pagamento] erro da API do Mercado Pago', JSON.stringify({ orderId: order.id, httpStatus: result.status, errors: apiErrors?.map((e) => ({ code: e.code, message: e.message })) }));
     return res.status(400).json({ error: errorMessage });
   }
 
@@ -191,7 +195,7 @@ checkoutRouter.post('/pay', optionalAuth, async (req, res) => {
 checkoutRouter.get('/orders/:id/status', async (req, res) => {
   const order = await prisma.order.findUnique({
     where: { id: req.params.id as string },
-    select: { id: true, status: true, paymentStatus: true, total: true },
+    select: { id: true, status: true, paymentStatus: true, paymentStatusDetail: true, total: true },
   });
   if (!order) {
     return res.status(404).json({ error: 'Pedido não encontrado.' });

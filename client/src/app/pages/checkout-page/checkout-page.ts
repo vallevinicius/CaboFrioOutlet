@@ -14,6 +14,7 @@ import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
 import { isValidCpf, normalizeCpf, formatCpf } from '../../utils/cpf';
 import { formatCep } from '../../utils/cep';
+import { describePaymentFailure } from '../../utils/payment-failure';
 
 type Step = 'dados' | 'pagamento' | 'aguardando' | 'sucesso' | 'recusado';
 
@@ -61,6 +62,9 @@ export class CheckoutPage implements OnInit, OnDestroy {
   submittingOrder = signal(false);
   order = signal<Order | null>(null);
   payResult = signal<PayResult | null>(null);
+  /** Motivo da recusa (status_detail do Mercado Pago), só para escolher a mensagem mostrada ao cliente. */
+  failureDetail = signal<string | null>(null);
+  readonly failureMessage = computed(() => describePaymentFailure(this.failureDetail()));
 
   name = signal('');
   email = signal('');
@@ -362,6 +366,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.cartService.clearCart();
       this.step.set('sucesso');
     } else if (result.orderStatus === 'cancelado') {
+      this.failureDetail.set(result.statusDetail ?? null);
       this.step.set('recusado');
     } else {
       // pendente — ex: Pix aguardando pagamento ou boleto emitido
@@ -390,6 +395,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
           this.step.set('sucesso');
         } else if (status.status === 'cancelado') {
           if (this.pollHandle) clearInterval(this.pollHandle);
+          this.failureDetail.set(status.paymentStatusDetail ?? null);
           this.step.set('recusado');
         }
       } catch {
@@ -417,6 +423,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
 
   retryPayment(): void {
     this.payResult.set(null);
+    this.failureDetail.set(null);
     this.step.set('pagamento');
     setTimeout(() => this.renderPaymentBrick(), 0);
   }

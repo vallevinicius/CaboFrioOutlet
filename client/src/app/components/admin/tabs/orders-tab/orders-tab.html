@@ -59,6 +59,15 @@
 
           @if (expandedId() === order.id) {
             <div class="border-t border-white/10 px-5 py-4">
+              @if (order.paymentStatus === 'failed' || order.paymentStatus === 'cancelled') {
+                <p class="mb-4 rounded-lg bg-red-500/15 px-3 py-2 text-xs text-red-200">
+                  Pagamento recusado
+                  @if (order.paymentStatusDetail) {
+                    — motivo: <span class="font-mono">{{ order.paymentStatusDetail }}</span>
+                  }
+                  <span class="block pt-1 text-red-200/80">{{ describePaymentFailure(order.paymentStatusDetail) }}</span>
+                </p>
+              }
               <ul class="flex flex-col gap-3">
                 @for (item of order.items; track item.id) {
                   <li class="flex items-center gap-3 text-sm">
