@@ -18,6 +18,7 @@ import { favoritesRouter } from './routes/favorites.js';
 import { reportsRouter } from './routes/reports.js';
 import { wholesaleRouter } from './routes/wholesale.js';
 import { rolesRouter } from './routes/roles.js';
+import { startPaymentReconciler } from './services/payment-reconcile.js';
 import { staffRouter } from './routes/staff.js';
 import { mountApiDocs } from './openapi/docs.js';
 import { seoRouter, sendIndexWithSeo } from './seo/routes.js';
@@ -84,4 +85,6 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Aplicação rodando em http://localhost:${PORT}`);
+  // Confere com o Mercado Pago os pagamentos que ficaram pendentes (webhook que não chegou, página fechada).
+  startPaymentReconciler();
 });

@@ -2,8 +2,9 @@ import { Router } from 'express';
 import { prisma } from '../db.js';
 import { optionalAuth } from '../middleware/auth.js';
 import { MP_PUBLIC_KEY, mpFetch } from '../services/mercadopago.js';
-import { restoreStockForOrder } from '../services/stock.js';
-import { notifyOrderConfirmed } from '../services/order-notifications.js';
+import { applyPaymentResult, type OrderPaymentInfo } from '../services/payment-result.js';
+import { reconcileOrderThrottled } from '../services/payment-reconcile.js';
+import { verifyWebhookSignature } from '../services/webhook-signature.js';
 
 export const checkoutRouter = Router();
 
@@ -28,19 +29,6 @@ interface PayPayload {
   payer?: PayerInput;
 }
 
-interface OrderPaymentInfo {
-  id?: string;
-  status?: string;
-  status_detail?: string;
-  payment_method?: {
-    type?: string;
-    installments?: number;
-    qr_code?: string;
-    qr_code_base64?: string;
-    ticket_url?: string;
-  };
-}
-
 // Resposta da Orders API: em sucesso (2xx) o corpo é o pedido diretamente;
 // em erro de pagamento (ex: 402 recusado) o pedido vem aninhado em `data`,
 // junto com uma lista de erros. As duas formas trazem o pedido completo.
@@ -55,57 +43,6 @@ interface MpOrderResponse {
 interface MpOrderErrorResponse {
   errors?: { code?: string; message?: string; details?: string[] }[];
   data?: MpOrderResponse;
-}
-
-// Aplica o resultado de um pagamento (vindo tanto da resposta direta da API
-// quanto do webhook) ao pedido correspondente, de forma idempotente.
-// Vocabulário de status da Orders API: "processed" (aprovado), "failed" /
-// "cancelled" (recusado), "processing" / demais (pendente, aguardando).
-async function applyPaymentResult(orderId: string, payment: OrderPaymentInfo) {
-  const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order) return null;
-
-  const paymentId = payment.id ?? null;
-  const status = payment.status ?? 'processing';
-  const paymentMethod = payment.payment_method?.type ?? null;
-  const installments = payment.payment_method?.installments ?? null;
-  const paymentStatusDetail = payment.status_detail ?? null;
-
-  if (status === 'processed') {
-    const updated = await prisma.order.updateMany({
-      where: { id: orderId, status: 'pendente' },
-      data: { status: 'confirmado', paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
-    });
-    if (updated.count > 0) {
-      // Só na transição pendente → confirmado: webhook repetido não duplica o e-mail.
-      void notifyOrderConfirmed(orderId);
-    }
-    if (updated.count === 0) {
-      // Já processado antes (ex: webhook chegou depois da resposta direta) — apenas garante os dados de pagamento.
-      await prisma.order.update({
-        where: { id: orderId },
-        data: { paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
-      });
-    }
-  } else if (status === 'failed' || status === 'cancelled') {
-    const updated = await prisma.order.updateMany({
-      where: { id: orderId, status: 'pendente' },
-      data: { status: 'cancelado', paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
-    });
-    if (updated.count > 0) {
-      await restoreStockForOrder(orderId);
-      // Só IDs e o motivo: nunca token do cartão, e-mail ou documento do cliente.
-      console.warn('[pagamento] recusado', JSON.stringify({ orderId, paymentId, status, statusDetail: paymentStatusDetail, method: paymentMethod, installments }));
-    }
-  } else {
-    // processing / action_required (ex: Pix aguardando pagamento) — mantém o pedido como pendente.
-    await prisma.order.update({
-      where: { id: orderId },
-      data: { paymentId, paymentMethod, paymentStatus: status, paymentStatusDetail, installments },
-    });
-  }
-
-  return prisma.order.findUnique({ where: { id: orderId } });
 }
 
 checkoutRouter.post('/pay', optionalAuth, async (req, res) => {
@@ -192,23 +129,73 @@ checkoutRouter.post('/pay', optionalAuth, async (req, res) => {
   });
 });
 
+const ORDER_STATUS_SELECT = {
+  id: true,
+  status: true,
+  paymentStatus: true,
+  paymentStatusDetail: true,
+  paymentId: true,
+  total: true,
+} as const;
+
+// Público e consultado pelo checkout a cada poucos segundos. Se o pedido ainda está pendente
+// com um pagamento iniciado, confere o resultado direto no Mercado Pago (no máximo uma vez a cada
+// 15s por pedido), para não depender só do webhook.
 checkoutRouter.get('/orders/:id/status', async (req, res) => {
-  const order = await prisma.order.findUnique({
-    where: { id: req.params.id as string },
-    select: { id: true, status: true, paymentStatus: true, paymentStatusDetail: true, total: true },
-  });
+  const id = req.params.id as string;
+  let order = await prisma.order.findUnique({ where: { id }, select: ORDER_STATUS_SELECT });
   if (!order) {
     return res.status(404).json({ error: 'Pedido não encontrado.' });
   }
-  res.json(order);
+
+  if (order.status === 'pendente' && order.paymentId) {
+    try {
+      if (await reconcileOrderThrottled(id)) {
+        order = (await prisma.order.findUnique({ where: { id }, select: ORDER_STATUS_SELECT })) ?? order;
+      }
+    } catch (err) {
+      console.error('[pagamento] falha ao conferir com o Mercado Pago', JSON.stringify({ orderId: id, erro: String(err) }));
+    }
+  }
+
+  // Resposta pública: só o necessário (o id do pagamento fica no servidor).
+  res.json({
+    id: order.id,
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    paymentStatusDetail: order.paymentStatusDetail,
+    total: order.total,
+  });
 });
 
+let warnedMissingWebhookSecret = false;
+
 // Notificação assíncrona da Mercado Pago (webhook). Precisa de URL pública
-// configurada no painel do Mercado Pago para funcionar fora de localhost —
-// usada principalmente para confirmar Pix/boleto, já que cartão responde na hora.
+// configurada no painel do Mercado Pago (modo produção, evento "Order") para funcionar fora de
+// localhost. Se a chave secreta do webhook estiver configurada no servidor, só aceita
+// notificações com assinatura válida; sem a chave, aceita como antes (o pedido é sempre
+// reconsultado no Mercado Pago, então uma notificação falsa não consegue aprovar nada).
 checkoutRouter.post('/webhook', async (req, res) => {
+  const secret = process.env.MP_WEBHOOK_SECRET;
+  const body = (req.body ?? {}) as { type?: string; action?: string; data?: { id?: string } };
+
+  if (secret) {
+    const valid = verifyWebhookSignature({
+      secret,
+      signature: req.get('x-signature'),
+      requestId: req.get('x-request-id'),
+      dataId: (req.query['data.id'] as string | undefined) ?? body.data?.id,
+    });
+    if (!valid) {
+      console.warn('[pagamento] webhook recusado: assinatura inválida ou ausente');
+      return res.sendStatus(401);
+    }
+  } else if (!warnedMissingWebhookSecret) {
+    warnedMissingWebhookSecret = true;
+    console.warn('[pagamento] a chave secreta do webhook não está configurada: notificações sem assinatura estão sendo aceitas');
+  }
+
   try {
-    const body = req.body as { type?: string; action?: string; data?: { id?: string } };
     const mpOrderId = body.data?.id ?? (req.query['data.id'] as string | undefined);
     const type = body.type ?? (req.query['type'] as string | undefined);
 
