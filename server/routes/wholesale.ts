@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
-import { notifyWholesaleQuote } from '../services/wholesale-notifications';
-import { isHoneypotFilled, validateQuote } from '../utils/wholesale';
-import { parseTiers, priceWholesaleItems, QuoteLine } from '../utils/wholesale-pricing';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
+import { notifyWholesaleQuote } from '../services/wholesale-notifications.js';
+import { isHoneypotFilled, validateQuote } from '../utils/wholesale.js';
+import { parseTiers, priceWholesaleItems, QuoteLine } from '../utils/wholesale-pricing.js';
 
 export const wholesaleRouter = Router();
 

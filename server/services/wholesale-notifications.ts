@@ -1,9 +1,9 @@
-import { prisma } from '../db';
-import { sendEmail } from './email';
-import { buildWholesaleQuoteEmail } from './wholesale-email';
-import type { QuoteInput } from '../utils/wholesale';
-import type { QuoteLine } from '../utils/wholesale-pricing';
-import type { QuoteExtras } from './wholesale-email';
+import { prisma } from '../db.js';
+import { sendEmail } from './email.js';
+import { buildWholesaleQuoteEmail } from './wholesale-email.js';
+import type { QuoteInput } from '../utils/wholesale.js';
+import type { QuoteLine } from '../utils/wholesale-pricing.js';
+import type { QuoteExtras } from './wholesale-email.js';
 
 /** Avisa a loja por e-mail. Nunca lança: o pedido já está salvo e aparece no painel. */
 export async function notifyWholesaleQuote(quote: QuoteInput, extras?: { lines: QuoteLine[]; estimatedTotal: number | null; discountPercent: number | null }): Promise<void> {

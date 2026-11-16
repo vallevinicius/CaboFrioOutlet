@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 export const usersRouter = Router();
 

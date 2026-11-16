@@ -1,4 +1,4 @@
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 
 // Restaura o estoque reservado na criação do pedido quando ele é
 // recusado/cancelado/expirado.

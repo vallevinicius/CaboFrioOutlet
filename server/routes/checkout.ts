@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { optionalAuth } from '../middleware/auth';
-import { MP_PUBLIC_KEY, mpFetch } from '../services/mercadopago';
-import { restoreStockForOrder } from '../services/stock';
-import { notifyOrderConfirmed } from '../services/order-notifications';
+import { prisma } from '../db.js';
+import { optionalAuth } from '../middleware/auth.js';
+import { MP_PUBLIC_KEY, mpFetch } from '../services/mercadopago.js';
+import { restoreStockForOrder } from '../services/stock.js';
+import { notifyOrderConfirmed } from '../services/order-notifications.js';
 
 export const checkoutRouter = Router();
 

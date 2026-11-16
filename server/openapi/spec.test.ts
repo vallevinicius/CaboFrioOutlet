@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
-import { tokenFor } from '../test/helpers';
+import { tokenFor } from '../test/helpers.js';
 
 vi.mock('../db', async () => {
   const { mockDeep } = await import('vitest-mock-extended');
@@ -9,22 +9,22 @@ vi.mock('../db', async () => {
 });
 vi.mock('../services/mercadopago', () => ({ MP_PUBLIC_KEY: 'pk', mpFetch: vi.fn() }));
 
-import { authRouter } from '../routes/auth';
-import { checkoutRouter } from '../routes/checkout';
-import { favoritesRouter } from '../routes/favorites';
-import { heroSlidesRouter } from '../routes/hero-slides';
-import { ordersRouter } from '../routes/orders';
-import { productsRouter } from '../routes/products';
-import { reportsRouter } from '../routes/reports';
-import { reviewsRouter } from '../routes/reviews';
-import { settingsRouter } from '../routes/settings';
-import { shippingRouter } from '../routes/shipping';
-import { uploadRouter } from '../routes/upload';
-import { usersRouter } from '../routes/users';
-import { wholesaleRouter } from '../routes/wholesale';
-import { seoRouter } from '../seo/routes';
-import { mountApiDocs } from './docs';
-import { buildOpenApiDocument } from './spec';
+import { authRouter } from '../routes/auth.js';
+import { checkoutRouter } from '../routes/checkout.js';
+import { favoritesRouter } from '../routes/favorites.js';
+import { heroSlidesRouter } from '../routes/hero-slides.js';
+import { ordersRouter } from '../routes/orders.js';
+import { productsRouter } from '../routes/products.js';
+import { reportsRouter } from '../routes/reports.js';
+import { reviewsRouter } from '../routes/reviews.js';
+import { settingsRouter } from '../routes/settings.js';
+import { shippingRouter } from '../routes/shipping.js';
+import { uploadRouter } from '../routes/upload.js';
+import { usersRouter } from '../routes/users.js';
+import { wholesaleRouter } from '../routes/wholesale.js';
+import { seoRouter } from '../seo/routes.js';
+import { mountApiDocs } from './docs.js';
+import { buildOpenApiDocument } from './spec.js';
 
 const MOUNTS: [string, Router][] = [
   ['/api/auth', authRouter],

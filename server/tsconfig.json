@@ -2,8 +2,10 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    // NodeNext = as regras reais do Node em ES Modules: import relativo SEM ".js" vira erro de compilação
+    // (foi isso que quebrou o servidor em produção: "Cannot find module .../dist/routes/auth").
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -14,5 +16,6 @@
     "outDir": "./dist",
     "types": ["node"]
   },
-  "include": ["."]
+  "include": ["."],
+  "exclude": ["dist", "**/*.test.ts", "test"]
 }

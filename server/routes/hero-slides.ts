@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
 
 export const heroSlidesRouter = Router();
 

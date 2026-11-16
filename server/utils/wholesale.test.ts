@@ -5,7 +5,7 @@ import {
   normalizeMinPieces,
   normalizeWholesaleNotes,
   validateQuote,
-} from './wholesale';
+} from './wholesale.js';
 
 const valid = {
   name: '  Maria  Souza ',

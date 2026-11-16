@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EmailOrder, buildOrderConfirmationEmail, orderCode, paymentLabel } from './order-email';
+import { EmailOrder, buildOrderConfirmationEmail, orderCode, paymentLabel } from './order-email.js';
 
 const order: EmailOrder = {
   id: 'cmu4stwin0000nknffustupxu',

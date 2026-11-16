@@ -1,27 +1,25 @@
-import 'dotenv/config';
+import './env.js';
 import express, { ErrorRequestHandler } from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { authRouter } from './routes/auth';
-import { productsRouter } from './routes/products';
-import { ordersRouter } from './routes/orders';
-import { settingsRouter } from './routes/settings';
-import { uploadRouter, UPLOADS_DIR } from './routes/upload';
-import { usersRouter } from './routes/users';
-import { heroSlidesRouter } from './routes/hero-slides';
-import { checkoutRouter } from './routes/checkout';
-import { shippingRouter } from './routes/shipping';
-import { reviewsRouter } from './routes/reviews';
-import { favoritesRouter } from './routes/favorites';
-import { reportsRouter } from './routes/reports';
-import { wholesaleRouter } from './routes/wholesale';
-import { mountApiDocs } from './openapi/docs';
-import { seoRouter, sendIndexWithSeo } from './seo/routes';
-import { corsOrigin, createRateLimiter, securityHeaders, staticCacheControl } from './middleware/security';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { authRouter } from './routes/auth.js';
+import { productsRouter } from './routes/products.js';
+import { ordersRouter } from './routes/orders.js';
+import { settingsRouter } from './routes/settings.js';
+import { uploadRouter } from './routes/upload.js';
+import { CLIENT_DIST, UPLOADS_DIR } from './paths.js';
+import { usersRouter } from './routes/users.js';
+import { heroSlidesRouter } from './routes/hero-slides.js';
+import { checkoutRouter } from './routes/checkout.js';
+import { shippingRouter } from './routes/shipping.js';
+import { reviewsRouter } from './routes/reviews.js';
+import { favoritesRouter } from './routes/favorites.js';
+import { reportsRouter } from './routes/reports.js';
+import { wholesaleRouter } from './routes/wholesale.js';
+import { mountApiDocs } from './openapi/docs.js';
+import { seoRouter, sendIndexWithSeo } from './seo/routes.js';
+import { corsOrigin, createRateLimiter, securityHeaders, staticCacheControl } from './middleware/security.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -64,7 +62,7 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Rota não encontra
 
 // Serve o build do Angular (client/dist/client/browser) e faz fallback de SPA
 // para qualquer rota que não seja /api ou /uploads.
-const clientDist = path.join(__dirname, '..', 'client', 'dist', 'client', 'browser');
+const clientDist = CLIENT_DIST;
 // index: false — o index.html passa por sendIndexWithSeo para receber as tags de SEO da rota.
 app.use(
   express.static(clientDist, {

@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
 import {
   normalizeEmail,
   normalizeOpeningHours,
   normalizePlaceId,
   normalizeWhatsapp,
   parseOpeningHours,
-} from '../utils/contact';
+} from '../utils/contact.js';
 
 import {
   DEFAULT_STORY_BODY,
@@ -16,11 +16,11 @@ import {
   normalizeStoryTitle,
   normalizeTickerMessages,
   parseTickerMessages,
-} from '../utils/home-content';
+} from '../utils/home-content.js';
 
-import { normalizeGaId, normalizeMetaPixelId } from '../utils/analytics';
-import { normalizeTiers, parseTiers } from '../utils/wholesale-pricing';
-import { DEFAULT_WHOLESALE_NOTES, normalizeMinPieces, normalizeWholesaleNotes } from '../utils/wholesale';
+import { normalizeGaId, normalizeMetaPixelId } from '../utils/analytics.js';
+import { normalizeTiers, parseTiers } from '../utils/wholesale-pricing.js';
+import { DEFAULT_WHOLESALE_NOTES, normalizeMinPieces, normalizeWholesaleNotes } from '../utils/wholesale.js';
 
 export const settingsRouter = Router();
 

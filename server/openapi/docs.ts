@@ -1,7 +1,7 @@
 import type { Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { requireAdmin } from '../middleware/auth';
-import { buildOpenApiDocument } from './spec';
+import { requireAdmin } from '../middleware/auth.js';
+import { buildOpenApiDocument } from './spec.js';
 
 /**
  * Fora de produção: Swagger UI em /api/docs e o JSON em /api/docs.json.

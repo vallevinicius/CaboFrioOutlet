@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { QuoteInput } from '../utils/wholesale';
-import { buildWholesaleQuoteEmail } from './wholesale-email';
+import type { QuoteInput } from '../utils/wholesale.js';
+import { buildWholesaleQuoteEmail } from './wholesale-email.js';
 
 const q: QuoteInput = {
   name: 'Maria',

@@ -1,6 +1,6 @@
-import { escapeHtml } from './order-email';
-import type { QuoteInput } from '../utils/wholesale';
-import type { QuoteLine } from '../utils/wholesale-pricing';
+import { escapeHtml } from './order-email.js';
+import type { QuoteInput } from '../utils/wholesale.js';
+import type { QuoteLine } from '../utils/wholesale-pricing.js';
 
 export interface QuoteExtras {
   lines: QuoteLine[];

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { isValidEmail, sendEmail } from './email';
+import { isValidEmail, sendEmail } from './email.js';
 
 const msg = { to: 'cliente@exemplo.com', subject: 'Oi', html: '<p>oi</p>', text: 'oi', idempotencyKey: 'k1' };
 const env = { apiKey: 're_secret', from: 'Loja <pedidos@loja.com.br>' };

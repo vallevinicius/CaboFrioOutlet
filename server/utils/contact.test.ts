@@ -6,7 +6,7 @@ import {
   normalizePlaceId,
   normalizeWhatsapp,
   parseOpeningHours,
-} from './contact';
+} from './contact.js';
 
 describe('normalizeWhatsapp', () => {
   it('formata com DDI 55 e só dígitos', () => {

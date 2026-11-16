@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_EXTRA_IMAGES, normalizeImages } from './product-images';
+import { MAX_EXTRA_IMAGES, normalizeImages } from './product-images.js';
 
 describe('normalizeImages', () => {
   it('ausente vira lista vazia', () => {

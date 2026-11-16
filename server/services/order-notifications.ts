@@ -1,6 +1,6 @@
-import { prisma } from '../db';
-import { sendEmail } from './email';
-import { buildOrderConfirmationEmail } from './order-email';
+import { prisma } from '../db.js';
+import { sendEmail } from './email.js';
+import { buildOrderConfirmationEmail } from './order-email.js';
 
 /**
  * Dispara o e-mail de confirmação. Deve ser chamado só na transição

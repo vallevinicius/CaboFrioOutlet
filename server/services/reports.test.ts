@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ReportOrder, buildLowStock, buildOverview, dayKey, parsePeriod } from './reports';
+import { ReportOrder, buildLowStock, buildOverview, dayKey, parsePeriod } from './reports.js';
 
 const NOW = new Date('2026-11-09T15:00:00Z'); // 12h em Brasília
 const order = (over: Partial<ReportOrder> & { createdAt: Date }): ReportOrder => ({

@@ -1,6 +1,6 @@
-import 'dotenv/config';
+import './env.js';
 import bcrypt from 'bcryptjs';
-import { prisma } from './db';
+import { prisma } from './db.js';
 
 /**
  * Bootstrap mínimo do banco: configurações padrão da loja e o usuário admin.

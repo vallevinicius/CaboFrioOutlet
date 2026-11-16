@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_FAVORITES, normalizeProductIds } from './favorites';
+import { MAX_FAVORITES, normalizeProductIds } from './favorites.js';
 
 describe('normalizeProductIds', () => {
   it('aceita ids no formato cuid, sem repetidos', () => {
