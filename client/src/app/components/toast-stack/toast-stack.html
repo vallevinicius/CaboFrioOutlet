@@ -1,16 +1,33 @@
 <div class="fixed top-4 right-4 z-[100] flex flex-col gap-2 w-[calc(100%-2rem)] max-w-sm">
   @for (toast of infoToasts(); track toast.id) {
-    <div class="animate-toast-in flex items-start gap-3 rounded-sm border border-slate-200 bg-white text-slate-900 px-4 py-3 shadow-xl">
-      <lucide-icon [img]="CircleCheckBig" class="h-5 w-5 flex-shrink-0 text-slate-900 mt-0.5" />
-      <div class="flex-1 min-w-0">
+    <div
+      role="status"
+      class="animate-toast-in flex items-start gap-3 rounded-sm border bg-white px-4 py-3 text-slate-900 shadow-xl"
+      [class]="toast.variant === 'success' ? 'border-emerald-500 border-l-4 shadow-2xl ring-1 ring-emerald-500/20' : 'border-slate-200'"
+    >
+      <lucide-icon
+        [img]="CircleCheckBig"
+        class="mt-0.5 h-5 w-5 flex-shrink-0"
+        [class]="toast.variant === 'success' ? 'text-emerald-600' : 'text-slate-900'"
+      />
+      <div class="min-w-0 flex-1">
         <p class="text-sm font-semibold leading-tight">{{ toast.title }}</p>
         @if (toast.description) {
-          <p class="text-xs text-slate-500 mt-0.5 leading-snug">{{ toast.description }}</p>
+          <p class="mt-0.5 text-xs leading-snug text-slate-500">{{ toast.description }}</p>
+        }
+        @if (toast.actionLabel) {
+          <button
+            type="button"
+            (click)="toastService.runAction(toast.id)"
+            class="mt-2 text-xs font-bold uppercase tracking-wide text-slate-900 underline decoration-accent decoration-2 underline-offset-4 hover:text-emerald-700"
+          >
+            {{ toast.actionLabel }}
+          </button>
         }
       </div>
       <button
         (click)="toastService.dismissToast(toast.id)"
-        class="flex-shrink-0 text-slate-400 hover:text-slate-900 transition-colors"
+        class="flex-shrink-0 text-slate-400 transition-colors hover:text-slate-900"
         aria-label="Fechar notificação"
       >
         <lucide-icon [img]="X" class="h-4 w-4" />

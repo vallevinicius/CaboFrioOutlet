@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
-import { LucideAngularModule, Plus, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, Plus, Check, ChevronRight } from 'lucide-angular';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
@@ -51,6 +51,7 @@ export class ProductPage {
   private lastViewedId = '';
 
   readonly Plus = Plus;
+  readonly Check = Check;
   readonly ChevronRight = ChevronRight;
   readonly formatPrice = formatPrice;
   readonly getDiscountedPrice = getDiscountedPrice;
@@ -151,7 +152,18 @@ export class ProductPage {
     if (!product || !size || !this.canAddToCart()) return;
     this.cartService.addToCart(product, size);
     this.analytics.addToCart(product, size);
-    this.toastService.showToast('Produto adicionado!', `${product.name} (Tam. ${size})`);
+    this.toastService.showAddedToCart(product.name, size, () => this.cartService.openCart());
+    this.flashAdded();
+  }
+
+  /** Mostra "Adicionado!" no botão por um instante, para o clique ter resposta imediata. */
+  justAdded = signal(false);
+  private justAddedTimer: ReturnType<typeof setTimeout> | undefined;
+
+  private flashAdded(): void {
+    clearTimeout(this.justAddedTimer);
+    this.justAdded.set(true);
+    this.justAddedTimer = setTimeout(() => this.justAdded.set(false), 2000);
   }
 
 }

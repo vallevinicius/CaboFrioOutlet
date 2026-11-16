@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { filter, map } from 'rxjs';
@@ -36,6 +36,27 @@ const CORREIOS_TRACKING_URL = 'https://rastreamento.correios.com.br/app/index.ph
   templateUrl: './navbar.html',
 })
 export class Navbar {
+  /** Pulinho no ícone do carrinho quando entra uma peça (feedback do "adicionar"). */
+  cartBump = signal(false);
+  private lastCartCount = 0;
+  private cartBumpTimer: ReturnType<typeof setTimeout> | undefined;
+
+  constructor() {
+    effect(() => {
+      const count = this.cartService.totalItems();
+      if (count > this.lastCartCount) {
+        clearTimeout(this.cartBumpTimer);
+        this.cartBump.set(false);
+        // um tick depois, para a animação reiniciar mesmo em cliques seguidos
+        setTimeout(() => {
+          this.cartBump.set(true);
+          this.cartBumpTimer = setTimeout(() => this.cartBump.set(false), 500);
+        }, 0);
+      }
+      this.lastCartCount = count;
+    });
+  }
+
   cartService = inject(CartService);
   private toastService = inject(ToastService);
   settingsService = inject(SettingsService);

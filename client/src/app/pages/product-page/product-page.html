@@ -131,10 +131,12 @@
           <button
             (click)="handleAddToCart()"
             [disabled]="!canAddToCart()"
+            [class.!bg-emerald-600]="justAdded()"
+            [class.!text-white]="justAdded()"
             class="mt-8 flex items-center justify-center gap-2 rounded-sm bg-accent py-3.5 text-sm font-bold uppercase tracking-wide text-black transition-all duration-300 hover:bg-slate-900 hover:text-white disabled:cursor-not-allowed disabled:border disabled:border-slate-200 disabled:bg-transparent disabled:text-slate-400"
           >
-            <lucide-icon [img]="Plus" class="h-4 w-4" />
-            {{ isOutOfStock() ? 'Esgotado' : 'Adicionar ao Carrinho' }}
+            <lucide-icon [img]="justAdded() ? Check : Plus" class="h-4 w-4" />
+            {{ isOutOfStock() ? 'Esgotado' : justAdded() ? 'Adicionado!' : 'Adicionar ao Carrinho' }}
           </button>
         </div>
       </div>

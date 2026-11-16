@@ -200,9 +200,12 @@
         class="relative flex h-10 w-10 items-center justify-center rounded-sm transition-colors duration-300 hover:bg-slate-100"
         aria-label="Abrir carrinho"
       >
-        <lucide-icon [img]="ShoppingBag" class="h-5 w-5 text-slate-900" />
+        <span class="flex" [class.animate-bump]="cartBump()">
+          <lucide-icon [img]="ShoppingBag" class="h-5 w-5 text-slate-900" />
+        </span>
         @if (cartService.totalItems() > 0) {
           <span
+            [class.animate-bump]="cartBump()"
             class="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-sm bg-accent font-mono text-[9px] font-bold text-black"
           >
             {{ cartService.totalItems() > 9 ? '9+' : cartService.totalItems() }}
