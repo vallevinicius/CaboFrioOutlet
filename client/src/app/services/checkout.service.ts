@@ -15,6 +15,9 @@ export interface ShippingAddressInput {
 export interface CreateOrderInput {
   customerName: string;
   customerContact: string;
+  /** Telefone/WhatsApp e CPF: o servidor usa os do cadastro quando o cliente está logado. */
+  customerPhone: string;
+  customerCpf: string;
   /** Pedido de atacado: o servidor confere o mínimo e define o desconto. */
   wholesale?: boolean;
   items: { productId: string; size: string; quantity: number }[];

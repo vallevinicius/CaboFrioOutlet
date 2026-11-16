@@ -5,6 +5,7 @@ import { ApiService } from '../../../../services/api.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { StatCard } from '../../stat-card/stat-card';
+import { OrderDetails } from '../../order-details/order-details';
 import { STATUS_LABELS, STATUS_STYLES, formatOrderPrice, formatOrderDate } from '../../../../utils/order-format';
 import { AuthService } from '../../../../services/auth.service';
 import { describePaymentFailure } from '../../../../utils/payment-failure';
@@ -15,7 +16,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
 
 @Component({
   selector: 'app-orders-tab',
-  imports: [LucideAngularModule, StatCard],
+  imports: [LucideAngularModule, StatCard, OrderDetails],
   templateUrl: './orders-tab.html',
 })
 export class OrdersTab implements OnInit {

@@ -50,7 +50,7 @@
                 [class]="statusStyles[order.status]"
               >
                 @for (opt of statusOptions; track opt.value) {
-                  <option [value]="opt.value" class="bg-[#1c1608] text-white">{{ opt.label }}</option>
+                  <option [value]="opt.value" [selected]="opt.value === order.status" class="bg-[#1c1608] text-white">{{ opt.label }}</option>
                 }
               </select>
               <lucide-icon [img]="expandedId() === order.id ? ChevronUp : ChevronDown" class="h-4 w-4 text-white/60" />
@@ -68,6 +68,8 @@
                   <span class="block pt-1 text-red-200/80">{{ describePaymentFailure(order.paymentStatusDetail) }}</span>
                 </p>
               }
+              <app-order-details [order]="order" />
+
               <ul class="flex flex-col gap-3">
                 @for (item of order.items; track item.id) {
                   <li class="flex items-center gap-3 text-sm">
@@ -84,6 +86,11 @@
                   </li>
                 }
               </ul>
+              <dl class="mt-4 flex flex-col gap-1 border-t border-white/10 pt-3 text-sm">
+                <div class="flex justify-between text-white/60"><dt>Produtos</dt><dd>{{ formatPrice(order.total - (order.shippingCost || 0)) }}</dd></div>
+                <div class="flex justify-between text-white/60"><dt>Frete</dt><dd>{{ order.shippingCost ? formatPrice(order.shippingCost) : 'Grátis' }}</dd></div>
+                <div class="flex justify-between font-bold text-white"><dt>Total</dt><dd>{{ formatPrice(order.total) }}</dd></div>
+              </dl>
             </div>
           }
         </div>
