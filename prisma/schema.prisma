@@ -137,10 +137,44 @@ model User {
   neighborhood String   @default("")
   city         String   @default("")
   state        String   @default("")
+  /// Pertence à equipe e entra no painel /admin. O que pode fazer vem de `role`.
   isAdmin      Boolean  @default(false)
+  /// Admin supremo: acessa tudo e é o único que gerencia equipe e perfis. Definido só pelo seed.
+  isSuperAdmin Boolean  @default(false)
+  roleId       String?
+  role         Role?    @relation(fields: [roleId], references: [id], onDelete: Restrict)
   createdAt    DateTime @default(now())
   orders       Order[]
   favorites    Favorite[]
+
+  @@index([roleId])
+}
+
+/// Perfil de acesso do painel: define, por tela, se o usuário só vê ou também edita.
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  /// Perfil de sistema ("Administrador"): não pode ser editado nem apagado.
+  system      Boolean          @default(false)
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime         @default(now())
+}
+
+/// Uma linha por tela com acesso. Sem linha = Nenhum.
+model RolePermission {
+  roleId  String
+  /// inicio, banners, produtos, estoque, pedidos, atacado, clientes ou configuracoes
+  section String
+  level   PermissionLevel
+  role    Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, section])
+}
+
+enum PermissionLevel {
+  VIEW
+  EDIT
 }
 
 /// Fotos adicionais do produto (a capa continua em Product.image).
