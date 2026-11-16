@@ -167,6 +167,7 @@ const Order = registry.register(
     shippingService: z.string().nullable(),
     status: OrderStatus,
     paymentStatus: z.string().nullable(),
+    paymentStatusDetail: z.string().nullable().openapi({ description: 'Motivo informado pelo Mercado Pago', example: 'cc_rejected_other_reason' }),
     paymentMethod: z.string().nullable(),
     installments: z.number().int().nullable(),
     isWholesale: z.boolean().openapi({ description: 'Pedido feito pela página de atacado' }),
@@ -497,7 +498,7 @@ doc({ method: 'patch', path: '/api/orders/{id}/status', tag: 'Pedidos', summary:
 
 doc({ method: 'get', path: '/api/checkout/config', tag: 'Checkout', summary: 'Chave pública do Mercado Pago', ok: { schema: z.object({ publicKey: z.string() }), description: 'Chave pública' } });
 doc({ method: 'post', path: '/api/checkout/pay', tag: 'Checkout', summary: 'Paga um pedido pendente', body: PayInput, ok: { schema: PayResult, description: 'Resultado do pagamento' }, errors: [400, 404] });
-doc({ method: 'get', path: '/api/checkout/orders/{id}/status', tag: 'Checkout', summary: 'Status público do pedido (usado no polling do Pix)', params: idParam, ok: { schema: z.object({ id: Id, status: OrderStatus, paymentStatus: z.string().nullable(), total: z.number() }), description: 'Status' }, errors: [404] });
+doc({ method: 'get', path: '/api/checkout/orders/{id}/status', tag: 'Checkout', summary: 'Status público do pedido (usado no polling do Pix)', params: idParam, ok: { schema: z.object({ id: Id, status: OrderStatus, paymentStatus: z.string().nullable(), paymentStatusDetail: z.string().nullable(), total: z.number() }), description: 'Status' }, errors: [404] });
 doc({ method: 'post', path: '/api/checkout/webhook', tag: 'Checkout', summary: 'Notificação do Mercado Pago', body: z.object({ type: z.string().optional(), data: z.object({ id: z.string() }).optional() }), ok: { description: 'Sempre 200 (evita reenvio em loop)' } });
 
 doc({ method: 'post', path: '/api/shipping/calculate', tag: 'Frete', summary: 'Cotação de frete por CEP', body: ShippingCalculateInput, ok: { schema: ShippingOptions, description: 'Opções de frete' }, errors: [400] });
