@@ -2,7 +2,7 @@
 
 # Cabo Frio Outlet
 
-**E-commerce for an urban apparel store: Angular storefront, Express API, Mercado Pago and Melhor Envio.**
+**Online store of Cabo Frio Outlet: Angular storefront, Express API, Mercado Pago and Melhor Envio.**
 
 🇧🇷 [Leia em português](README.pt-BR.md)
 
