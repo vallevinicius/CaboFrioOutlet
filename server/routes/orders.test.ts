@@ -2,7 +2,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers.js';
+import { FULL_EDIT, appWith, mockAccess, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -30,6 +30,7 @@ const product = { id: 'p1', name: 'Camisa', price: 100, discountPercent: 10, ima
 
 beforeEach(() => {
   mockReset(prisma());
+  mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
   prisma().$transaction.mockImplementation((async (cb: (tx: unknown) => unknown) => cb(prisma())) as never);
   prisma().settings.upsert.mockResolvedValue({ id: 1, freeShippingThreshold: 299, shippingFee: 19.9, wholesaleMinPieces: 10, wholesaleTiers: null } as never);
 });

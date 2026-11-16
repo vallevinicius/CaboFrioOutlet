@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import type { StaffAccess } from '../services/access.js';
 
 const JWT_SECRET_ENV = process.env.JWT_SECRET;
 
@@ -18,11 +19,13 @@ declare global {
   namespace Express {
     interface Request {
       user?: AuthTokenPayload;
+      /** Preenchido pelos middlewares de permissão (lido do banco na requisição). */
+      access?: StaffAccess;
     }
   }
 }
 
-function readToken(req: Request): AuthTokenPayload | null {
+export function readToken(req: Request): AuthTokenPayload | null {
   const header = req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) return null;
@@ -47,18 +50,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
   const payload = readToken(req);
   if (payload) req.user = payload;
-  next();
-}
-
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const payload = readToken(req);
-  if (!payload) {
-    return res.status(401).json({ error: 'Autenticação necessária.' });
-  }
-  if (!payload.isAdmin) {
-    return res.status(403).json({ error: 'Acesso restrito ao administrador.' });
-  }
-  req.user = payload;
   next();
 }
 

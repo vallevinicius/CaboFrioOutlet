@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { prisma } from '../db.js';
-import { requireAdmin } from '../middleware/auth.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { buildLowStock, buildOverview, parsePeriod } from '../services/reports.js';
 
 export const reportsRouter = Router();
 
 // Dados de venda e estoque: só administradores.
-reportsRouter.get('/overview', requireAdmin, async (req, res) => {
+reportsRouter.get('/overview', requirePermission('inicio', 'view'), async (req, res) => {
   const days = parsePeriod(req.query.days);
   const since = new Date(Date.now() - (days + 1) * 24 * 60 * 60 * 1000);
 

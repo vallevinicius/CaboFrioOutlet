@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
-import { requireAdmin, requireAuth, optionalAuth } from '../middleware/auth.js';
+import { requireAuth, optionalAuth } from '../middleware/auth.js';
 import { expireStaleOrders } from '../services/stock.js';
 import { calculateShippingOptions, ShippingPackageInput } from '../services/melhor-envio.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { discountedUnitPrice, parseTiers, tierFor } from '../utils/wholesale-pricing.js';
 
 export const ordersRouter = Router();
@@ -26,7 +27,7 @@ interface ShippingAddressInput {
 
 const VALID_STATUSES = ['pendente', 'confirmado', 'enviado', 'entregue', 'cancelado'];
 
-ordersRouter.get('/', requireAdmin, async (_req, res) => {
+ordersRouter.get('/', requirePermission('pedidos', 'view'), async (_req, res) => {
   await expireStaleOrders();
   const orders = await prisma.order.findMany({
     include: { items: true },
@@ -204,7 +205,7 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
   }
 });
 
-ordersRouter.patch('/:id/status', requireAdmin, async (req, res) => {
+ordersRouter.patch('/:id/status', requirePermission('pedidos', 'edit'), async (req, res) => {
   const id = req.params.id as string;
   const { status } = req.body as { status?: string };
 

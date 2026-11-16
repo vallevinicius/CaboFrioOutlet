@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Prisma, Product, ProductImage, ProductSize } from '@prisma/client';
 import { prisma } from '../db.js';
-import { requireAdmin } from '../middleware/auth.js';
+import { requireAnyPermission, requirePermission } from '../middleware/permissions.js';
 import { normalizeImages } from '../utils/product-images.js';
 
 export const productsRouter = Router();
@@ -72,7 +72,7 @@ productsRouter.get('/', async (_req, res) => {
   res.json(products.map(serializeProduct));
 });
 
-productsRouter.post('/', requireAdmin, async (req, res) => {
+productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res) => {
   if (!validatePayload(req.body)) {
     return res.status(400).json({ error: 'Dados do produto inválidos.' });
   }
@@ -103,7 +103,7 @@ productsRouter.post('/', requireAdmin, async (req, res) => {
   res.status(201).json(serializeProduct(product));
 });
 
-productsRouter.put('/:id', requireAdmin, async (req, res) => {
+productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, res) => {
   if (!validatePayload(req.body)) {
     return res.status(400).json({ error: 'Dados do produto inválidos.' });
   }
@@ -151,7 +151,7 @@ productsRouter.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-productsRouter.put('/:id/stock', requireAdmin, async (req, res) => {
+productsRouter.put('/:id/stock', requireAnyPermission(['estoque', 'edit'], ['produtos', 'edit']), async (req, res) => {
   const id = req.params.id as string;
   const { size, quantity } = req.body as { size?: string; quantity?: number };
 
@@ -175,7 +175,7 @@ productsRouter.put('/:id/stock', requireAdmin, async (req, res) => {
   }
 });
 
-productsRouter.delete('/:id', requireAdmin, async (req, res) => {
+productsRouter.delete('/:id', requirePermission('produtos', 'edit'), async (req, res) => {
   const id = req.params.id as string;
   try {
     await prisma.product.delete({ where: { id } });

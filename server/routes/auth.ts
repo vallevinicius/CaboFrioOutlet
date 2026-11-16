@@ -4,7 +4,8 @@ import jwt from 'jsonwebtoken';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { requireAuth, JWT_SECRET } from '../middleware/auth.js';
-import { isValidCpf, normalizeCpf } from '../utils/cpf.js';
+import { loadAccess } from '../services/access.js';
+import { isValidCpf, normalizeCpf, publicCpf } from '../utils/cpf.js';
 
 export const authRouter = Router();
 
@@ -32,7 +33,15 @@ function serializeUser(user: {
   createdAt: Date;
 }) {
   const { passwordHash: _drop, ...rest } = user as typeof user & { passwordHash?: string };
-  return rest;
+  return { ...rest, cpf: publicCpf(rest.cpf) };
+}
+
+type SerializableUser = Parameters<typeof serializeUser>[0] & { id: string };
+
+/** Usuário para o front, com o que ele pode fazer no painel (lido do banco agora). */
+async function userWithAccess(user: SerializableUser) {
+  const access = await loadAccess(user.id);
+  return { ...serializeUser(user), isSuperAdmin: access?.isSuperAdmin ?? false, permissions: access?.permissions ?? {} };
 }
 
 interface RegisterPayload {
@@ -101,7 +110,7 @@ authRouter.post('/register', async (req, res) => {
       },
     });
     const token = issueToken(user);
-    res.status(201).json({ token, user: serializeUser(user) });
+    res.status(201).json({ token, user: { ...serializeUser(user), isSuperAdmin: false, permissions: {} } });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const rawTarget = err.meta?.target;
@@ -132,7 +141,7 @@ authRouter.post('/login', async (req, res) => {
   }
 
   const token = issueToken(user);
-  res.json({ token, user: serializeUser(user) });
+  res.json({ token, user: await userWithAccess(user) });
 });
 
 authRouter.get('/me', requireAuth, async (req, res) => {
@@ -140,7 +149,7 @@ authRouter.get('/me', requireAuth, async (req, res) => {
   if (!user) {
     return res.status(401).json({ error: 'Sessão inválida ou expirada.' });
   }
-  res.json({ user: serializeUser(user) });
+  res.json({ user: await userWithAccess(user) });
 });
 
 interface UpdateMePayload {
@@ -196,7 +205,7 @@ authRouter.put('/me', requireAuth, async (req, res) => {
         state,
       },
     });
-    res.json({ user: serializeUser(user) });
+    res.json({ user: await userWithAccess(user) });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       return res.status(409).json({ error: 'Já existe uma conta com esse e-mail.' });

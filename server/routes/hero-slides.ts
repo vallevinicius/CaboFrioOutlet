@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
+import { requirePermission } from '../middleware/permissions.js';
 import { prisma } from '../db.js';
-import { requireAdmin } from '../middleware/auth.js';
 
 export const heroSlidesRouter = Router();
 
@@ -24,7 +24,7 @@ heroSlidesRouter.get('/', async (_req, res) => {
   res.json(slides);
 });
 
-heroSlidesRouter.post('/', requireAdmin, async (req, res) => {
+heroSlidesRouter.post('/', requirePermission('banners', 'edit'), async (req, res) => {
   if (!validatePayload(req.body)) {
     return res.status(400).json({ error: 'Informe ao menos a imagem e o título.' });
   }
@@ -45,7 +45,7 @@ heroSlidesRouter.post('/', requireAdmin, async (req, res) => {
   res.status(201).json(slide);
 });
 
-heroSlidesRouter.put('/:id', requireAdmin, async (req, res) => {
+heroSlidesRouter.put('/:id', requirePermission('banners', 'edit'), async (req, res) => {
   if (!validatePayload(req.body)) {
     return res.status(400).json({ error: 'Informe ao menos a imagem e o título.' });
   }
@@ -73,7 +73,7 @@ heroSlidesRouter.put('/:id', requireAdmin, async (req, res) => {
   }
 });
 
-heroSlidesRouter.patch('/:id/move', requireAdmin, async (req, res) => {
+heroSlidesRouter.patch('/:id/move', requirePermission('banners', 'edit'), async (req, res) => {
   const id = req.params.id as string;
   const { direction } = req.body as { direction?: 'up' | 'down' };
   if (direction !== 'up' && direction !== 'down') {
@@ -102,7 +102,7 @@ heroSlidesRouter.patch('/:id/move', requireAdmin, async (req, res) => {
   res.json(updated);
 });
 
-heroSlidesRouter.delete('/:id', requireAdmin, async (req, res) => {
+heroSlidesRouter.delete('/:id', requirePermission('banners', 'edit'), async (req, res) => {
   const id = req.params.id as string;
   try {
     await prisma.heroSlide.delete({ where: { id } });

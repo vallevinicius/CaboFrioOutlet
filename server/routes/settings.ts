@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { prisma } from '../db.js';
-import { requireAdmin } from '../middleware/auth.js';
 import {
   normalizeEmail,
   normalizeOpeningHours,
@@ -20,6 +19,7 @@ import {
 
 import { normalizeGaId, normalizeMetaPixelId } from '../utils/analytics.js';
 import { normalizeTiers, parseTiers } from '../utils/wholesale-pricing.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { DEFAULT_WHOLESALE_NOTES, normalizeMinPieces, normalizeWholesaleNotes } from '../utils/wholesale.js';
 
 export const settingsRouter = Router();
@@ -88,7 +88,7 @@ settingsRouter.get('/', async (_req, res) => {
   res.json(serialize(settings));
 });
 
-settingsRouter.put('/', requireAdmin, async (req, res) => {
+settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, res) => {
   const {
     storeName,
     freeShippingThreshold,

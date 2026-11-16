@@ -1,16 +1,16 @@
 import type { Express } from 'express';
 import swaggerUi from 'swagger-ui-express';
-import { requireAdmin } from '../middleware/auth.js';
+import { requireSuperAdmin } from '../middleware/permissions.js';
 import { buildOpenApiDocument } from './spec.js';
 
 /**
  * Fora de produção: Swagger UI em /api/docs e o JSON em /api/docs.json.
- * Em produção a interface não é montada e o JSON só é entregue a administradores.
+ * Em produção a interface não é montada e o JSON só é entregue ao admin supremo.
  */
 export function mountApiDocs(app: Express, nodeEnv: string | undefined): void {
   const document = buildOpenApiDocument();
   if (nodeEnv === 'production') {
-    app.get('/api/docs.json', requireAdmin, (_req, res) => res.json(document));
+    app.get('/api/docs.json', requireSuperAdmin, (_req, res) => res.json(document));
     return;
   }
   app.get('/api/docs.json', (_req, res) => res.json(document));

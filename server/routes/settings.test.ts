@@ -2,7 +2,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers.js';
+import { FULL_EDIT, appWith, mockAccess, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -42,6 +42,7 @@ const row = {
 
 beforeEach(() => {
   mockReset(prisma());
+  mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
   prisma().settings.upsert.mockResolvedValue(row as never);
 });
 

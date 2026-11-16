@@ -1,9 +1,9 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
-import { requireAdmin } from '../middleware/auth.js';
 import { notifyWholesaleQuote } from '../services/wholesale-notifications.js';
 import { isHoneypotFilled, validateQuote } from '../utils/wholesale.js';
+import { requirePermission } from '../middleware/permissions.js';
 import { parseTiers, priceWholesaleItems, QuoteLine } from '../utils/wholesale-pricing.js';
 
 export const wholesaleRouter = Router();
@@ -89,7 +89,7 @@ wholesaleRouter.post('/quotes', async (req, res) => {
 });
 
 // Dados pessoais de clientes: só administradores.
-wholesaleRouter.get('/quotes', requireAdmin, async (_req, res) => {
+wholesaleRouter.get('/quotes', requirePermission('atacado', 'view'), async (_req, res) => {
   const quotes = await prisma.wholesaleQuote.findMany({
     orderBy: [{ handled: 'asc' }, { createdAt: 'desc' }],
     take: 200,
@@ -97,7 +97,7 @@ wholesaleRouter.get('/quotes', requireAdmin, async (_req, res) => {
   res.json(quotes.map(serialize));
 });
 
-wholesaleRouter.patch('/quotes/:id', requireAdmin, async (req, res) => {
+wholesaleRouter.patch('/quotes/:id', requirePermission('atacado', 'edit'), async (req, res) => {
   const { handled } = req.body as { handled?: unknown };
   if (typeof handled !== 'boolean') return res.status(400).json({ error: 'Informe handled como true ou false.' });
   try {
