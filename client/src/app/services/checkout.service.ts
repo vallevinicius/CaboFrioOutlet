@@ -52,6 +52,8 @@ export interface OrderStatusResult {
   id: string;
   status: string;
   paymentStatus: string | null;
+  /** Motivo informado pelo Mercado Pago (ex.: cc_rejected_other_reason). */
+  paymentStatusDetail?: string | null;
   total: number;
 }
 

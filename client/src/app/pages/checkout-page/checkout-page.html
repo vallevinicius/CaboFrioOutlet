@@ -274,7 +274,7 @@
                 Pagamento não aprovado
               </h1>
               <p class="mb-6 text-sm text-slate-500">
-                Seu pagamento foi recusado. Verifique os dados do cartão ou tente outro método de pagamento.
+                {{ failureMessage() }}
               </p>
               <button
                 type="button"

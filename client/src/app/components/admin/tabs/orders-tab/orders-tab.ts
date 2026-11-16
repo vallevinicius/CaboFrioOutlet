@@ -7,6 +7,7 @@ import { ApiError } from '../../../../services/api-error';
 import { StatCard } from '../../stat-card/stat-card';
 import { STATUS_LABELS, STATUS_STYLES, formatOrderPrice, formatOrderDate } from '../../../../utils/order-format';
 import { AuthService } from '../../../../services/auth.service';
+import { describePaymentFailure } from '../../../../utils/payment-failure';
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
   Object.entries(STATUS_LABELS) as [OrderStatus, string][]
@@ -18,6 +19,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
   templateUrl: './orders-tab.html',
 })
 export class OrdersTab implements OnInit {
+  readonly describePaymentFailure = describePaymentFailure;
   private auth = inject(AuthService);
   /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
   readonly canEdit = computed(() => this.auth.can('pedidos', 'edit'));
