@@ -1,0 +1,159 @@
+<div class="flex flex-col gap-10">
+  <div>
+    <h1 class="text-2xl font-black tracking-tight text-white">Equipe e perfis</h1>
+    <p class="mt-1 text-sm text-white/60">
+      Crie usuários para a equipe e defina, por perfil, o que cada um pode ver ou editar no painel.
+    </p>
+  </div>
+
+  <section aria-labelledby="staff-title">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <h2 id="staff-title" class="text-lg font-bold tracking-tight text-white">Usuários da equipe</h2>
+      <button
+        type="button"
+        (click)="openNew()"
+        class="flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-xs font-bold uppercase tracking-wide text-black transition-colors hover:bg-accent-hover"
+      >
+        <lucide-icon [img]="Plus" class="h-4 w-4" />
+        Novo usuário
+      </button>
+    </div>
+
+    @if (loading()) {
+      <p class="py-10 text-center text-sm text-white/60">Carregando equipe...</p>
+    } @else {
+      <ul class="flex flex-col gap-3">
+        @for (member of members(); track member.id) {
+          <li class="glass flex items-center gap-3 p-4">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-bold text-white">{{ member.name }}</p>
+              <p class="truncate text-xs text-white/60">{{ member.email }}</p>
+            </div>
+            @if (member.isSuperAdmin) {
+              <span class="flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-[11px] font-bold uppercase text-black">
+                <lucide-icon [img]="ShieldCheck" class="h-3.5 w-3.5" /> Supremo
+              </span>
+            } @else {
+              <span class="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold uppercase text-white/80">
+                {{ member.role?.name ?? 'Sem perfil' }}
+              </span>
+              <div class="flex shrink-0 gap-1">
+                <button
+                  type="button"
+                  (click)="openEdit(member)"
+                  [attr.aria-label]="'Editar ' + member.name"
+                  class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+                >
+                  <lucide-icon [img]="Pencil" class="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  (click)="removeAccess(member)"
+                  [attr.aria-label]="'Remover o acesso de ' + member.name"
+                  class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-red-500/15 hover:text-red-300"
+                >
+                  <lucide-icon [img]="UserMinus" class="h-4 w-4" />
+                </button>
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+
+    @if (editingId() !== null) {
+      <form (submit)="save($event)" class="glass mt-4 flex max-w-xl flex-col gap-4 p-5">
+        <h3 class="text-sm font-bold text-white">{{ editingId() === '' ? 'Novo usuário da equipe' : 'Editar usuário' }}</h3>
+
+        <div>
+          <label for="staff-name" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Nome</label>
+          <input
+            id="staff-name"
+            type="text"
+            required
+            maxlength="80"
+            [value]="name()"
+            (input)="name.set($any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="staff-email" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">E-mail (é o login)</label>
+          <input
+            id="staff-email"
+            type="email"
+            required
+            autocomplete="off"
+            [disabled]="editingId() !== ''"
+            [value]="email()"
+            (input)="email.set($any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none disabled:opacity-60"
+          />
+        </div>
+
+        <div>
+          <label for="staff-password" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
+            {{ editingId() === '' ? 'Senha provisória (mín. 8 caracteres)' : 'Nova senha (deixe em branco para manter)' }}
+          </label>
+          <div class="relative">
+            <input
+              id="staff-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="new-password"
+              [required]="editingId() === ''"
+              minlength="8"
+              maxlength="72"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              class="w-full rounded-lg border border-white/25 bg-white/10 py-2.5 pl-4 pr-11 text-sm text-white focus:border-accent focus:outline-none"
+            />
+            <button
+              type="button"
+              (click)="showPassword.set(!showPassword())"
+              [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+              [attr.aria-pressed]="showPassword()"
+              class="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-white/60 hover:text-white"
+            >
+              <lucide-icon [img]="showPassword() ? EyeOff : Eye" class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="staff-role" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Perfil de acesso</label>
+          <select
+            id="staff-role"
+            required
+            [value]="roleId()"
+            (change)="roleId.set($any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
+          >
+            @for (role of roles(); track role.id) {
+              <option [value]="role.id" [selected]="role.id === roleId()" class="bg-[#1c1608] text-white">{{ role.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="saving()"
+            class="rounded-full bg-accent px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-black hover:bg-accent-hover disabled:opacity-60"
+          >
+            {{ saving() ? 'Salvando...' : 'Salvar' }}
+          </button>
+          <button
+            type="button"
+            (click)="close()"
+            class="rounded-full border border-white/25 px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-white hover:border-white"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+
+  <app-roles-panel [roles]="roles()" (changed)="reload()" />
+</div>

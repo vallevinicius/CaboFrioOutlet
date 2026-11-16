@@ -6,6 +6,7 @@ import { Component, OnInit, input, signal } from '@angular/core';
 })
 export class StockInput implements OnInit {
   value = input.required<number>();
+  disabled = input(false);
   onCommit = input.required<(quantity: number) => Promise<void>>();
 
   draft = signal('');

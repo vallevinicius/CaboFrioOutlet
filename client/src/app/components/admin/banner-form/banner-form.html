@@ -1,10 +1,10 @@
-<div class="fixed inset-0 z-[60] bg-slate-900/40" (click)="formClose.emit()" aria-hidden="true"></div>
-<aside class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg animate-slide-in flex-col overflow-y-auto border-l border-slate-200 bg-white">
-  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-    <h2 class="text-base font-bold text-slate-900">{{ isEditing() ? 'Editar Banner' : 'Novo Banner' }}</h2>
+<div class="fixed inset-0 z-[60] bg-black/60" (click)="formClose.emit()" aria-hidden="true"></div>
+<aside class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg animate-slide-in flex-col overflow-y-auto border-l border-white/15 glass">
+  <div class="flex items-center justify-between border-b border-white/15 px-6 py-4">
+    <h2 class="text-base font-bold text-white">{{ isEditing() ? 'Editar Banner' : 'Novo Banner' }}</h2>
     <button
       (click)="formClose.emit()"
-      class="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900"
+      class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors duration-300 hover:bg-white/10 hover:text-white"
       aria-label="Fechar"
     >
       <lucide-icon [img]="X" class="h-5 w-5" />
@@ -13,18 +13,18 @@
 
   <form (submit)="handleSubmit($event)" class="flex flex-1 flex-col gap-5 px-6 py-6">
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Imagem de fundo
       </label>
       <div class="flex items-center gap-4">
-        <div class="flex h-24 w-40 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-900">
+        <div class="flex h-24 w-40 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-accent">
           @if (image()) {
             <img [src]="image()" alt="" class="h-full w-full object-cover opacity-70" />
           } @else {
-            <lucide-icon [img]="Upload" class="h-5 w-5 text-slate-500" />
+            <lucide-icon [img]="Upload" class="h-5 w-5 text-white/60" />
           }
         </div>
-        <label class="flex cursor-pointer items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:border-slate-900">
+        <label class="flex cursor-pointer items-center justify-center rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent">
           {{ uploading() ? 'Processando...' : image() ? 'Trocar foto' : 'Enviar foto' }}
           <input
             type="file"
@@ -35,47 +35,47 @@
           />
         </label>
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         A foto aparece ao lado do texto, em formato vertical. Use fotos verticais ou quadradas com pelo menos 1400px de altura; fotos horizontais são cortadas nas laterais.
       </p>
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Selo (opcional)
       </label>
       <input
         [value]="eyebrow()"
         (input)="eyebrow.set($any($event.target).value)"
         placeholder="Ex: Nova Coleção"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Título</label>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Título</label>
       <input
         [value]="title()"
         (input)="title.set($any($event.target).value)"
         placeholder="Ex: Estilo urbano que fala mais alto que"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Destaque do título (opcional, vem em amarelo)
       </label>
       <input
         [value]="highlight()"
         (input)="highlight.set($any($event.target).value)"
         placeholder="Ex: palavras."
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Texto de apoio (opcional)
       </label>
       <textarea
@@ -83,40 +83,40 @@
         (input)="subtitle.set($any($event.target).value)"
         rows="3"
         placeholder="Frase curta abaixo do título..."
-        class="w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full resize-none rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       ></textarea>
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Texto do botão
       </label>
       <input
         [value]="ctaLabel()"
         (input)="ctaLabel.set($any($event.target).value)"
         placeholder="Ver Coleção"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         O botão sempre leva para a lista de produtos.
       </p>
     </div>
 
     @if (error()) {
-      <p class="text-xs font-medium text-red-500">{{ error() }}</p>
+      <p class="text-xs font-medium text-red-400">{{ error() }}</p>
     }
 
     <div class="flex gap-3 pt-2">
       <button
         type="button"
         (click)="formClose.emit()"
-        class="flex-1 rounded-full border border-slate-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:border-slate-900"
+        class="flex-1 rounded-full border border-white/25 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent"
       >
         Cancelar
       </button>
       <button
         type="submit"
-        class="flex-1 rounded-full bg-yellow-400 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+        class="flex-1 rounded-full bg-yellow-400 py-3 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-accent hover:text-black"
       >
         {{ isEditing() ? 'Salvar alterações' : 'Adicionar banner' }}
       </button>

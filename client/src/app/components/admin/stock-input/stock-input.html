@@ -2,9 +2,9 @@
   type="number"
   min="0"
   [value]="draft()"
-  [disabled]="saving()"
+  [disabled]="saving() || disabled()"
   (input)="onDraftChange($any($event.target).value)"
   (blur)="commit()"
   (keydown)="onKeydown($event)"
-  class="w-12 rounded-full bg-slate-100 px-1.5 py-0.5 text-center text-slate-900 focus:outline-none disabled:opacity-50"
+  class="w-12 rounded-full bg-white/10 px-1.5 py-0.5 text-center text-white focus:outline-none disabled:opacity-50"
 />

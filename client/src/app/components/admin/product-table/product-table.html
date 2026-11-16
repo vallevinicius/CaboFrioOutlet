@@ -1,12 +1,12 @@
 @if (products().length === 0) {
-  <div class="rounded-2xl border border-dashed border-slate-300 py-20 text-center">
-    <p class="text-sm font-medium text-slate-500">Nenhum produto cadastrado ainda.</p>
+  <div class="rounded-2xl border border-dashed border-white/25 py-20 text-center">
+    <p class="text-sm font-medium text-white/60">Nenhum produto cadastrado ainda.</p>
   </div>
 } @else {
-  <div class="overflow-x-auto rounded-2xl border border-slate-200">
+  <div class="overflow-x-auto rounded-2xl border border-white/15">
     <table class="w-full min-w-[720px] text-left text-sm">
       <thead>
-        <tr class="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+        <tr class="border-b border-white/15 text-xs uppercase tracking-wider text-white/60">
           <th class="px-4 py-3 font-semibold">Produto</th>
           <th class="px-4 py-3 font-semibold">Categoria</th>
           <th class="px-4 py-3 font-semibold">Preço</th>
@@ -17,47 +17,49 @@
       </thead>
       <tbody>
         @for (product of products(); track product.id) {
-          <tr class="border-b border-slate-100 last:border-0">
+          <tr class="border-b border-white/10 last:border-0">
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
                 <img [src]="product.image" alt="" class="h-12 w-10 flex-shrink-0 rounded-md object-cover" />
-                <span class="font-semibold text-slate-900">{{ product.name }}</span>
+                <span class="font-semibold text-white">{{ product.name }}</span>
               </div>
             </td>
-            <td class="px-4 py-3 capitalize text-slate-500">{{ product.category }}</td>
-            <td class="px-4 py-3 text-slate-900">{{ formatPrice(product.price) }}</td>
-            <td class="px-4 py-3 text-slate-500">{{ product.sizes.join(', ') }}</td>
+            <td class="px-4 py-3 capitalize text-white/60">{{ product.category }}</td>
+            <td class="px-4 py-3 text-white">{{ formatPrice(product.price) }}</td>
+            <td class="px-4 py-3 text-white/60">{{ product.sizes.join(', ') }}</td>
             <td class="px-4 py-3">
               <div class="flex gap-1.5">
                 @if (product.isNew) {
-                  <span class="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-bold uppercase text-white">
+                  <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase text-black">
                     Novo
                   </span>
                 }
                 @if (product.discountPercent) {
-                  <span class="rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-900">
+                  <span class="rounded-full bg-yellow-400 px-2 py-0.5 text-[10px] font-bold uppercase text-black">
                     -{{ product.discountPercent }}%
                   </span>
                 }
               </div>
             </td>
             <td class="px-4 py-3">
+              @if (!readOnly()) {
               <div class="flex justify-end gap-1.5">
                 <button
                   (click)="edit.emit(product)"
                   [attr.aria-label]="'Editar ' + product.name"
-                  class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900"
+                  class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition-colors duration-300 hover:bg-white/10 hover:text-white"
                 >
                   <lucide-icon [img]="Pencil" class="h-4 w-4" />
                 </button>
                 <button
                   (click)="delete.emit(product)"
                   [attr.aria-label]="'Excluir ' + product.name"
-                  class="flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-red-50 hover:text-red-500"
+                  class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 transition-colors duration-300 hover:bg-red-500/15 hover:text-red-300"
                 >
                   <lucide-icon [img]="Trash2" class="h-4 w-4" />
                 </button>
               </div>
+              }
             </td>
           </tr>
         }

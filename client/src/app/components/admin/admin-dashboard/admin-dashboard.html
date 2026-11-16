@@ -1,61 +1,122 @@
-<div class="min-h-screen bg-white">
-  <header class="border-b border-slate-200">
-    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
-      <div class="flex items-center gap-2.5 text-slate-900">
-        <span class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-300 text-[11px] font-black tracking-tight">
-          {{ storeInitials(settingsService.settings().storeName) }}
-        </span>
-        <div>
-          <p class="text-sm font-black leading-none tracking-tighter">
-            {{ wordmark().lead ? wordmark().lead + ' ' : '' }}
-            <span class="bg-accent px-1 text-black">{{ wordmark().accent }}</span>
-          </p>
-          <p class="mt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Painel Admin</p>
-        </div>
-      </div>
+<div class="admin-bg flex min-h-screen">
+  @if (menuOpen()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-30 bg-black/60 lg:hidden"
+      aria-label="Fechar menu"
+      (click)="menuOpen.set(false)"
+    ></button>
+  }
 
-      <div class="flex items-center gap-2">
-        <a
-          routerLink="/"
-          class="rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:border-slate-900"
-        >
-          Ver loja
-        </a>
-        <button
-          (click)="logout()"
-          aria-label="Sair"
-          class="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900"
-        >
-          <lucide-icon [img]="LogOut" class="h-4 w-4" />
-        </button>
+  <aside
+    class="glass fixed inset-y-3 left-3 z-40 flex w-64 flex-col gap-1 p-3 transition-transform duration-300 lg:sticky lg:top-3 lg:h-[calc(100vh-1.5rem)] lg:translate-x-0"
+    [class.-translate-x-[120%]]="!menuOpen()"
+  >
+    <div class="flex items-center gap-2.5 px-2 pb-4 pt-2">
+      <span class="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 text-[11px] font-black tracking-tight">
+        {{ storeInitials(settingsService.settings().storeName) }}
+      </span>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-black leading-none tracking-tighter">
+          {{ wordmark().lead ? wordmark().lead + ' ' : '' }}
+          <span class="bg-accent px-1 text-black">{{ wordmark().accent }}</span>
+        </p>
+        <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">Painel Admin</p>
       </div>
+      <button
+        type="button"
+        class="ml-auto flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-white/10 lg:hidden"
+        aria-label="Fechar menu"
+        (click)="menuOpen.set(false)"
+      >
+        <lucide-icon [img]="CloseIcon" class="h-4 w-4" />
+      </button>
     </div>
 
-    <div class="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-4 sm:px-6 lg:px-8">
-      @for (tab of tabs; track tab.key) {
+    <nav aria-label="Menu do painel" class="flex flex-1 flex-col gap-0.5 overflow-y-auto">
+      @for (tab of visibleTabs(); track tab.key) {
         <button
-          (click)="activeTab.set(tab.key)"
-          class="flex-shrink-0 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors duration-300"
-          [class]="activeTab() === tab.key
-            ? 'bg-slate-900 text-white'
-            : 'border border-slate-300 text-slate-500 hover:border-slate-900 hover:text-slate-900'"
+          type="button"
+          class="glass-item"
+          [attr.aria-current]="activeTab() === tab.key ? 'page' : null"
+          (click)="select(tab.key)"
         >
+          <lucide-icon [img]="tab.icon" class="h-4 w-4" />
           {{ tab.label }}
         </button>
       }
-    </div>
-  </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-    @switch (activeTab()) {
-      @case ('inicio') { <app-overview-tab (goToStock)="activeTab.set('estoque')" /> }
-      @case ('banners') { <app-banners-tab /> }
-      @case ('produtos') { <app-products-tab /> }
-      @case ('estoque') { <app-stock-tab /> }
-      @case ('pedidos') { <app-orders-tab /> }
-      @case ('atacado') { <app-wholesale-tab /> }
-      @case ('clientes') { <app-customers-tab /> }
-      @case ('configuracoes') { <app-settings-tab /> }
-    }
-  </main>
+      @if (isSuperAdmin()) {
+        <p class="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">Administração</p>
+        <button
+          type="button"
+          class="glass-item"
+          [attr.aria-current]="activeTab() === 'equipe' ? 'page' : null"
+          (click)="select('equipe')"
+        >
+          <lucide-icon [img]="teamTab.icon" class="h-4 w-4" />
+          {{ teamTab.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="mt-2 flex items-center gap-2.5 rounded-xl bg-white/10 p-2.5">
+      <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-black text-black">
+        {{ (user()?.name ?? '?').charAt(0).toUpperCase() }}
+      </span>
+      <div class="min-w-0 flex-1">
+        <p class="truncate text-xs font-bold">{{ user()?.name }}</p>
+        <p class="truncate text-[10px] text-white/50">{{ roleLabel() }}</p>
+      </div>
+      <button
+        type="button"
+        (click)="logout()"
+        aria-label="Sair"
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+      >
+        <lucide-icon [img]="LogOut" class="h-4 w-4" />
+      </button>
+    </div>
+  </aside>
+
+  <div class="flex min-w-0 flex-1 flex-col gap-3 p-3 lg:pl-4">
+    <header class="glass flex items-center justify-between gap-3 px-4 py-3">
+      <button
+        type="button"
+        class="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10 lg:hidden"
+        aria-label="Abrir menu"
+        (click)="menuOpen.set(true)"
+      >
+        <lucide-icon [img]="MenuIcon" class="h-5 w-5" />
+      </button>
+      <h1 class="text-base font-bold tracking-tight">Painel da loja</h1>
+      <a
+        routerLink="/"
+        class="ml-auto flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide transition-colors hover:border-accent hover:text-accent"
+      >
+        Ver loja
+        <lucide-icon [img]="ExternalLink" class="h-3.5 w-3.5" />
+      </a>
+    </header>
+
+    <main class="min-w-0 flex-1 px-1 py-4 sm:px-3">
+      @switch (activeTab()) {
+        @case ('inicio') { <app-overview-tab (goToStock)="select('estoque')" /> }
+        @case ('banners') { <app-banners-tab /> }
+        @case ('produtos') { <app-products-tab /> }
+        @case ('estoque') { <app-stock-tab /> }
+        @case ('pedidos') { <app-orders-tab /> }
+        @case ('atacado') { <app-wholesale-tab /> }
+        @case ('clientes') { <app-customers-tab /> }
+        @case ('configuracoes') { <app-settings-tab /> }
+        @case ('equipe') { <app-staff-tab /> }
+        @default {
+          <div class="glass mx-auto mt-10 max-w-md p-8 text-center">
+            <p class="text-sm font-bold">Seu perfil ainda não tem acesso a nenhuma tela.</p>
+            <p class="mt-2 text-xs text-white/60">Peça ao administrador para liberar as telas que você precisa.</p>
+          </div>
+        }
+      }
+    </main>
+  </div>
 </div>

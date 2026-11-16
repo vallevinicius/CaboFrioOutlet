@@ -1,59 +1,64 @@
 <div>
   <div class="mb-8">
-    <h1 class="text-2xl font-black tracking-tight text-slate-900">Configurações</h1>
-    <p class="mt-1 text-sm text-slate-500">Ajustes gerais da loja.</p>
+    <h1 class="text-2xl font-black tracking-tight text-white">Configurações</h1>
+    <p class="mt-1 text-sm text-white/60">Ajustes gerais da loja.</p>
   </div>
 
+  @if (!canEdit()) {
+    <p class="mb-4 max-w-xl rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-xs text-white/70">Somente leitura: seu perfil pode ver as configurações, mas não alterá-las.</p>
+  }
+
   <form (submit)="handleSubmit($event)" class="flex max-w-xl flex-col gap-6">
+  <fieldset class="contents" [disabled]="!canEdit()">
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Nome da loja
       </label>
       <input
         [value]="storeName()"
         (input)="storeName.set($any($event.target).value)"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
       />
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Aparece na navbar, rodapé, aba do navegador e no painel admin.
       </p>
     </div>
 
     <div class="flex flex-col gap-6 sm:flex-row">
       <div class="flex-1">
-        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
           Valor do frete (R$)
         </label>
         <input
           [value]="shippingFee()"
           (input)="shippingFee.set($any($event.target).value)"
           inputmode="decimal"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         />
-        <p class="mt-1.5 text-xs text-slate-400">
+        <p class="mt-1.5 text-xs text-white/45">
           Cobrado no checkout quando o pedido não atinge o frete grátis.
         </p>
       </div>
       <div class="flex-1">
-        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
           Frete grátis a partir de (R$)
         </label>
         <input
           [value]="threshold()"
           (input)="threshold.set($any($event.target).value)"
           inputmode="decimal"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         />
       </div>
     </div>
 
-    <div class="rounded-lg border border-slate-200 p-4">
-      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+    <div class="rounded-lg border border-white/15 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">
         Frete por localidade (Melhor Envio)
       </p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             CEP de origem
           </label>
           <input
@@ -61,12 +66,12 @@
             (input)="onOriginCepInput($any($event.target).value)"
             placeholder="00000-000"
             maxlength="9"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
           />
-          <p class="mt-1.5 text-xs text-slate-400">CEP de onde os produtos são enviados.</p>
+          <p class="mt-1.5 text-xs text-white/45">CEP de onde os produtos são enviados.</p>
         </div>
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             Token da Melhor Envio
           </label>
           <input
@@ -74,34 +79,34 @@
             (input)="melhorEnvioToken.set($any($event.target).value)"
             type="password"
             [placeholder]="hasMelhorEnvioToken() ? '•••••••• (já configurado)' : 'Cole o token aqui'"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
           />
-          <p class="mt-1.5 text-xs text-slate-400">
+          <p class="mt-1.5 text-xs text-white/45">
             Deixe em branco pra manter o token já salvo.
           </p>
         </div>
       </div>
-      <label class="mt-4 flex items-center gap-2 text-sm text-slate-700">
+      <label class="mt-4 flex items-center gap-2 text-sm text-white/80">
         <input
           type="checkbox"
           [checked]="melhorEnvioSandbox()"
           (change)="melhorEnvioSandbox.set($any($event.target).checked)"
-          class="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-yellow-400"
+          class="h-4 w-4 rounded border-white/25 text-accent focus:ring-accent"
         />
         Ambiente de testes (sandbox)
       </label>
-      <p class="mt-2 text-xs text-slate-400">
+      <p class="mt-2 text-xs text-white/45">
         Se a Melhor Envio não estiver configurada, a loja usa o frete fixo definido acima como alternativa.
       </p>
     </div>
 
-    <div class="rounded-lg border border-slate-200 p-4">
-      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+    <div class="rounded-lg border border-white/15 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">
         Contato e atendimento
       </p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             WhatsApp
           </label>
           <input
@@ -109,14 +114,14 @@
             (input)="onWhatsappInput($any($event.target).value)"
             inputmode="tel"
             placeholder="(22) 99999-9999"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
           />
-          <p class="mt-1.5 text-xs text-slate-400">
+          <p class="mt-1.5 text-xs text-white/45">
             Ativa o botão flutuante de WhatsApp. Deixe em branco para ocultá-lo.
           </p>
         </div>
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             E-mail de contato
           </label>
           <input
@@ -124,13 +129,13 @@
             (input)="contactEmail.set($any($event.target).value)"
             type="email"
             placeholder="contato@sualoja.com.br"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
           />
-          <p class="mt-1.5 text-xs text-slate-400">Aparece na página de Contato.</p>
+          <p class="mt-1.5 text-xs text-white/45">Aparece na página de Contato.</p>
         </div>
       </div>
 
-      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-white/60">
         Horário de funcionamento
       </label>
       <div class="flex flex-col gap-2">
@@ -141,20 +146,20 @@
               (input)="updateHoursRow($index, 'label', $any($event.target).value)"
               placeholder="Ex: Segunda a sábado"
               aria-label="Dias"
-              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+              class="min-w-0 flex-1 rounded-lg border border-white/25 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
             />
             <input
               [value]="row.hours"
               (input)="updateHoursRow($index, 'hours', $any($event.target).value)"
               placeholder="Ex: 09h às 19h"
               aria-label="Horário"
-              class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+              class="min-w-0 flex-1 rounded-lg border border-white/25 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
             />
             <button
               type="button"
               (click)="removeHoursRow($index)"
               aria-label="Remover horário"
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-400 hover:border-slate-900 hover:text-slate-900"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/25 text-white/45 hover:border-accent hover:text-white"
             >
               <lucide-icon [img]="X" class="h-4 w-4" />
             </button>
@@ -163,32 +168,32 @@
         <button
           type="button"
           (click)="addHoursRow()"
-          class="flex items-center gap-1.5 self-start text-sm font-semibold text-slate-900 hover:underline"
+          class="flex items-center gap-1.5 self-start text-sm font-semibold text-white hover:underline"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
           Adicionar horário
         </button>
       </div>
-      <p class="mt-2 text-xs text-slate-400">Aparece no rodapé, na página inicial e na página de Contato.</p>
+      <p class="mt-2 text-xs text-white/45">Aparece no rodapé, na página inicial e na página de Contato.</p>
 
-      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 mt-5 block text-xs font-bold uppercase tracking-wider text-white/60">
         Place ID do Google (avaliações)
       </label>
       <input
         [value]="googlePlaceId()"
         (input)="googlePlaceId.set($any($event.target).value)"
         placeholder="ChIJ..."
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Identificador da loja no Google. Com ele e a chave da API configurada no servidor, as avaliações aparecem na página inicial.
       </p>
     </div>
 
-    <div class="rounded-lg border border-slate-200 p-4">
-      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Página inicial</p>
+    <div class="rounded-lg border border-white/15 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Página inicial</p>
 
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Frases da faixa amarela
       </label>
       <div class="flex gap-2">
@@ -198,31 +203,31 @@
           (keydown)="onTickerKeydown($event)"
           maxlength="60"
           placeholder="Ex: Multimarcas"
-          class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="flex-1 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
         <button
           type="button"
           (click)="addTickerMessage()"
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-900 transition-colors duration-300 hover:border-slate-900"
+          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/25 text-white transition-colors duration-300 hover:border-accent"
           aria-label="Adicionar frase"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
         </button>
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Rolam na faixa amarela abaixo do banner (até 8, com até 60 caracteres). Sem nenhuma frase, a faixa some.
       </p>
       @if (tickerMessages().length > 0) {
         <ul class="mt-3 flex flex-col gap-2">
           @for (msg of tickerMessages(); track msg; let i = $index; let first = $first; let last = $last) {
-            <li class="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-4 pr-2 text-sm text-slate-700">
+            <li class="flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 py-1.5 pl-4 pr-2 text-sm text-white/80">
               <span class="flex-1">{{ msg }}</span>
               <button
                 type="button"
                 (click)="moveTickerMessage(i, -1)"
                 [disabled]="first"
                 aria-label="Subir frase"
-                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900 disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center rounded text-white/45 hover:text-white disabled:opacity-30"
               >
                 <lucide-icon [img]="ArrowUp" class="h-4 w-4" />
               </button>
@@ -231,7 +236,7 @@
                 (click)="moveTickerMessage(i, 1)"
                 [disabled]="last"
                 aria-label="Descer frase"
-                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900 disabled:opacity-30"
+                class="flex h-7 w-7 items-center justify-center rounded text-white/45 hover:text-white disabled:opacity-30"
               >
                 <lucide-icon [img]="ArrowDown" class="h-4 w-4" />
               </button>
@@ -239,7 +244,7 @@
                 type="button"
                 (click)="removeTickerMessage(i)"
                 aria-label="Remover frase"
-                class="flex h-7 w-7 items-center justify-center rounded text-slate-400 hover:text-slate-900"
+                class="flex h-7 w-7 items-center justify-center rounded text-white/45 hover:text-white"
               >
                 <lucide-icon [img]="X" class="h-4 w-4" />
               </button>
@@ -248,17 +253,17 @@
         </ul>
       }
 
-      <label class="mb-2 mt-6 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 mt-6 block text-xs font-bold uppercase tracking-wider text-white/60">
         Título da seção da história
       </label>
       <input
         [value]="storyTitle()"
         (input)="storyTitle.set($any($event.target).value)"
         maxlength="80"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
       />
 
-      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-white/60">
         Texto da seção da história
       </label>
       <textarea
@@ -266,35 +271,35 @@
         (input)="storyBody.set($any($event.target).value)"
         rows="6"
         maxlength="1200"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
       ></textarea>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Deixe uma linha em branco entre os parágrafos. Se apagar tudo, volta ao texto padrão.
       </p>
     </div>
 
-    <div class="rounded-lg border border-slate-200 p-4">
-      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Atacado</p>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+    <div class="rounded-lg border border-white/15 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Atacado</p>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Pedido mínimo (peças)
       </label>
       <input
         [value]="wholesaleMinPieces()"
         (input)="wholesaleMinPieces.set($any($event.target).value)"
         inputmode="numeric"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none sm:max-w-[10rem]"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none sm:max-w-[10rem]"
       />
-      <p class="mb-2 mt-5 text-xs font-bold uppercase tracking-wider text-slate-500">Desconto por quantidade</p>
+      <p class="mb-2 mt-5 text-xs font-bold uppercase tracking-wider text-white/60">Desconto por quantidade</p>
       <div class="flex flex-col gap-2">
         @for (tier of wholesaleTiers(); track $index) {
-          <div class="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+          <div class="flex flex-wrap items-center gap-2 text-sm text-white/80">
             <span>A partir de</span>
             <input
               [value]="tier.minPieces"
               (input)="updateTier($index, 'minPieces', $any($event.target).value)"
               inputmode="numeric"
               aria-label="Quantidade de peças da faixa"
-              class="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+              class="w-20 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none"
             />
             <span>peças:</span>
             <input
@@ -302,14 +307,14 @@
               (input)="updateTier($index, 'discountPercent', $any($event.target).value)"
               inputmode="decimal"
               aria-label="Percentual de desconto da faixa"
-              class="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+              class="w-20 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none"
             />
             <span>% de desconto</span>
             <button
               type="button"
               (click)="removeTier($index)"
               aria-label="Remover faixa"
-              class="flex h-8 w-8 items-center justify-center rounded text-slate-400 hover:text-slate-900"
+              class="flex h-8 w-8 items-center justify-center rounded text-white/45 hover:text-white"
             >
               <lucide-icon [img]="X" class="h-4 w-4" />
             </button>
@@ -318,17 +323,17 @@
         <button
           type="button"
           (click)="addTier()"
-          class="flex items-center gap-1.5 self-start text-sm font-semibold text-slate-900 hover:underline"
+          class="flex items-center gap-1.5 self-start text-sm font-semibold text-white hover:underline"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
           Adicionar faixa
         </button>
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         O desconto vale para todas as peças do pedido de atacado, pela quantidade total de peças. Quanto mais peças, maior o desconto (até 90%). Soma com a promoção que o produto já tiver. Sem nenhuma faixa, o atacado não dá desconto automático.
       </p>
 
-      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 mt-4 block text-xs font-bold uppercase tracking-wider text-white/60">
         Condições do atacado
       </label>
       <textarea
@@ -336,29 +341,29 @@
         (input)="wholesaleNotes.set($any($event.target).value)"
         rows="4"
         maxlength="1500"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
       ></textarea>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Uma condição por linha. Aparecem na página /atacado. Se apagar tudo, volta ao texto padrão. Os pedidos de orçamento chegam na aba Atacado e, se houver e-mail de contato e Resend configurados, também por e-mail.
       </p>
     </div>
 
-    <div class="rounded-lg border border-slate-200 p-4">
-      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-slate-500">Medição e anúncios</p>
+    <div class="rounded-lg border border-white/15 p-4">
+      <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Medição e anúncios</p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             ID do Google Analytics (GA4)
           </label>
           <input
             [value]="gaMeasurementId()"
             (input)="gaMeasurementId.set($any($event.target).value)"
             placeholder="G-XXXXXXXXXX"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm uppercase text-slate-900 placeholder:normal-case placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm uppercase text-white placeholder:normal-case placeholder:text-white/40 focus:border-accent focus:outline-none"
           />
         </div>
         <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
             ID do Pixel da Meta
           </label>
           <input
@@ -366,17 +371,17 @@
             (input)="metaPixelId.set($any($event.target).value)"
             inputmode="numeric"
             placeholder="Somente números"
-            class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
           />
         </div>
       </div>
-      <p class="mt-2 text-xs text-slate-400">
+      <p class="mt-2 text-xs text-white/45">
         Deixe em branco para desligar. Quando preenchido, o site mostra um aviso de cookies e só mede quem aceitar.
       </p>
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Mensagens da barra de anúncio
       </label>
       <div class="flex gap-2">
@@ -385,30 +390,30 @@
           (input)="messageInput.set($any($event.target).value)"
           (keydown)="onMessageInputKeydown($event)"
           placeholder="Ex: Novidades toda semana"
-          class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="flex-1 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
         <button
           type="button"
           (click)="addMessage()"
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-900 transition-colors duration-300 hover:border-slate-900"
+          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/25 text-white transition-colors duration-300 hover:border-accent"
           aria-label="Adicionar mensagem"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
         </button>
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         A mensagem de frete grátis é gerada automaticamente a partir do valor acima.
       </p>
       @if (messages().length > 0) {
         <ul class="mt-3 flex flex-col gap-2">
           @for (msg of messages(); track $index) {
-            <li class="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700">
+            <li class="flex items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/80">
               {{ msg }}
               <button
                 type="button"
                 (click)="removeMessage($index)"
                 aria-label="Remover mensagem"
-                class="text-slate-400 hover:text-slate-900"
+                class="text-white/45 hover:text-white"
               >
                 <lucide-icon [img]="X" class="h-4 w-4" />
               </button>
@@ -419,7 +424,7 @@
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Marcas que trabalhamos
       </label>
       <div class="flex gap-2">
@@ -428,30 +433,30 @@
           (input)="brandInput.set($any($event.target).value)"
           (keydown)="onBrandInputKeydown($event)"
           placeholder="Ex: Nike, Adidas, Puma..."
-          class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="flex-1 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
         <button
           type="button"
           (click)="addBrand()"
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-900 transition-colors duration-300 hover:border-slate-900"
+          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/25 text-white transition-colors duration-300 hover:border-accent"
           aria-label="Adicionar marca"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
         </button>
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">
+      <p class="mt-1.5 text-xs text-white/45">
         Aparecem na vitrine de marcas da página inicial, nessa ordem.
       </p>
       @if (brands().length > 0) {
         <ul class="mt-3 flex flex-wrap gap-2">
           @for (brand of brands(); track $index) {
-            <li class="flex items-center gap-2 rounded-full border border-slate-300 py-1.5 pl-3.5 pr-2 text-sm font-semibold text-slate-900">
+            <li class="flex items-center gap-2 rounded-full border border-white/25 py-1.5 pl-3.5 pr-2 text-sm font-semibold text-white">
               {{ brand }}
               <button
                 type="button"
                 (click)="removeBrand($index)"
                 [attr.aria-label]="'Remover marca ' + brand"
-                class="text-slate-400 hover:text-slate-900"
+                class="text-white/45 hover:text-white"
               >
                 <lucide-icon [img]="X" class="h-3.5 w-3.5" />
               </button>
@@ -461,12 +466,15 @@
       }
     </div>
 
+    @if (canEdit()) {
     <button
       type="submit"
       [disabled]="saving()"
-      class="self-start rounded-full bg-yellow-400 px-6 py-3 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white disabled:opacity-60"
+      class="self-start rounded-full bg-yellow-400 px-6 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-accent hover:text-black disabled:opacity-60"
     >
       {{ saving() ? 'Salvando...' : 'Salvar configurações' }}
     </button>
+    }
+  </fieldset>
   </form>
 </div>

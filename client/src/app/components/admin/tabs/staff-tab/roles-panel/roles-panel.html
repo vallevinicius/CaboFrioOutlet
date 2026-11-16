@@ -1,0 +1,128 @@
+<section aria-labelledby="roles-title">
+  <div class="mb-4 flex items-center justify-between gap-3">
+    <h2 id="roles-title" class="text-lg font-bold tracking-tight text-white">Perfis de acesso</h2>
+    <button
+      type="button"
+      (click)="openNew()"
+      class="flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors hover:border-accent hover:text-accent"
+    >
+      <lucide-icon [img]="Plus" class="h-4 w-4" />
+      Novo perfil
+    </button>
+  </div>
+
+  <ul class="flex flex-col gap-3">
+    @for (role of roles(); track role.id) {
+      <li class="glass flex items-start gap-3 p-4">
+        <div class="min-w-0 flex-1">
+          <p class="flex items-center gap-2 text-sm font-bold text-white">
+            {{ role.name }}
+            @if (role.system) {
+              <span class="flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-white/70">
+                <lucide-icon [img]="Lock" class="h-3 w-3" /> Sistema
+              </span>
+            }
+          </p>
+          <p class="mt-1 text-xs text-white/60">{{ summary(role) }}</p>
+          <p class="mt-1 text-[11px] text-white/45">{{ role.userCount }} usuário(s)</p>
+        </div>
+        @if (!role.system) {
+          <div class="flex shrink-0 gap-1">
+            <button
+              type="button"
+              (click)="openEdit(role)"
+              [attr.aria-label]="'Editar perfil ' + role.name"
+              class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <lucide-icon [img]="Pencil" class="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              (click)="remove(role)"
+              [attr.aria-label]="'Apagar perfil ' + role.name"
+              class="flex h-8 w-8 items-center justify-center rounded-full text-white/60 hover:bg-red-500/15 hover:text-red-300"
+            >
+              <lucide-icon [img]="Trash2" class="h-4 w-4" />
+            </button>
+          </div>
+        }
+      </li>
+    }
+  </ul>
+
+  @if (editingId() !== null) {
+    <form (submit)="save($event)" class="glass mt-4 flex flex-col gap-4 p-5">
+      <h3 class="text-sm font-bold text-white">{{ editingId() === '' ? 'Novo perfil' : 'Editar perfil' }}</h3>
+
+      <div>
+        <label for="role-name" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Nome do perfil</label>
+        <input
+          id="role-name"
+          type="text"
+          maxlength="40"
+          required
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+          placeholder="Ex.: Estoquista"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+        />
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <caption class="sr-only">Acesso do perfil a cada tela</caption>
+          <thead>
+            <tr class="text-left text-[11px] font-bold uppercase tracking-wider text-white/50">
+              <th scope="col" class="pb-2 pr-3">Tela</th>
+              <th scope="col" class="pb-2">Acesso</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (section of sections; track section.key) {
+              <tr class="border-t border-white/10">
+                <th scope="row" class="py-2 pr-3 text-left font-semibold text-white">{{ section.label }}</th>
+                <td class="py-2">
+                  <div role="group" [attr.aria-label]="'Acesso a ' + section.label" class="inline-flex rounded-full bg-white/10 p-0.5 text-xs font-bold">
+                    @for (choice of choices; track choice.value) {
+                      <button
+                        type="button"
+                        [attr.aria-pressed]="draft()[section.key] === choice.value"
+                        (click)="setChoice(section.key, choice.value)"
+                        class="rounded-full px-3 py-1 transition-colors"
+                        [class]="draft()[section.key] === choice.value
+                          ? (choice.value === 'edit' ? 'bg-accent text-black' : 'bg-white/90 text-black')
+                          : 'text-white/60 hover:text-white'"
+                      >
+                        {{ choice.label }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <p class="mt-3 text-xs text-white/50">
+          Telas em "Nenhum" não aparecem no menu. Com "Ver", a pessoa só consulta, sem salvar nada.
+        </p>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          [disabled]="saving()"
+          class="rounded-full bg-accent px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-black hover:bg-accent-hover disabled:opacity-60"
+        >
+          {{ saving() ? 'Salvando...' : 'Salvar perfil' }}
+        </button>
+        <button
+          type="button"
+          (click)="close()"
+          class="rounded-full border border-white/25 px-6 py-2.5 text-xs font-bold uppercase tracking-wide text-white hover:border-white"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  }
+</section>

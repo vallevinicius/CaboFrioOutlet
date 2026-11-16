@@ -7,6 +7,7 @@ import { ApiError } from '../../../../services/api-error';
 import { ProductForm } from '../../product-form/product-form';
 import { ProductTable } from '../../product-table/product-table';
 import { StatCard } from '../../stat-card/stat-card';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-products-tab',
@@ -14,6 +15,9 @@ import { StatCard } from '../../stat-card/stat-card';
   templateUrl: './products-tab.html',
 })
 export class ProductsTab {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('produtos', 'edit'));
   productService = inject(ProductService);
   private toastService = inject(ToastService);
 

@@ -13,6 +13,8 @@ function formatPrice(value: number): string {
 })
 export class ProductTable {
   products = input.required<Product[]>();
+  /** Sem permissão de editar: esconde editar e apagar. */
+  readOnly = input(false);
   edit = output<Product>();
   delete = output<Product>();
 

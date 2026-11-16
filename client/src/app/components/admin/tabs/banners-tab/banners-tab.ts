@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { LucideAngularModule, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Image } from 'lucide-angular';
 import { HeroSlide, HeroSlideInput } from '../../../../types/hero-slide';
 import { HeroSlideService } from '../../../../services/hero-slide.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { BannerForm } from '../../banner-form/banner-form';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-banners-tab',
@@ -12,6 +13,9 @@ import { BannerForm } from '../../banner-form/banner-form';
   templateUrl: './banners-tab.html',
 })
 export class BannersTab {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('banners', 'edit'));
   heroSlideService = inject(HeroSlideService);
   private toastService = inject(ToastService);
 

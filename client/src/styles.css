@@ -50,6 +50,75 @@
   }
 }
 
+@layer components {
+  /* Painel admin: fundo escuro em degradê com a logo da loja grande e borrada. */
+  .admin-bg {
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    color: #fff8e1;
+    color-scheme: dark; /* selects, datas e barras de rolagem nativos em modo escuro */
+    background: radial-gradient(120% 90% at 15% 0%, #5a4300 0%, #1c1608 55%, #050505 100%);
+  }
+  .admin-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: url('/Logo%20Preto.png') 62% 50% / min(70vw, 720px) no-repeat;
+    filter: blur(22px) invert(1);
+    opacity: 0.22;
+  }
+
+  /* Liquid glass: vidro fosco com brilho interno. */
+  .glass {
+    background: rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(26px) saturate(170%);
+    backdrop-filter: blur(26px) saturate(170%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.25),
+      0 8px 24px rgba(0, 0, 0, 0.25);
+    border-radius: 1.125rem;
+  }
+  /* Sem suporte a backdrop-filter, ou com "reduzir transparência": fundo sólido legível. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      background: rgba(28, 22, 8, 0.94);
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .glass {
+      background: rgba(28, 22, 8, 0.94);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+
+  .glass-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(255, 248, 225, 0.75);
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .glass-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+  .glass-item[aria-current='page'] {
+    background: rgba(255, 199, 0, 0.18);
+    color: #ffc700;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
 /* Respeita quem prefere menos movimento: sem faixa rolando, sem entrada animada. */
 @media (prefers-reduced-motion: reduce) {
   *,

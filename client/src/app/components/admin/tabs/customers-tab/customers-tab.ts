@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { LucideAngularModule, Users, ShieldCheck, UserPlus } from 'lucide-angular';
+import { LucideAngularModule, Users, ShieldCheck } from 'lucide-angular';
 import { CustomerProfile } from '../../../../types/user';
 import { ApiService } from '../../../../services/api.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -26,13 +26,11 @@ export class CustomersTab implements OnInit {
 
   readonly Users = Users;
   readonly ShieldCheck = ShieldCheck;
-  readonly UserPlus = UserPlus;
   readonly formatDate = formatDate;
   readonly formatCpf = formatCpf;
 
   customers = signal<CustomerProfile[]>([]);
   loading = signal(true);
-  updatingId = signal<string | null>(null);
 
   readonly stats = computed(() => {
     const customers = this.customers();
@@ -55,23 +53,5 @@ export class CustomersTab implements OnInit {
         this.toastService.showToast('Erro ao carregar clientes', err instanceof ApiError ? err.message : undefined)
       )
       .finally(() => this.loading.set(false));
-  }
-
-  async toggleAdmin(customer: CustomerProfile): Promise<void> {
-    const nextIsAdmin = !customer.isAdmin;
-    this.updatingId.set(customer.id);
-    try {
-      const updated = await this.api.patch<CustomerProfile>(`/users/${customer.id}/admin`, {
-        isAdmin: nextIsAdmin,
-      });
-      this.customers.update((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
-    } catch (err) {
-      this.toastService.showToast(
-        'Erro ao atualizar permissão',
-        err instanceof ApiError ? err.message : undefined
-      );
-    } finally {
-      this.updatingId.set(null);
-    }
   }
 }

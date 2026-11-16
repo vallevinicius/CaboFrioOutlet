@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LucideAngularModule, MessageCircle, Mail } from 'lucide-angular';
 import { WholesaleService } from '../../../../services/wholesale.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -6,6 +6,7 @@ import { ApiError } from '../../../../services/api-error';
 import { WholesaleQuote } from '../../../../types/wholesale';
 import { formatCnpj } from '../../../../utils/cnpj';
 import { whatsappUrl } from '../../../../utils/whatsapp';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-wholesale-tab',
@@ -13,6 +14,9 @@ import { whatsappUrl } from '../../../../utils/whatsapp';
   templateUrl: './wholesale-tab.html',
 })
 export class WholesaleTab implements OnInit {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('atacado', 'edit'));
   private wholesale = inject(WholesaleService);
   private toast = inject(ToastService);
 

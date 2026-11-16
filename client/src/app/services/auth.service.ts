@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from './api.service';
 import { CustomerProfile, ProfileInput, RegisterInput } from '../types/user';
 import { clearToken, getToken, setToken } from './token';
+import { Level, Section, canAccess } from '../utils/permissions';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,6 +15,12 @@ export class AuthService {
   readonly checking = this._checking.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
   readonly isAdmin = computed(() => this._user()?.isAdmin ?? false);
+  readonly isSuperAdmin = computed(() => this._user()?.isSuperAdmin ?? false);
+
+  /** Pode ver/editar a tela? O admin supremo pode tudo. */
+  can(section: Section, level: Level): boolean {
+    return this.isSuperAdmin() || canAccess(this._user()?.permissions, section, level);
+  }
 
   /** Resolve assim que a checagem da sessão salva (se houver) terminar. */
   private readonly ready: Promise<void>;

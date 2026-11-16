@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LucideAngularModule, ChevronDown, ChevronUp, Receipt, Clock, CircleCheckBig } from 'lucide-angular';
 import { Order, OrderStatus } from '../../../../types/order';
 import { ApiService } from '../../../../services/api.service';
@@ -6,6 +6,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { StatCard } from '../../stat-card/stat-card';
 import { STATUS_LABELS, STATUS_STYLES, formatOrderPrice, formatOrderDate } from '../../../../utils/order-format';
+import { AuthService } from '../../../../services/auth.service';
 
 const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
   Object.entries(STATUS_LABELS) as [OrderStatus, string][]
@@ -17,6 +18,9 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
   templateUrl: './orders-tab.html',
 })
 export class OrdersTab implements OnInit {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('pedidos', 'edit'));
   private api = inject(ApiService);
   private toastService = inject(ToastService);
 
