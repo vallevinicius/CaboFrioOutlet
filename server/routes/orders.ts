@@ -114,6 +114,12 @@ ordersRouter.post('/', optionalAuth, async (req, res) => {
         if (!product) {
           throw new Error('Um dos produtos do carrinho não existe mais.');
         }
+        if (isWholesale && product.channel === 'RETAIL') {
+          throw new Error(`"${product.name}" é vendido apenas no varejo.`);
+        }
+        if (!isWholesale && product.channel === 'WHOLESALE') {
+          throw new Error(`"${product.name}" é vendido apenas no atacado.`);
+        }
 
         const productSize = await tx.productSize.findUnique({
           where: { productId_size: { productId, size } },

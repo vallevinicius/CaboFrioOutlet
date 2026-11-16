@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Product` ADD COLUMN `channel` ENUM('RETAIL', 'WHOLESALE', 'BOTH') NOT NULL DEFAULT 'BOTH';

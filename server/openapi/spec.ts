@@ -16,6 +16,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 
 const Id = z.string().openapi({ example: 'cmu4stwin0000nknffustupxu' });
 const Category = z.enum(['camisas', 'calças', 'bermudas', 'bonés']);
+const SalesChannel = z.enum(['retail', 'wholesale', 'both']).openapi({ description: 'Onde a peça é vendida: retail = só varejo (loja), wholesale = só atacado, both = nos dois', example: 'both' });
 const OrderStatus = z.enum(['pendente', 'confirmado', 'enviado', 'entregue', 'cancelado']);
 
 export const ErrorSchema = registry.register('Erro', z.object({ error: z.string().openapi({ example: 'Mensagem explicando o problema.' }) }));
@@ -33,6 +34,7 @@ const Product = registry.register(
     description: z.string(),
     isNew: z.boolean(),
     discountPercent: z.number().optional(),
+    channel: SalesChannel,
     sizes: z.array(z.string()).openapi({ example: ['P', 'M', 'G'] }),
     stock: z.record(z.string(), z.number().int()).openapi({ description: 'Quantidade por tamanho', example: { P: 3, M: 5, G: 0 } }),
   }),
@@ -52,6 +54,7 @@ const ProductInput = registry.register(
     stock: z.record(z.string(), z.number().int().min(0)),
     discountPercent: z.number().optional(),
     isNew: z.boolean().optional(),
+    channel: SalesChannel.optional().openapi({ description: 'Padrão: both ao criar; ao editar, omitir mantém o canal atual' }),
   }),
 );
 
@@ -474,7 +477,8 @@ const productIdParam = z.object({ productId: Id });
 doc({ method: 'get', path: '/api/products', tag: 'Produtos', summary: 'Lista o catálogo', ok: { schema: z.array(Product), description: 'Produtos com estoque por tamanho' } });
 doc({ method: 'post', path: '/api/products', tag: 'Produtos', summary: 'Cria um produto', access: 'admin', body: ProductInput, ok: { status: 201, schema: Product, description: 'Produto criado' }, errors: [400] });
 doc({ method: 'put', path: '/api/products/{id}', tag: 'Produtos', summary: 'Edita um produto', access: 'admin', params: idParam, body: ProductInput, ok: { schema: Product, description: 'Produto atualizado' }, errors: [400, 404] });
-doc({ method: 'put', path: '/api/products/{id}/stock', tag: 'Produtos', summary: 'Ajusta o estoque de um tamanho', access: 'admin', params: idParam, body: z.object({ size: z.string(), quantity: z.number().int().min(0) }), ok: { schema: Product, description: 'Produto atualizado' }, errors: [400, 404] });
+doc({ method: 'put', path: '/api/products/{id}/stock', tag: 'Produtos', summary: 'Ajusta o estoque de um tamanho (cria o tamanho se ele ainda não existir; nome com até 20 caracteres)', access: 'admin', params: idParam, body: z.object({ size: z.string(), quantity: z.number().int().min(0) }), ok: { schema: Product, description: 'Produto atualizado' }, errors: [400, 404] });
+doc({ method: 'delete', path: '/api/products/{id}/stock/{size}', tag: 'Produtos', summary: 'Remove um tamanho do produto (não remove o último)', access: 'admin', params: z.object({ id: Id, size: z.string().openapi({ example: 'GG' }) }), ok: { schema: Product, description: 'Produto atualizado' }, errors: [404, 409] });
 doc({ method: 'delete', path: '/api/products/{id}', tag: 'Produtos', summary: 'Apaga um produto', access: 'admin', params: idParam, ok: { status: 204, description: 'Apagado' }, errors: [404] });
 
 doc({ method: 'get', path: '/api/settings', tag: 'Configurações', summary: 'Configurações públicas da loja', ok: { schema: Settings, description: 'Configurações (sem segredos)' } });

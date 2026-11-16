@@ -52,7 +52,7 @@ wholesaleRouter.post('/quotes', async (req, res) => {
     const ids = rawItems.map((i) => (i as { productId?: unknown })?.productId).filter((v): v is string => typeof v === 'string');
     const [products, settings] = await Promise.all([
       prisma.product.findMany({
-        where: { id: { in: ids } },
+        where: { id: { in: ids }, channel: { in: ['WHOLESALE', 'BOTH'] } },
         select: { id: true, name: true, price: true, discountPercent: true, sizes: { select: { size: true } } },
       }),
       prisma.settings.findUnique({ where: { id: 1 }, select: { wholesaleTiers: true } }),

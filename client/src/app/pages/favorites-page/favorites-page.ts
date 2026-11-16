@@ -26,7 +26,7 @@ export class FavoritesPage {
 
   /** Mantém a ordem dos favoritos (mais recentes primeiro) e ignora produtos que não existem mais. */
   readonly products = computed(() => {
-    const byId = new Map(this.productService.products().map((p) => [p.id, p]));
+    const byId = new Map(this.productService.retailProducts().map((p) => [p.id, p]));
     return this.favorites.ids().flatMap((id) => byId.get(id) ?? []);
   });
 

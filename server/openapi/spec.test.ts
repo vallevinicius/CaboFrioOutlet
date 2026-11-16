@@ -181,6 +181,16 @@ describe('OpenAPI: atacado', () => {
   });
 });
 
+describe('canal de venda do produto', () => {
+  const schemas = (doc.components?.schemas ?? {}) as Record<string, { properties: Record<string, { enum?: string[] }>; required?: string[] }>;
+  it('Produto devolve channel e ProdutoEntrada aceita channel opcional', () => {
+    expect(schemas['Produto'].properties['channel'].enum).toEqual(['retail', 'wholesale', 'both']);
+    expect(schemas['Produto'].required).toContain('channel');
+    expect(schemas['ProdutoEntrada'].properties['channel'].enum).toEqual(['retail', 'wholesale', 'both']);
+    expect(schemas['ProdutoEntrada'].required ?? []).not.toContain('channel');
+  });
+});
+
 describe('perfis de acesso e equipe', () => {
   const paths = doc.paths as Record<string, Record<string, { security?: unknown[]; responses: Record<string, unknown> }>>;
   const schemas = (doc.components?.schemas ?? {}) as Record<string, { properties: Record<string, unknown> }>;

@@ -50,7 +50,7 @@ export class StorefrontPage {
   private router = inject(Router);
   private queryParams = toSignal(this.route.queryParamMap);
 
-  readonly products = this.productService.products;
+  readonly products = this.productService.retailProducts;
   readonly loading = this.productService.loading;
 
   constructor() {

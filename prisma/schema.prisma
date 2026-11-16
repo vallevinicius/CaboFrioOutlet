@@ -17,6 +17,8 @@ model Product {
   description     String        @db.Text
   isNew           Boolean       @default(false)
   discountPercent Float?
+  /// Onde a peça é vendida: só na loja (varejo), só no atacado ou nos dois.
+  channel         SalesChannel  @default(BOTH)
   weightKg        Float         @default(0.3)
   heightCm        Float         @default(4)
   widthCm         Float         @default(20)
@@ -27,6 +29,12 @@ model Product {
   images          ProductImage[]
   favorites       Favorite[]
   orderItems      OrderItem[]
+}
+
+enum SalesChannel {
+  RETAIL
+  WHOLESALE
+  BOTH
 }
 
 model ProductSize {

@@ -1,11 +1,13 @@
-import { Component, computed, inject } from '@angular/core';
-import { LucideAngularModule, Boxes, TriangleAlert, CircleX } from 'lucide-angular';
+import { Component, computed, inject, signal } from '@angular/core';
+import { LucideAngularModule, Boxes, TriangleAlert, CircleX, Plus, X } from 'lucide-angular';
 import { ProductService } from '../../../../services/product.service';
 import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { StatCard } from '../../stat-card/stat-card';
 import { StockInput } from '../../stock-input/stock-input';
 import { AuthService } from '../../../../services/auth.service';
+import { Product } from '../../../../types/product';
+import { MAX_SIZE_LENGTH, checkNewSize } from '../../../../utils/sizes';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -32,6 +34,9 @@ export class StockTab {
   readonly Boxes = Boxes;
   readonly TriangleAlert = TriangleAlert;
   readonly CircleX = CircleX;
+  readonly Plus = Plus;
+  readonly X = X;
+  readonly MAX_SIZE_LENGTH = MAX_SIZE_LENGTH;
   readonly LOW_STOCK_THRESHOLD = LOW_STOCK_THRESHOLD;
   readonly totalStockOf = totalStockOf;
   readonly stockOf = stockOf;
@@ -56,5 +61,44 @@ export class StockTab {
         );
       }
     };
+  }
+
+  /** Texto digitado no campo "+ tamanho" de cada produto. */
+  readonly newSizeDraft = signal<Record<string, string | undefined>>({});
+
+  setNewSizeDraft(productId: string, value: string): void {
+    this.newSizeDraft.update((d) => ({ ...d, [productId]: value }));
+  }
+
+  async addSize(product: Product, event?: Event): Promise<void> {
+    event?.preventDefault();
+    const check = checkNewSize(product.sizes, this.newSizeDraft()[product.id] ?? '');
+    if (!check.ok) {
+      this.toastService.showToast('Tamanho inválido', check.error);
+      return;
+    }
+    try {
+      await this.productService.addSize(product.id, check.size);
+      this.setNewSizeDraft(product.id, '');
+      this.toastService.showToast('Tamanho adicionado', `${check.size} entrou com estoque 0. Ajuste a quantidade.`);
+    } catch (err) {
+      this.toastService.showToast('Erro ao adicionar tamanho', err instanceof ApiError ? err.message : undefined);
+    }
+  }
+
+  removeSize(product: Product, size: string): void {
+    this.toastService.showConfirm(
+      `Remover o tamanho ${size} de ${product.name}?`,
+      'O estoque desse tamanho some da loja. Pedidos já feitos não mudam.',
+      async () => {
+        try {
+          await this.productService.removeSize(product.id, size);
+          this.toastService.showToast('Tamanho removido');
+        } catch (err) {
+          this.toastService.showToast('Erro ao remover tamanho', err instanceof ApiError ? err.message : undefined);
+        }
+      },
+      { confirmLabel: 'Remover' }
+    );
   }
 }

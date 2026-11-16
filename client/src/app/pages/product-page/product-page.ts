@@ -64,7 +64,7 @@ export class ProductPage {
   private paramMap = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   private productId = computed(() => this.paramMap().get('id') ?? '');
 
-  readonly product = computed(() => this.productService.products().find((p) => p.id === this.productId()));
+  readonly product = computed(() => this.productService.retailProducts().find((p) => p.id === this.productId()));
   readonly notFound = computed(() => !this.productService.loading() && !this.product());
 
   private firstAvailableSize = computed(() => {
@@ -84,7 +84,7 @@ export class ProductPage {
 
   readonly related = computed(() => {
     const product = this.product();
-    return product ? relatedProducts(this.productService.products(), product) : [];
+    return product ? relatedProducts(this.productService.retailProducts(), product) : [];
   });
 
   readonly selectedSize = computed(() => this.selectedSizeOverride() ?? this.firstAvailableSize());

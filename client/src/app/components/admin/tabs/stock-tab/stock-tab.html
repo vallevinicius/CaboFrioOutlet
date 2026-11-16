@@ -2,7 +2,7 @@
   <div class="mb-8">
     <h1 class="text-2xl font-black tracking-tight text-white">Estoque</h1>
     <p class="mt-1 text-sm text-white/60">
-      Ajuste a quantidade disponível de cada tamanho. As mudanças valem na loja na hora.
+      Ajuste a quantidade de cada tamanho, adicione tamanhos novos ou remova os que acabaram. As mudanças valem na loja na hora.
     </p>
   </div>
 
@@ -44,7 +44,37 @@
                         [onCommit]="makeCommitHandler(product.id, size)"
                         [disabled]="!canEdit()"
                       />
+                      @if (canEdit() && product.sizes.length > 1) {
+                        <button
+                          type="button"
+                          (click)="removeSize(product, size)"
+                          [attr.aria-label]="'Remover o tamanho ' + size + ' de ' + product.name"
+                          class="flex h-5 w-5 items-center justify-center rounded-full text-white/45 hover:bg-red-500/15 hover:text-red-300"
+                        >
+                          <lucide-icon [img]="X" class="h-3 w-3" />
+                        </button>
+                      }
                     </label>
+                  }
+                  @if (canEdit()) {
+                    <form (submit)="addSize(product, $event)" class="flex items-center gap-1">
+                      <input
+                        type="text"
+                        [maxLength]="MAX_SIZE_LENGTH"
+                        [value]="newSizeDraft()[product.id] ?? ''"
+                        (input)="setNewSizeDraft(product.id, $any($event.target).value)"
+                        [attr.aria-label]="'Novo tamanho de ' + product.name"
+                        placeholder="+ tamanho"
+                        class="w-24 rounded-full border border-dashed border-white/25 bg-white/5 px-3 py-1 text-xs uppercase text-white placeholder:normal-case placeholder:text-white/40 focus:border-accent focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        [attr.aria-label]="'Adicionar tamanho a ' + product.name"
+                        class="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-black hover:bg-accent-hover"
+                      >
+                        <lucide-icon [img]="Plus" class="h-3.5 w-3.5" />
+                      </button>
+                    </form>
                   }
                 </div>
               </td>

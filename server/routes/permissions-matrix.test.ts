@@ -42,6 +42,7 @@ const cases: Case[] = [
   { name: 'editar produto', router: productsRouter, mount: '/api/products', method: 'put', url: '/api/products/p1', any: [['produtos', 'edit']] },
   { name: 'apagar produto', router: productsRouter, mount: '/api/products', method: 'delete', url: '/api/products/p1', any: [['produtos', 'edit']] },
   { name: 'ajustar estoque', router: productsRouter, mount: '/api/products', method: 'put', url: '/api/products/p1/stock', any: [['estoque', 'edit'], ['produtos', 'edit']] },
+  { name: 'remover tamanho', router: productsRouter, mount: '/api/products', method: 'delete', url: '/api/products/p1/stock/M', any: [['estoque', 'edit'], ['produtos', 'edit']] },
   { name: 'criar banner', router: heroSlidesRouter, mount: '/api/hero-slides', method: 'post', url: '/api/hero-slides', any: [['banners', 'edit']] },
   { name: 'editar banner', router: heroSlidesRouter, mount: '/api/hero-slides', method: 'put', url: '/api/hero-slides/h1', any: [['banners', 'edit']] },
   { name: 'mover banner', router: heroSlidesRouter, mount: '/api/hero-slides', method: 'patch', url: '/api/hero-slides/h1/move', any: [['banners', 'edit']] },
