@@ -161,6 +161,28 @@ const Order = registry.register(
     createdAt: z.string().datetime(),
     customerName: z.string(),
     customerContact: z.string().openapi({ description: 'E-mail do cliente' }),
+    customerPhone: z.string().nullable().openapi({ description: 'Telefone/WhatsApp na hora da compra (só números). Pedidos antigos: null', example: '22999991234' }),
+    customerCpf: z.string().nullable().openapi({ description: 'CPF na hora da compra (só números). Pedidos antigos: null', example: '00000000000' }),
+    account: z
+      .object({
+        id: Id,
+        name: z.string(),
+        email: z.string(),
+        cpf: z.string(),
+        phone: z.string(),
+        cep: z.string(),
+        street: z.string(),
+        number: z.string(),
+        complement: z.string().nullable(),
+        neighborhood: z.string(),
+        city: z.string(),
+        state: z.string(),
+        createdAt: z.string().datetime(),
+        linkedBy: z.enum(['account', 'email']).openapi({ description: 'account = pedido feito logado; email = achado pelo mesmo e-mail (pedido de visitante)' }),
+      })
+      .nullable()
+      .optional()
+      .openapi({ description: 'Cadastro do cliente (só na lista do admin)' }),
     items: z.array(OrderItem),
     total: z.number(),
     shippingCost: z.number(),
@@ -189,6 +211,8 @@ const OrderCreate = registry.register(
   z.object({
     customerName: z.string(),
     customerContact: z.string().openapi({ description: 'E-mail', example: 'cliente@exemplo.com' }),
+    customerPhone: z.string().optional().openapi({ description: 'Telefone/WhatsApp. Obrigatório para visitante; logado usa o do cadastro', example: '(22) 99999-1234' }),
+    customerCpf: z.string().optional().openapi({ description: 'CPF válido. Obrigatório para visitante; logado usa o do cadastro', example: '000.000.000-00' }),
     items: z
       .array(z.object({ productId: Id, size: z.string(), quantity: z.number().int().positive() }))
       .min(1)

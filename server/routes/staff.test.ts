@@ -72,8 +72,10 @@ describe('POST /api/staff', () => {
     expect(data.email).toBe('marina@loja.com');
     expect(data.isAdmin).toBe(true);
     expect(data.roleId).toBe('r1');
-    // cpf é @unique: sem placeholder próprio, o 2º usuário sem CPF bateria no "" do admin do seed.
-    expect((prisma().user.create.mock.calls[0][0].data as { cpf: string }).cpf).toMatch(/^equipe-/);
+    // Conta da equipe não tem CPF: fica vazio e sem carimbo (a unicidade vale só para CPFs de verdade).
+    const created = prisma().user.create.mock.calls[0][0].data as { cpf?: string; cpfHash?: string };
+    expect(created.cpf ?? '').toBe('');
+    expect(created.cpfHash).toBeUndefined();
     expect(data.passwordHash).not.toBe('senha-provisoria');
     expect(await bcrypt.compare('senha-provisoria', data.passwordHash)).toBe(true);
     expect(JSON.stringify(res.body)).not.toMatch(/senha|password/i);

@@ -5,7 +5,8 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { requireAuth, JWT_SECRET } from '../middleware/auth.js';
 import { loadAccess } from '../services/access.js';
-import { isValidCpf, normalizeCpf, publicCpf } from '../utils/cpf.js';
+import { isValidCpf, normalizeCpf } from '../utils/cpf.js';
+import { openCpf, sealCpf } from '../utils/cpf-vault.js';
 
 export const authRouter = Router();
 
@@ -33,7 +34,7 @@ function serializeUser(user: {
   createdAt: Date;
 }) {
   const { passwordHash: _drop, ...rest } = user as typeof user & { passwordHash?: string };
-  return { ...rest, cpf: publicCpf(rest.cpf) };
+  return { ...rest, cpf: openCpf(rest.cpf) };
 }
 
 type SerializableUser = Parameters<typeof serializeUser>[0] & { id: string };
@@ -93,12 +94,15 @@ authRouter.post('/register', async (req, res) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 10);
+    // CPF cifrado no banco; o carimbo (cpfHash) é quem barra conta duplicada.
+    const sealedCpf = sealCpf(cpf);
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
         email: email.trim().toLowerCase(),
         passwordHash,
-        cpf,
+        cpf: sealedCpf.cpf,
+        cpfHash: sealedCpf.cpfHash,
         phone: phone.trim(),
         cep,
         street: street.trim(),

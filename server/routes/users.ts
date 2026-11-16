@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requirePermission } from '../middleware/permissions.js';
 import { prisma } from '../db.js';
-import { publicCpf } from '../utils/cpf.js';
+import { openCpf } from '../utils/cpf-vault.js';
 
 export const usersRouter = Router();
 
@@ -22,7 +22,7 @@ function serializeUser(user: {
   createdAt: Date;
 }) {
   const { passwordHash: _drop, ...rest } = user as typeof user & { passwordHash?: string };
-  return { ...rest, cpf: publicCpf(rest.cpf) };
+  return { ...rest, cpf: openCpf(rest.cpf) };
 }
 
 usersRouter.get('/', requirePermission('clientes', 'view'), async (_req, res) => {
