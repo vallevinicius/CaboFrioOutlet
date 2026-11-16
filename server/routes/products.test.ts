@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers.js';
+import { FULL_EDIT, appWith, mockAccess, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -27,7 +27,10 @@ const valid = {
   stock: { M: 3 },
 };
 
-beforeEach(() => mockReset(prisma()));
+beforeEach(() => {
+  mockReset(prisma());
+  mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
+});
 
 describe('produtos: acesso', () => {
   it('listar é público; criar, editar, estoque e apagar exigem admin', async () => {

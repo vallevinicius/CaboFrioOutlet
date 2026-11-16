@@ -1,3 +1,5 @@
+import type { Permissions } from '../utils/permissions';
+
 export interface CustomerProfile {
   id: string;
   name: string;
@@ -12,6 +14,9 @@ export interface CustomerProfile {
   city: string;
   state: string;
   isAdmin: boolean;
+  /** Só vêm preenchidos na sessão (login e /auth/me). */
+  isSuperAdmin?: boolean;
+  permissions?: Permissions;
   createdAt: string;
 }
 

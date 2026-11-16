@@ -1,7 +1,7 @@
 <div>
   <div class="mb-8">
-    <h1 class="text-2xl font-black tracking-tight text-slate-900">Pedidos</h1>
-    <p class="mt-1 text-sm text-slate-500">
+    <h1 class="text-2xl font-black tracking-tight text-white">Pedidos</h1>
+    <p class="mt-1 text-sm text-white/60">
       Acompanhe as compras feitas na loja e atualize o status de cada uma.
     </p>
   </div>
@@ -13,21 +13,21 @@
   </div>
 
   @if (loading()) {
-    <p class="py-20 text-center text-sm text-slate-500">Carregando pedidos...</p>
+    <p class="py-20 text-center text-sm text-white/60">Carregando pedidos...</p>
   } @else if (orders().length === 0) {
-    <div class="rounded-2xl border border-dashed border-slate-300 py-20 text-center">
-      <p class="text-sm font-medium text-slate-500">Nenhum pedido realizado ainda.</p>
+    <div class="rounded-2xl border border-dashed border-white/25 py-20 text-center">
+      <p class="text-sm font-medium text-white/60">Nenhum pedido realizado ainda.</p>
     </div>
   } @else {
     <div class="flex flex-col gap-3">
       @for (order of orders(); track order.id) {
-        <div class="overflow-hidden rounded-2xl border border-slate-200">
+        <div class="overflow-hidden rounded-2xl border border-white/15">
           <button
             (click)="toggleExpanded(order.id)"
             class="flex w-full flex-col gap-3 px-5 py-4 text-left sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <p class="text-sm font-bold text-slate-900">
+              <p class="text-sm font-bold text-white">
                 #{{ order.id.slice(-6).toUpperCase() }} · {{ order.customerName }}
                 @if (order.isWholesale) {
                   <span class="ml-2 rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-black">
@@ -35,40 +35,41 @@
                   </span>
                 }
               </p>
-              <p class="mt-0.5 text-xs text-slate-500">
+              <p class="mt-0.5 text-xs text-white/60">
                 {{ formatDate(order.createdAt) }} · {{ order.customerContact }}
               </p>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-sm font-bold text-slate-900">{{ formatPrice(order.total) }}</span>
+              <span class="text-sm font-bold text-white">{{ formatPrice(order.total) }}</span>
               <select
                 [value]="order.status"
+                [disabled]="!canEdit()"
                 (click)="$event.stopPropagation()"
                 (change)="handleStatusChange(order, $any($event.target).value)"
                 class="rounded-full border-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wide focus:outline-none"
                 [class]="statusStyles[order.status]"
               >
                 @for (opt of statusOptions; track opt.value) {
-                  <option [value]="opt.value" class="bg-white text-slate-900">{{ opt.label }}</option>
+                  <option [value]="opt.value" class="bg-[#1c1608] text-white">{{ opt.label }}</option>
                 }
               </select>
-              <lucide-icon [img]="expandedId() === order.id ? ChevronUp : ChevronDown" class="h-4 w-4 text-slate-500" />
+              <lucide-icon [img]="expandedId() === order.id ? ChevronUp : ChevronDown" class="h-4 w-4 text-white/60" />
             </div>
           </button>
 
           @if (expandedId() === order.id) {
-            <div class="border-t border-slate-100 px-5 py-4">
+            <div class="border-t border-white/10 px-5 py-4">
               <ul class="flex flex-col gap-3">
                 @for (item of order.items; track item.id) {
                   <li class="flex items-center gap-3 text-sm">
                     <img [src]="item.image" alt="" class="h-12 w-10 flex-shrink-0 rounded-md object-cover" />
                     <div class="flex-1">
-                      <p class="font-semibold text-slate-900">{{ item.productName }}</p>
-                      <p class="text-xs text-slate-500">
+                      <p class="font-semibold text-white">{{ item.productName }}</p>
+                      <p class="text-xs text-white/60">
                         Tam. {{ item.size }} · Qtd {{ item.quantity }}
                       </p>
                     </div>
-                    <span class="font-semibold text-slate-900">
+                    <span class="font-semibold text-white">
                       {{ formatPrice(item.unitPrice * item.quantity) }}
                     </span>
                   </li>

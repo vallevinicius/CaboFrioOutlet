@@ -1,5 +1,6 @@
 import { OpenAPIRegistry, OpenApiGeneratorV31, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
+import { SECTIONS } from '../services/access.js';
 
 extendZodWithOpenApi(z);
 
@@ -215,6 +216,60 @@ const User = registry.register(
     createdAt: z.string().datetime(),
   }),
 );
+const SectionKey = z.enum(SECTIONS).openapi({ description: 'Tela do painel', example: 'produtos' });
+const AccessLevel = z.enum(['view', 'edit']).openapi({ description: 'view = só ver; edit = ver e alterar', example: 'edit' });
+
+/** Usuário como o painel o recebe: com o que ele pode fazer em cada tela (lido do banco a cada chamada). */
+const SessionUser = registry.register(
+  'UsuarioSessao',
+  User.extend({
+    isSuperAdmin: z.boolean(),
+    permissions: z.partialRecord(SectionKey, AccessLevel).openapi({ description: 'Telas liberadas. Tela ausente = sem acesso.', example: { produtos: 'edit', pedidos: 'view' } }),
+  }),
+);
+
+const Role = registry.register(
+  'PerfilAcesso',
+  z.object({
+    id: Id,
+    name: z.string().openapi({ example: 'Estoquista' }),
+    system: z.boolean().openapi({ description: 'Perfil de sistema (Administrador): não pode ser editado nem apagado' }),
+    userCount: z.number().int().openapi({ description: 'Quantos usuários usam o perfil' }),
+    permissions: z.array(z.object({ section: SectionKey, level: AccessLevel })),
+  }),
+);
+const RoleInput = registry.register(
+  'PerfilAcessoEntrada',
+  z.object({
+    name: z.string().min(1).max(40).openapi({ example: 'Estoquista' }),
+    permissions: z.array(z.object({ section: SectionKey, level: AccessLevel })).openapi({ description: 'Uma entrada por tela; telas fora da lista ficam sem acesso' }),
+  }),
+);
+const StaffMember = registry.register(
+  'MembroEquipe',
+  z.object({
+    id: Id,
+    name: z.string().openapi({ example: 'Maria' }),
+    email: z.string().openapi({ example: 'maria@exemplo.com' }),
+    isSuperAdmin: z.boolean(),
+    role: z.object({ id: Id, name: z.string() }).nullable(),
+    createdAt: z.string().datetime(),
+  }),
+);
+const StaffInput = registry.register(
+  'MembroEquipeEntrada',
+  z.object({
+    name: z.string().min(1).max(80).openapi({ example: 'Maria' }),
+    email: z.string().email().openapi({ example: 'maria@exemplo.com' }),
+    password: z.string().min(8).max(72).openapi({ description: 'Senha provisória (mín. 8 caracteres)', example: 'trocar-esta-senha' }),
+    roleId: Id,
+  }),
+);
+const StaffUpdate = registry.register(
+  'MembroEquipeAtualizacao',
+  z.object({ name: z.string().min(1).max(80).optional(), roleId: Id.optional(), password: z.string().min(8).max(72).optional() }).openapi({ description: 'Ao menos um campo' }),
+);
+
 const RegisterInput = registry.register(
   'CadastroEntrada',
   z.object({
@@ -234,7 +289,7 @@ const RegisterInput = registry.register(
 );
 const ProfileInput = registry.register('PerfilEntrada', RegisterInput.omit({ password: true, cpf: true }).partial());
 const LoginInput = registry.register('LoginEntrada', z.object({ email: z.string(), password: z.string() }));
-const AuthResponse = registry.register('AuthResposta', z.object({ token: z.string(), user: User }));
+const AuthResponse = registry.register('AuthResposta', z.object({ token: z.string(), user: SessionUser }));
 
 const ProductIds = registry.register('FavoritosLista', z.object({ productIds: z.array(Id) }));
 
@@ -445,11 +500,21 @@ doc({ method: 'post', path: '/api/shipping/calculate', tag: 'Frete', summary: 'C
 
 doc({ method: 'post', path: '/api/auth/register', tag: 'Conta', summary: 'Cria uma conta de cliente', body: RegisterInput, ok: { status: 201, schema: AuthResponse, description: 'Conta criada' }, errors: [400, 409, 429] });
 doc({ method: 'post', path: '/api/auth/login', tag: 'Conta', summary: 'Entra na conta', body: LoginInput, ok: { schema: AuthResponse, description: 'Token e usuário' }, errors: [400, 401, 429] });
-doc({ method: 'get', path: '/api/auth/me', tag: 'Conta', summary: 'Dados do usuário logado', access: 'auth', ok: { schema: z.object({ user: User }), description: 'Usuário' } });
-doc({ method: 'put', path: '/api/auth/me', tag: 'Conta', summary: 'Atualiza o perfil', access: 'auth', body: ProfileInput, ok: { schema: z.object({ user: User }), description: 'Usuário atualizado' }, errors: [400, 409] });
+doc({ method: 'get', path: '/api/auth/me', tag: 'Conta', summary: 'Dados do usuário logado', access: 'auth', ok: { schema: z.object({ user: SessionUser }), description: 'Usuário, com isSuperAdmin e permissions' } });
+doc({ method: 'put', path: '/api/auth/me', tag: 'Conta', summary: 'Atualiza o perfil', access: 'auth', body: ProfileInput, ok: { schema: z.object({ user: SessionUser }), description: 'Usuário atualizado' }, errors: [400, 409] });
 
 doc({ method: 'get', path: '/api/users', tag: 'Clientes', summary: 'Lista os clientes', access: 'admin', ok: { schema: z.array(User), description: 'Usuários' } });
-doc({ method: 'patch', path: '/api/users/{id}/admin', tag: 'Clientes', summary: 'Concede ou retira acesso de administrador', access: 'admin', params: idParam, body: z.object({ isAdmin: z.boolean() }), ok: { schema: User, description: 'Usuário atualizado' }, errors: [400] });
+
+doc({ method: 'get', path: '/api/roles', tag: 'Equipe', summary: 'Lista os perfis de acesso (só admin supremo)', access: 'admin', ok: { schema: z.array(Role), description: 'Perfis' } });
+doc({ method: 'post', path: '/api/roles', tag: 'Equipe', summary: 'Cria um perfil de acesso (só admin supremo)', access: 'admin', body: RoleInput, ok: { status: 201, schema: Role, description: 'Perfil criado' }, errors: [409, 422] });
+doc({ method: 'get', path: '/api/roles/{id}', tag: 'Equipe', summary: 'Detalha um perfil (só admin supremo)', access: 'admin', params: idParam, ok: { schema: Role, description: 'Perfil' }, errors: [404] });
+doc({ method: 'put', path: '/api/roles/{id}', tag: 'Equipe', summary: 'Edita nome e permissões de um perfil (só admin supremo)', access: 'admin', params: idParam, body: RoleInput, ok: { schema: Role, description: 'Perfil atualizado' }, errors: [404, 409, 422] });
+doc({ method: 'delete', path: '/api/roles/{id}', tag: 'Equipe', summary: 'Apaga um perfil sem usuários (só admin supremo)', access: 'admin', params: idParam, ok: { status: 204, description: 'Apagado' }, errors: [404, 409] });
+
+doc({ method: 'get', path: '/api/staff', tag: 'Equipe', summary: 'Lista a equipe do painel (só admin supremo)', access: 'admin', ok: { schema: z.array(StaffMember), description: 'Membros da equipe' } });
+doc({ method: 'post', path: '/api/staff', tag: 'Equipe', summary: 'Cria um usuário da equipe com perfil (só admin supremo)', access: 'admin', body: StaffInput, ok: { status: 201, schema: StaffMember, description: 'Membro criado' }, errors: [409, 422] });
+doc({ method: 'patch', path: '/api/staff/{id}', tag: 'Equipe', summary: 'Troca perfil, nome ou senha de um membro (só admin supremo)', access: 'admin', params: idParam, body: StaffUpdate, ok: { schema: StaffMember, description: 'Membro atualizado' }, errors: [404, 422] });
+doc({ method: 'delete', path: '/api/staff/{id}', tag: 'Equipe', summary: 'Remove o acesso do membro à equipe (a conta de cliente continua)', access: 'admin', params: idParam, ok: { status: 204, description: 'Acesso removido' }, errors: [404] });
 
 doc({ method: 'post', path: '/api/upload', tag: 'Upload', summary: 'Envia uma imagem (convertida para JPEG, até 8 MB)', access: 'admin', bodyContent: 'multipart', body: z.object({ image: z.string().openapi({ type: 'string', format: 'binary' }) }), ok: { status: 201, schema: z.object({ url: z.string().openapi({ example: '/uploads/uuid.jpg' }) }), description: 'URL da imagem' }, errors: [400] });
 

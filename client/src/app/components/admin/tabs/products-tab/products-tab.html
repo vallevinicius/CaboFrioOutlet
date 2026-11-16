@@ -1,18 +1,20 @@
 <div>
   <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h1 class="text-2xl font-black tracking-tight text-slate-900">Produtos</h1>
-      <p class="mt-1 text-sm text-slate-500">
+      <h1 class="text-2xl font-black tracking-tight text-white">Produtos</h1>
+      <p class="mt-1 text-sm text-white/60">
         Gerencie o catálogo da loja: adicione fotos, preços e tamanhos.
       </p>
     </div>
+    @if (canEdit()) {
     <button
       (click)="openCreateForm()"
-      class="flex items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+      class="flex items-center justify-center gap-2 rounded-full bg-yellow-400 px-5 py-3 text-xs font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-accent hover:text-black"
     >
       <lucide-icon [img]="Plus" class="h-4 w-4" />
       Novo produto
     </button>
+    }
   </div>
 
   <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -22,16 +24,17 @@
   </div>
 
   @if (productService.loading()) {
-    <p class="py-20 text-center text-sm text-slate-500">Carregando produtos...</p>
+    <p class="py-20 text-center text-sm text-white/60">Carregando produtos...</p>
   } @else {
     <app-product-table
       [products]="productService.products()"
+      [readOnly]="!canEdit()"
       (edit)="openEditForm($event)"
       (delete)="handleDelete($event)"
     />
   }
 
-  <p class="mt-6 text-xs text-slate-400">
+  <p class="mt-6 text-xs text-white/45">
     O catálogo, o estoque e as fotos ficam salvos em um banco de dados real no servidor,
     acessível de qualquer navegador que aponte para esta API.
   </p>

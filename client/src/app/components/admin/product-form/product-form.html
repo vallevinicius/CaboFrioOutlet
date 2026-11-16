@@ -1,10 +1,10 @@
-<div class="fixed inset-0 z-[60] bg-slate-900/40" (click)="formClose.emit()" aria-hidden="true"></div>
-<aside class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg animate-slide-in flex-col overflow-y-auto border-l border-slate-200 bg-white">
-  <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-    <h2 class="text-base font-bold text-slate-900">{{ isEditing() ? 'Editar Produto' : 'Novo Produto' }}</h2>
+<div class="fixed inset-0 z-[60] bg-black/60" (click)="formClose.emit()" aria-hidden="true"></div>
+<aside class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg animate-slide-in flex-col overflow-y-auto border-l border-white/15 glass">
+  <div class="flex items-center justify-between border-b border-white/15 px-6 py-4">
+    <h2 class="text-base font-bold text-white">{{ isEditing() ? 'Editar Produto' : 'Novo Produto' }}</h2>
     <button
       (click)="formClose.emit()"
-      class="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors duration-300 hover:bg-slate-100 hover:text-slate-900"
+      class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors duration-300 hover:bg-white/10 hover:text-white"
       aria-label="Fechar"
     >
       <lucide-icon [img]="X" class="h-5 w-5" />
@@ -13,18 +13,18 @@
 
   <form (submit)="handleSubmit($event)" class="flex flex-1 flex-col gap-5 px-6 py-6">
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Foto do produto
       </label>
       <div class="flex items-center gap-4">
-        <div class="flex h-24 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+        <div class="flex h-24 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-white/5">
           @if (image()) {
             <img [src]="image()" alt="" class="h-full w-full object-cover" />
           } @else {
-            <lucide-icon [img]="Upload" class="h-5 w-5 text-slate-400" />
+            <lucide-icon [img]="Upload" class="h-5 w-5 text-white/45" />
           }
         </div>
-        <label class="flex cursor-pointer items-center justify-center rounded-full border border-slate-300 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:border-slate-900">
+        <label class="flex cursor-pointer items-center justify-center rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent">
           {{ uploading() ? 'Processando...' : image() ? 'Trocar foto' : 'Enviar foto' }}
           <input
             type="file"
@@ -38,25 +38,25 @@
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Fotos adicionais
       </label>
       <div class="flex flex-wrap items-center gap-3">
         @for (img of extraImages(); track img; let i = $index) {
-          <div class="relative h-20 w-16 overflow-hidden rounded-lg border border-slate-200">
+          <div class="relative h-20 w-16 overflow-hidden rounded-lg border border-white/15">
             <img [src]="img" alt="" class="h-full w-full object-cover" />
             <button
               type="button"
               (click)="removeExtraImage(i)"
               aria-label="Remover foto"
-              class="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-slate-900/80 text-white hover:bg-slate-900"
+              class="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/80 text-white hover:bg-slate-900"
             >
               <lucide-icon [img]="X" class="h-3 w-3" />
             </button>
           </div>
         }
         @if (extraImages().length < maxExtraImages) {
-          <label class="flex h-20 w-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-400 transition-colors duration-300 hover:border-slate-900 hover:text-slate-900">
+          <label class="flex h-20 w-16 cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/25 text-white/45 transition-colors duration-300 hover:border-accent hover:text-white">
             <lucide-icon [img]="Plus" class="h-5 w-5" />
             <input
               type="file"
@@ -69,39 +69,39 @@
           </label>
         }
       </div>
-      <p class="mt-1.5 text-xs text-slate-400">Até {{ maxExtraImages }} fotos além da principal. Aparecem na galeria da página do produto.</p>
+      <p class="mt-1.5 text-xs text-white/45">Até {{ maxExtraImages }} fotos além da principal. Aparecem na galeria da página do produto.</p>
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Nome</label>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Nome</label>
       <input
         [value]="name()"
         (input)="name.set($any($event.target).value)"
         placeholder="Ex: Camisa Oversized Concrete"
-        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       />
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Marca
       </label>
       @if (brandOptions().length > 0) {
         <select
           [value]="brand()"
           (change)="brand.set($any($event.target).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         >
           <option value="">Sem marca</option>
           @for (opt of brandOptions(); track opt) {
             <option [value]="opt">{{ opt }}</option>
           }
         </select>
-        <p class="mt-1.5 text-xs text-slate-400">
+        <p class="mt-1.5 text-xs text-white/45">
           Gerencie as opções em Configurações → Marcas que trabalhamos.
         </p>
       } @else {
-        <p class="rounded-lg border border-dashed border-slate-300 px-4 py-2.5 text-xs text-slate-500">
+        <p class="rounded-lg border border-dashed border-white/25 px-4 py-2.5 text-xs text-white/60">
           Nenhuma marca cadastrada ainda. Adicione em Configurações → Marcas que trabalhamos.
         </p>
       }
@@ -109,13 +109,13 @@
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
           Categoria
         </label>
         <select
           [value]="category()"
           (change)="category.set($any($event.target).value)"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         >
           @for (opt of categoryOptions; track opt.value) {
             <option [value]="opt.value">{{ opt.label }}</option>
@@ -123,7 +123,7 @@
         </select>
       </div>
       <div>
-        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
           Preço (R$)
         </label>
         <input
@@ -131,14 +131,14 @@
           (input)="onPriceInput($any($event.target).value)"
           inputmode="numeric"
           placeholder="149,90"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
       </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
           Desconto (%)
         </label>
         <input
@@ -146,34 +146,34 @@
           (input)="discountPercent.set($any($event.target).value)"
           inputmode="decimal"
           placeholder="Opcional"
-          class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
       </div>
-      <label class="flex items-center gap-2.5 self-end pb-2.5 text-sm font-medium text-slate-700">
+      <label class="flex items-center gap-2.5 self-end pb-2.5 text-sm font-medium text-white/80">
         <input
           type="checkbox"
           [checked]="isNew()"
           (change)="isNew.set($any($event.target).checked)"
-          class="h-4 w-4 rounded border-slate-300 bg-white accent-yellow-400"
+          class="h-4 w-4 rounded border-white/25 glass accent-yellow-400"
         />
         Marcar como novidade
       </label>
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">Tamanhos</label>
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Tamanhos</label>
       <div class="flex gap-2">
         <input
           [value]="sizeInput()"
           (input)="sizeInput.set($any($event.target).value)"
           (keydown)="onSizeInputKeydown($event)"
           placeholder="Ex: P, M, G..."
-          class="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+          class="flex-1 rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
         />
         <button
           type="button"
           (click)="addSize()"
-          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-900 transition-colors duration-300 hover:border-slate-900"
+          class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-white/25 text-white transition-colors duration-300 hover:border-accent"
           aria-label="Adicionar tamanho"
         >
           <lucide-icon [img]="Plus" class="h-4 w-4" />
@@ -181,26 +181,26 @@
       </div>
 
       <div class="mt-3 flex items-center gap-3">
-        <label class="text-xs font-medium text-slate-500">Estoque inicial por tamanho novo</label>
+        <label class="text-xs font-medium text-white/60">Estoque inicial por tamanho novo</label>
         <input
           type="number"
           min="0"
           [value]="initialStock()"
           (input)="initialStock.set($any($event.target).value)"
-          class="w-16 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-center text-sm text-slate-900 focus:border-yellow-400 focus:outline-none"
+          class="w-16 rounded-lg border border-white/25 bg-white/10 px-2 py-1.5 text-center text-sm text-white focus:border-accent focus:outline-none"
         />
       </div>
 
       @if (sizes().length > 0) {
         <div class="mt-3 flex flex-wrap gap-1.5">
           @for (size of sizes(); track size) {
-            <span class="flex items-center gap-1.5 rounded-full border border-slate-300 py-1 pl-3 pr-2 text-xs font-semibold text-slate-900">
+            <span class="flex items-center gap-1.5 rounded-full border border-white/25 py-1 pl-3 pr-2 text-xs font-semibold text-white">
               {{ size }}
               <button
                 type="button"
                 (click)="removeSize(size)"
                 [attr.aria-label]="'Remover tamanho ' + size"
-                class="text-slate-400 hover:text-slate-900"
+                class="text-white/45 hover:text-white"
               >
                 <lucide-icon [img]="X" class="h-3 w-3" />
               </button>
@@ -211,7 +211,7 @@
     </div>
 
     <div>
-      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500">
+      <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
         Descrição
       </label>
       <textarea
@@ -219,25 +219,25 @@
         (input)="description.set($any($event.target).value)"
         rows="3"
         placeholder="Descreva o produto..."
-        class="w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-yellow-400 focus:outline-none"
+        class="w-full resize-none rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
       ></textarea>
     </div>
 
     @if (error()) {
-      <p class="text-xs font-medium text-red-500">{{ error() }}</p>
+      <p class="text-xs font-medium text-red-400">{{ error() }}</p>
     }
 
     <div class="flex gap-3 pt-2">
       <button
         type="button"
         (click)="formClose.emit()"
-        class="flex-1 rounded-full border border-slate-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:border-slate-900"
+        class="flex-1 rounded-full border border-white/25 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent"
       >
         Cancelar
       </button>
       <button
         type="submit"
-        class="flex-1 rounded-full bg-yellow-400 py-3 text-sm font-bold uppercase tracking-wide text-slate-900 transition-colors duration-300 hover:bg-slate-900 hover:text-white"
+        class="flex-1 rounded-full bg-yellow-400 py-3 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-accent hover:text-black"
       >
         {{ isEditing() ? 'Salvar alterações' : 'Adicionar produto' }}
       </button>

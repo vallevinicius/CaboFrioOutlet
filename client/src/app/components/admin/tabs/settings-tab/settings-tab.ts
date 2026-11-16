@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { LucideAngularModule, Plus, X, ArrowUp, ArrowDown } from 'lucide-angular';
 import { SettingsService } from '../../../../services/settings.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -7,6 +7,7 @@ import { formatCep } from '../../../../utils/cep';
 import { formatPhone } from '../../../../utils/phone';
 import { moveItem } from '../../../../utils/text';
 import { OpeningHoursRow } from '../../../../types/settings';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-settings-tab',
@@ -14,6 +15,9 @@ import { OpeningHoursRow } from '../../../../types/settings';
   templateUrl: './settings-tab.html',
 })
 export class SettingsTab implements OnInit {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('configuracoes', 'edit'));
   private settingsService = inject(SettingsService);
   private toastService = inject(ToastService);
 

@@ -5,6 +5,7 @@ import { ToastService } from '../../../../services/toast.service';
 import { ApiError } from '../../../../services/api-error';
 import { StatCard } from '../../stat-card/stat-card';
 import { StockInput } from '../../stock-input/stock-input';
+import { AuthService } from '../../../../services/auth.service';
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -22,6 +23,9 @@ function stockOf(stock: Record<string, number>, size: string): number {
   templateUrl: './stock-tab.html',
 })
 export class StockTab {
+  private auth = inject(AuthService);
+  /** Só "ver" na tela: os controles que gravam somem ou ficam desativados. */
+  readonly canEdit = computed(() => this.auth.can('estoque', 'edit') || this.auth.can('produtos', 'edit'));
   productService = inject(ProductService);
   private toastService = inject(ToastService);
 

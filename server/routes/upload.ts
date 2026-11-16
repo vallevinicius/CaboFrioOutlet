@@ -4,7 +4,7 @@ import sharp from 'sharp';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { requireAdmin } from '../middleware/auth.js';
+import { requireAnyPermission } from '../middleware/permissions.js';
 import { UPLOADS_DIR } from '../paths.js';
 
 
@@ -22,22 +22,27 @@ const upload = multer({
 
 export const uploadRouter = Router();
 
-uploadRouter.post('/', requireAdmin, upload.single('image'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
-  }
+uploadRouter.post(
+  '/',
+  requireAnyPermission(['produtos', 'edit'], ['banners', 'edit'], ['configuracoes', 'edit']),
+  upload.single('image'),
+  async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhuma imagem enviada.' });
+    }
 
-  try {
-    await fs.mkdir(UPLOADS_DIR, { recursive: true });
-    const filename = `${randomUUID()}.jpg`;
+    try {
+      await fs.mkdir(UPLOADS_DIR, { recursive: true });
+      const filename = `${randomUUID()}.jpg`;
 
-    await sharp(req.file.buffer)
-      .resize({ width: 1000, withoutEnlargement: true })
-      .jpeg({ quality: 82 })
-      .toFile(path.join(UPLOADS_DIR, filename));
+      await sharp(req.file.buffer)
+        .resize({ width: 1000, withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toFile(path.join(UPLOADS_DIR, filename));
 
-    res.status(201).json({ url: `/uploads/${filename}` });
-  } catch {
-    res.status(400).json({ error: 'Não foi possível processar a imagem enviada.' });
-  }
-});
+      res.status(201).json({ url: `/uploads/${filename}` });
+    } catch {
+      res.status(400).json({ error: 'Não foi possível processar a imagem enviada.' });
+    }
+  },
+);

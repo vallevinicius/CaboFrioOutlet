@@ -2,7 +2,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers.js';
+import { FULL_EDIT, appWith, mockAccess, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -18,6 +18,7 @@ const app = appWith('/api/reports', reportsRouter);
 
 beforeEach(() => {
   mockReset(prisma());
+  mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
   prisma().order.findMany.mockResolvedValue([] as never);
   prisma().product.findMany.mockResolvedValue([] as never);
 });

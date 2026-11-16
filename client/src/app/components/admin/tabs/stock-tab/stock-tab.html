@@ -1,7 +1,7 @@
 <div>
   <div class="mb-8">
-    <h1 class="text-2xl font-black tracking-tight text-slate-900">Estoque</h1>
-    <p class="mt-1 text-sm text-slate-500">
+    <h1 class="text-2xl font-black tracking-tight text-white">Estoque</h1>
+    <p class="mt-1 text-sm text-white/60">
       Ajuste a quantidade disponível de cada tamanho. As mudanças valem na loja na hora.
     </p>
   </div>
@@ -13,12 +13,12 @@
   </div>
 
   @if (productService.loading()) {
-    <p class="py-20 text-center text-sm text-slate-500">Carregando estoque...</p>
+    <p class="py-20 text-center text-sm text-white/60">Carregando estoque...</p>
   } @else {
-    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+    <div class="overflow-x-auto rounded-2xl border border-white/15">
       <table class="w-full min-w-[720px] text-left text-sm">
         <thead>
-          <tr class="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+          <tr class="border-b border-white/15 text-xs uppercase tracking-wider text-white/60">
             <th class="px-4 py-3 font-semibold">Produto</th>
             <th class="px-4 py-3 font-semibold">Estoque por tamanho</th>
             <th class="px-4 py-3 font-semibold">Total</th>
@@ -27,38 +27,39 @@
         </thead>
         <tbody>
           @for (product of productService.products(); track product.id) {
-            <tr class="border-b border-slate-100 last:border-0">
+            <tr class="border-b border-white/10 last:border-0">
               <td class="px-4 py-3">
                 <div class="flex items-center gap-3">
                   <img [src]="product.image" alt="" class="h-12 w-10 flex-shrink-0 rounded-md object-cover" />
-                  <span class="font-semibold text-slate-900">{{ product.name }}</span>
+                  <span class="font-semibold text-white">{{ product.name }}</span>
                 </div>
               </td>
               <td class="px-4 py-3">
                 <div class="flex flex-wrap gap-2">
                   @for (size of product.sizes; track size) {
-                    <label class="flex items-center gap-1.5 rounded-full border border-slate-300 py-1 pl-3 pr-1.5 text-xs text-slate-700">
+                    <label class="flex items-center gap-1.5 rounded-full border border-white/25 py-1 pl-3 pr-1.5 text-xs text-white/80">
                       {{ size }}
                       <app-stock-input
                         [value]="stockOf(product.stock, size)"
                         [onCommit]="makeCommitHandler(product.id, size)"
+                        [disabled]="!canEdit()"
                       />
                     </label>
                   }
                 </div>
               </td>
-              <td class="px-4 py-3 font-semibold text-slate-900">{{ totalStockOf(product.stock) }}</td>
+              <td class="px-4 py-3 font-semibold text-white">{{ totalStockOf(product.stock) }}</td>
               <td class="px-4 py-3">
                 @if (totalStockOf(product.stock) === 0) {
-                  <span class="rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-bold uppercase text-red-600">
+                  <span class="rounded-full bg-red-500/15 px-2.5 py-1 text-[10px] font-bold uppercase text-red-400">
                     Esgotado
                   </span>
                 } @else if (totalStockOf(product.stock) <= LOW_STOCK_THRESHOLD) {
-                  <span class="rounded-full bg-yellow-100 px-2.5 py-1 text-[10px] font-bold uppercase text-yellow-800">
+                  <span class="rounded-full bg-yellow-400/20 px-2.5 py-1 text-[10px] font-bold uppercase text-yellow-200">
                     Estoque baixo
                   </span>
                 } @else {
-                  <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-600">
+                  <span class="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase text-emerald-300">
                     Disponível
                   </span>
                 }

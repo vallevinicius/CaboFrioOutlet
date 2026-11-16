@@ -1,7 +1,10 @@
 import express, { Router } from 'express';
 import request from 'supertest';
 import { describe, expect, it, vi } from 'vitest';
-import { tokenFor } from '../test/helpers.js';
+import type { PrismaClient } from '@prisma/client';
+import type { DeepMockProxy } from 'vitest-mock-extended';
+import { mockAccess, tokenFor } from '../test/helpers.js';
+import { prisma } from '../db.js';
 
 vi.mock('../db', async () => {
   const { mockDeep } = await import('vitest-mock-extended');
@@ -21,6 +24,8 @@ import { settingsRouter } from '../routes/settings.js';
 import { shippingRouter } from '../routes/shipping.js';
 import { uploadRouter } from '../routes/upload.js';
 import { usersRouter } from '../routes/users.js';
+import { rolesRouter } from '../routes/roles.js';
+import { staffRouter } from '../routes/staff.js';
 import { wholesaleRouter } from '../routes/wholesale.js';
 import { seoRouter } from '../seo/routes.js';
 import { mountApiDocs } from './docs.js';
@@ -33,6 +38,8 @@ const MOUNTS: [string, Router][] = [
   ['/api/settings', settingsRouter],
   ['/api/upload', uploadRouter],
   ['/api/users', usersRouter],
+  ['/api/roles', rolesRouter],
+  ['/api/staff', staffRouter],
   ['/api/hero-slides', heroSlidesRouter],
   ['/api/checkout', checkoutRouter],
   ['/api/shipping', shippingRouter],
@@ -174,6 +181,40 @@ describe('OpenAPI: atacado', () => {
   });
 });
 
+describe('perfis de acesso e equipe', () => {
+  const paths = doc.paths as Record<string, Record<string, { security?: unknown[]; responses: Record<string, unknown> }>>;
+  const schemas = (doc.components?.schemas ?? {}) as Record<string, { properties: Record<string, unknown> }>;
+
+  it('documenta perfis e equipe com autenticação bearer e erros 401/403', () => {
+    for (const [path, method] of [['/api/roles', 'get'], ['/api/roles', 'post'], ['/api/roles/{id}', 'put'], ['/api/roles/{id}', 'delete'], ['/api/staff', 'get'], ['/api/staff', 'post'], ['/api/staff/{id}', 'patch'], ['/api/staff/{id}', 'delete']]) {
+      const op = paths[path]?.[method];
+      expect(op, `${method} ${path}`).toBeDefined();
+      expect(op.security).toEqual([{ bearerAuth: [] }]);
+      expect(Object.keys(op.responses)).toEqual(expect.arrayContaining(['401', '403']));
+    }
+    expect(Object.keys(paths['/api/staff'].post.responses)).toEqual(expect.arrayContaining(['409', '422']));
+    expect(Object.keys(paths['/api/roles/{id}'].delete.responses)).toContain('409');
+  });
+
+  it('o usuário da sessão informa isSuperAdmin e permissions, e a promoção antiga não existe', () => {
+    const session = schemas['UsuarioSessao'] as unknown as { allOf: { properties?: Record<string, unknown> }[] };
+    const own = session.allOf.flatMap((part) => Object.keys(part.properties ?? {}));
+    expect(own).toEqual(expect.arrayContaining(['isSuperAdmin', 'permissions']));
+    expect(paths['/api/users/{id}/admin']).toBeUndefined();
+  });
+
+  it('os nomes dos schemas não colidem com o perfil do cliente (PerfilEntrada)', () => {
+    expect(Object.keys(schemas['PerfilEntrada'].properties)).not.toContain('permissions');
+    expect(Object.keys(schemas['PerfilAcessoEntrada'].properties)).toContain('permissions');
+  });
+
+  it('nenhum DTO de equipe expõe senha', () => {
+    for (const name of ['PerfilAcesso', 'MembroEquipe']) {
+      expect(Object.keys(schemas[name].properties).join(',')).not.toMatch(/password/i);
+    }
+  });
+});
+
 describe('Swagger UI: exposição', () => {
   it('fora de produção serve a interface e o JSON', async () => {
     const app = express();
@@ -183,12 +224,17 @@ describe('Swagger UI: exposição', () => {
     expect(ui.text).toContain('swagger');
   });
 
-  it('em produção não há interface e o JSON só abre para administrador', async () => {
+  it('em produção não há interface e o JSON só abre para o admin supremo', async () => {
+    const db = prisma as unknown as DeepMockProxy<PrismaClient>;
+    mockAccess(db, 'cliente', { isAdmin: false });
     const app = express();
     mountApiDocs(app, 'production');
     await request(app).get('/api/docs/').expect(404);
     await request(app).get('/api/docs.json').expect(401);
     await request(app).get('/api/docs.json').set('Authorization', tokenFor('cliente', false)).expect(403);
+    mockAccess(db, 'comum', { permissions: { pedidos: 'edit' } });
+    await request(app).get('/api/docs.json').set('Authorization', tokenFor('comum', true)).expect(403);
+    mockAccess(db, 'admin', { isSuperAdmin: true });
     const res = await request(app).get('/api/docs.json').set('Authorization', tokenFor('admin', true)).expect(200);
     expect(res.body.openapi).toBe('3.1.0');
   });
