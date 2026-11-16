@@ -45,3 +45,18 @@ export function formatInstallments(
   if (!installments || installments <= 1) return 'À vista';
   return `Parcelado em ${installments}x`;
 }
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  processed: 'Aprovado',
+  failed: 'Recusado',
+  cancelled: 'Cancelado',
+  processing: 'Em análise',
+  action_required: 'Aguardando o pagamento',
+  expired: 'Expirado',
+};
+
+/** Situação do pagamento em português, para a equipe (o Mercado Pago devolve em inglês). */
+export function formatPaymentStatus(status: string | null | undefined): string {
+  if (!status) return 'Sem pagamento iniciado';
+  return PAYMENT_STATUS_LABELS[status] ?? status;
+}

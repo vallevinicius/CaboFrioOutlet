@@ -1,0 +1,96 @@
+<div class="mb-5 grid gap-3 md:grid-cols-2">
+  <section aria-label="Cliente" class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <h3 class="text-[11px] font-bold uppercase tracking-wider text-white/50">Cliente</h3>
+      @if (whatsappUrl(); as url) {
+        <a
+          [href]="url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-1.5 rounded-full bg-emerald-500 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-black transition-colors hover:bg-emerald-400"
+        >
+          <lucide-icon [img]="MessageCircle" class="h-3.5 w-3.5" />
+          Chamar no WhatsApp
+        </a>
+      } @else {
+        <span class="rounded-full border border-white/15 px-3 py-1 text-[11px] text-white/45">Sem WhatsApp neste pedido</span>
+      }
+    </div>
+    <dl class="flex flex-col gap-1.5 text-sm">
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Nome</dt><dd class="text-white">{{ order().customerName }}</dd></div>
+      <div class="flex gap-2">
+        <dt class="w-24 shrink-0 text-white/50">E-mail</dt>
+        <dd class="min-w-0 break-all text-white">
+          <a [href]="'mailto:' + order().customerContact" class="hover:text-accent">{{ order().customerContact }}</a>
+        </dd>
+      </div>
+      <div class="flex gap-2">
+        <dt class="w-24 shrink-0 text-white/50">WhatsApp</dt>
+        <dd class="text-white">{{ phoneDisplay() || 'Não informado' }}</dd>
+      </div>
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">CPF</dt><dd class="text-white">{{ cpf() || 'Não informado' }}</dd></div>
+      <div class="flex gap-2">
+        <dt class="w-24 shrink-0 text-white/50">Cadastro</dt>
+        <dd class="text-white">
+          @if (order().account; as account) {
+            Cliente cadastrado desde {{ formatDate(account.createdAt).split(',')[0] }}
+            @if (account.linkedBy === 'email') {
+              <span class="block text-xs text-white/50">Pedido de visitante, ligado à conta pelo mesmo e-mail.</span>
+            }
+          } @else {
+            <span class="text-white/70">Comprou como visitante, sem cadastro.</span>
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+
+  <section aria-label="Entrega" class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <h3 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-white/50">Entrega</h3>
+    @if (hasAddress()) {
+      <address class="text-sm not-italic leading-relaxed text-white">
+        {{ order().shippingStreet }}, {{ order().shippingNumber }}
+        @if (order().shippingComplement) { — {{ order().shippingComplement }} }
+        <br />
+        {{ order().shippingNeighborhood }} · {{ order().shippingCity }}/{{ order().shippingState }}
+        <br />
+        CEP {{ cep() }}
+      </address>
+      <p class="mt-2 text-xs text-white/60">
+        {{ order().shippingService || 'Frete padrão' }} ·
+        {{ order().shippingCost ? (order().shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })) : 'Frete grátis' }}
+      </p>
+    } @else {
+      <p class="text-sm text-white/60">Endereço não registrado neste pedido.</p>
+    }
+  </section>
+
+  <section aria-label="Pagamento" class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <h3 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-white/50">Pagamento</h3>
+    <dl class="flex flex-col gap-1.5 text-sm">
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Forma</dt><dd class="text-white">{{ formatPaymentMethod(order().paymentMethod) }}</dd></div>
+      @if (formatInstallments(order().paymentMethod, order().installments); as installments) {
+        <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Parcelas</dt><dd class="text-white">{{ installments }}</dd></div>
+      }
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Situação</dt><dd class="text-white">{{ formatPaymentStatus(order().paymentStatus) }}</dd></div>
+    </dl>
+  </section>
+
+  <section aria-label="Pedido" class="rounded-xl border border-white/10 bg-white/5 p-4">
+    <h3 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-white/50">Pedido</h3>
+    <dl class="flex flex-col gap-1.5 text-sm">
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Número</dt><dd class="font-mono text-white">#{{ code() }}</dd></div>
+      <div class="flex gap-2"><dt class="w-24 shrink-0 text-white/50">Feito em</dt><dd class="text-white">{{ formatDate(order().createdAt) }}</dd></div>
+      <div class="flex gap-2">
+        <dt class="w-24 shrink-0 text-white/50">Tipo</dt>
+        <dd class="text-white">
+          @if (order().isWholesale) {
+            Atacado{{ order().wholesaleDiscountPercent ? ' (−' + order().wholesaleDiscountPercent + '% por quantidade)' : '' }}
+          } @else {
+            Varejo
+          }
+        </dd>
+      </div>
+    </dl>
+  </section>
+</div>

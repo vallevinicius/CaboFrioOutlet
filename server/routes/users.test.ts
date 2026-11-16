@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
 import { appWith, mockAccess, tokenFor } from '../test/helpers.js';
+import { sealCpf } from '../utils/cpf-vault.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -29,6 +30,18 @@ describe('GET /api/users', () => {
     expect(JSON.stringify(res.body)).not.toContain('segredo');
     expect(res.body[0]).not.toHaveProperty('passwordHash');
     expect(res.body[0].cpf).toBe(''); // marcador interno de conta da equipe não vaza
+  });
+});
+
+describe('GET /api/users: CPF cifrado', () => {
+  it('a lista mostra o CPF aberto, nunca o texto cifrado', async () => {
+    mockAccess(prisma(), 'u1', { permissions: { clientes: 'view' } });
+    prisma().user.findMany.mockResolvedValue([
+      { id: 'c1', name: 'Ana', email: 'ana@x.com', passwordHash: 'x', cpf: sealCpf('52998224725').cpf, phone: '', cep: '', street: '', number: '', complement: null, neighborhood: '', city: '', state: '', isAdmin: false, createdAt: new Date() },
+    ] as never);
+    const res = await request(app).get('/api/users').set('Authorization', tokenFor('u1', true)).expect(200);
+    expect(res.body[0].cpf).toBe('52998224725');
+    expect(JSON.stringify(res.body)).not.toContain('enc:v1');
   });
 });
 

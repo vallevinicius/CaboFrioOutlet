@@ -55,6 +55,23 @@
                 />
                 <p class="mt-1 text-[11px] text-slate-500">Exigido pelo Mercado Pago para processar o pagamento.</p>
               </div>
+              <div>
+                <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  WhatsApp / telefone
+                </label>
+                <input
+                  type="tel"
+                  inputmode="numeric"
+                  autocomplete="tel"
+                  [value]="phone()"
+                  (input)="onPhoneInput($any($event.target).value)"
+                  maxlength="15"
+                  required
+                  placeholder="(22) 99999-9999"
+                  class="w-full rounded-sm border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
+                />
+                <p class="mt-1 text-[11px] text-slate-500">Com DDD. Usado só para falarmos sobre o seu pedido e a entrega.</p>
+              </div>
 
               <p class="mt-2 text-xs font-bold uppercase tracking-wider text-slate-500">Endereço de entrega</p>
 

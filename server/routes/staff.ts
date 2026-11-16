@@ -4,7 +4,6 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { requireSuperAdmin } from '../middleware/permissions.js';
-import { staffCpfPlaceholder } from '../utils/cpf.js';
 
 export const staffRouter = Router();
 staffRouter.use(requireSuperAdmin);
@@ -65,7 +64,6 @@ staffRouter.post('/', async (req, res) => {
       data: {
         name,
         email,
-        cpf: staffCpfPlaceholder(),
         passwordHash: await bcrypt.hash(password, 10),
         isAdmin: true,
         roleId,

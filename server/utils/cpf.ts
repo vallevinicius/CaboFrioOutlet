@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 export function normalizeCpf(raw: string): string {
   return raw.replace(/\D/g, '');
 }
@@ -21,15 +19,8 @@ export function isValidCpf(raw: string): boolean {
   return check2 === parseInt(cpf[10], 10);
 }
 
+/** Marcador que contas da equipe usavam antes (a coluna era única). Ainda pode existir em dados antigos. */
 const STAFF_CPF_PREFIX = 'equipe-';
-
-/**
- * A coluna `User.cpf` é @unique e o padrão "" já é do admin do seed. Conta da equipe não tem CPF,
- * então recebe um marcador único que nunca é um CPF válido (tem letras e hífen).
- */
-export function staffCpfPlaceholder(): string {
-  return `${STAFF_CPF_PREFIX}${randomUUID()}`;
-}
 
 /** O marcador é detalhe interno: para o front, conta da equipe é só "sem CPF". */
 export function publicCpf(cpf: string): string {

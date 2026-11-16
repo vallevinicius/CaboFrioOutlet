@@ -51,6 +51,10 @@ model Order {
   id              String      @id @default(cuid())
   customerName    String
   customerContact String
+  /// Telefone/WhatsApp do cliente na hora da compra (só números). Pedidos antigos: nulo.
+  customerPhone   String?
+  /// CPF do cliente na hora da compra, cifrado (AES-256-GCM). Pedidos antigos: nulo.
+  customerCpf     String?
   total           Float
   shippingCost    Float       @default(0)
   shippingService String?
@@ -138,7 +142,10 @@ model User {
   name         String
   email        String   @unique
   passwordHash String
-  cpf          String   @unique @default("")
+  /// CPF cifrado (AES-256-GCM, formato "enc:v1:..."). A unicidade vale no cpfHash.
+  cpf          String   @default("")
+  /// Carimbo (HMAC) do CPF: barra conta duplicada sem revelar o número. Nulo em conta sem CPF.
+  cpfHash      String?  @unique
   phone        String   @default("")
   cep          String   @default("")
   street       String   @default("")

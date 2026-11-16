@@ -13,6 +13,7 @@ import { ToastService } from '../../services/toast.service';
 import { ApiError } from '../../services/api-error';
 import { Order } from '../../types/order';
 import { isValidCpf, normalizeCpf, formatCpf } from '../../utils/cpf';
+import { formatPhone } from '../../utils/phone';
 import { formatCep } from '../../utils/cep';
 import { describePaymentFailure } from '../../utils/payment-failure';
 
@@ -69,6 +70,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
   name = signal('');
   email = signal('');
   cpf = signal('');
+  phone = signal('');
 
   cep = signal('');
   street = signal('');
@@ -126,6 +128,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
       this.name.set(user.name);
       this.email.set(user.email);
       this.cpf.set(formatCpf(user.cpf));
+      this.phone.set(formatPhone(user.phone));
       this.cep.set(formatCep(user.cep));
       this.street.set(user.street);
       this.number.set(user.number);
@@ -140,6 +143,10 @@ export class CheckoutPage implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.brickController?.unmount();
     if (this.pollHandle) clearInterval(this.pollHandle);
+  }
+
+  onPhoneInput(value: string): void {
+    this.phone.set(formatPhone(value));
   }
 
   onCpfInput(value: string): void {
@@ -207,6 +214,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
     const name = this.name().trim();
     const email = this.email().trim();
     const cpf = normalizeCpf(this.cpf());
+    const phoneDigits = this.phone().replace(/\D/g, '');
     const cepDigits = this.cep().replace(/\D/g, '');
 
     if (!name) {
@@ -219,6 +227,10 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
     if (!isValidCpf(cpf)) {
       this.toastService.showToast('Informe um CPF válido.');
+      return;
+    }
+    if (phoneDigits.length < 10) {
+      this.toastService.showToast('Informe um telefone/WhatsApp válido.', 'Com DDD, para falarmos sobre a entrega.');
       return;
     }
     if (
@@ -242,6 +254,8 @@ export class CheckoutPage implements OnInit, OnDestroy {
       const order = await this.checkoutService.createOrder({
         customerName: name,
         customerContact: email,
+        customerPhone: phoneDigits,
+        customerCpf: cpf,
         wholesale: this.cartService.wholesale() || undefined,
         items: this.cartService.items().map((item) => ({
           productId: item.product.id,
