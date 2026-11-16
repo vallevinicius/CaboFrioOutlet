@@ -1,4 +1,4 @@
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 
 const PRODUCTION_BASE = 'https://melhorenvio.com.br';
 const SANDBOX_BASE = 'https://sandbox.melhorenvio.com.br';

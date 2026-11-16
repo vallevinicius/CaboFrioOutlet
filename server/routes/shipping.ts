@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { calculateShippingOptions, ShippingOption } from '../services/melhor-envio';
+import { prisma } from '../db.js';
+import { calculateShippingOptions, ShippingOption } from '../services/melhor-envio.js';
 
 export const shippingRouter = Router();
 

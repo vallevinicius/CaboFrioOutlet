@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeGaId, normalizeMetaPixelId } from './analytics';
+import { normalizeGaId, normalizeMetaPixelId } from './analytics.js';
 
 describe('normalizeGaId', () => {
   it('aceita G-XXXX (em qualquer caixa) e vazio', () => {

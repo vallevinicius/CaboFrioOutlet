@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import fs from 'fs';
-import { prisma } from '../db';
-import { parseOpeningHours } from '../utils/contact';
+import { prisma } from '../db.js';
+import { parseOpeningHours } from '../utils/contact.js';
 import {
   SeoProduct,
   buildRobotsTxt,
@@ -9,7 +9,7 @@ import {
   buildSitemapXml,
   injectSeo,
   resolveBaseUrl,
-} from './meta';
+} from './meta.js';
 
 export const seoRouter = Router();
 

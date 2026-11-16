@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { Prisma, Product, ProductImage, ProductSize } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
-import { normalizeImages } from '../utils/product-images';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
+import { normalizeImages } from '../utils/product-images.js';
 
 export const productsRouter = Router();
 

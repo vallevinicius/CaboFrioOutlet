@@ -2,7 +2,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers';
+import { appWith, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -13,7 +13,7 @@ vi.mock('../db', async () => {
 vi.mock('../services/melhor-envio', () => ({ calculateShippingOptions: vi.fn().mockResolvedValue(null) }));
 vi.mock('../services/stock', () => ({ expireStaleOrders: vi.fn(), restoreStockForOrder: vi.fn() }));
 
-import { ordersRouter } from './orders';
+import { ordersRouter } from './orders.js';
 
 const prisma = () => prismaMock.current as ReturnType<typeof mockDeep<PrismaClient>>;
 const app = appWith('/api/orders', ordersRouter);

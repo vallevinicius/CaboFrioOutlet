@@ -8,7 +8,7 @@ import {
   parseTiers,
   priceWholesaleItems,
   tierFor,
-} from './wholesale-pricing';
+} from './wholesale-pricing.js';
 
 describe('normalizeTiers', () => {
   it('aceita faixas válidas e ordena por quantidade', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidCnpj, normalizeCnpj } from './cnpj';
+import { isValidCnpj, normalizeCnpj } from './cnpj.js';
 
 describe('CNPJ', () => {
   it('aceita CNPJs com dígitos verificadores corretos (com ou sem máscara)', () => {

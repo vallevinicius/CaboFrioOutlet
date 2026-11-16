@@ -1,5 +1,5 @@
-import { isValidCnpj, normalizeCnpj } from './cnpj';
-import { normalizeEmail, normalizeWhatsapp } from './contact';
+import { isValidCnpj, normalizeCnpj } from './cnpj.js';
+import { normalizeEmail, normalizeWhatsapp } from './contact.js';
 
 export const QUOTE_CATEGORIES = ['camisas', 'calças', 'bermudas', 'bonés'] as const;
 export const DEFAULT_MIN_PIECES = 10;

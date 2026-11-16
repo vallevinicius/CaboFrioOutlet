@@ -4,11 +4,9 @@ import sharp from 'sharp';
 import { randomUUID } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { requireAdmin } from '../middleware/auth';
+import { requireAdmin } from '../middleware/auth.js';
+import { UPLOADS_DIR } from '../paths.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const UPLOADS_DIR = path.resolve(__dirname, '..', 'uploads');
 
 const upload = multer({
   storage: multer.memoryStorage(),

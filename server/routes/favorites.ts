@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAuth } from '../middleware/auth';
-import { MAX_FAVORITES, normalizeProductIds } from '../utils/favorites';
+import { prisma } from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+import { MAX_FAVORITES, normalizeProductIds } from '../utils/favorites.js';
 
 export const favoritesRouter = Router();
 

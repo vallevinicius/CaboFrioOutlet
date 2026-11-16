@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { fetchGoogleReviews, EMPTY_REVIEWS } from '../services/google-reviews';
+import { prisma } from '../db.js';
+import { fetchGoogleReviews, EMPTY_REVIEWS } from '../services/google-reviews.js';
 
 export const reviewsRouter = Router();
 

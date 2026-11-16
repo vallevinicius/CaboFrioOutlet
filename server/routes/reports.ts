@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { prisma } from '../db';
-import { requireAdmin } from '../middleware/auth';
-import { buildLowStock, buildOverview, parsePeriod } from '../services/reports';
+import { prisma } from '../db.js';
+import { requireAdmin } from '../middleware/auth.js';
+import { buildLowStock, buildOverview, parsePeriod } from '../services/reports.js';
 
 export const reportsRouter = Router();
 

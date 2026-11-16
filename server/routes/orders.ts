@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAdmin, requireAuth, optionalAuth } from '../middleware/auth';
-import { expireStaleOrders } from '../services/stock';
-import { calculateShippingOptions, ShippingPackageInput } from '../services/melhor-envio';
-import { discountedUnitPrice, parseTiers, tierFor } from '../utils/wholesale-pricing';
+import { prisma } from '../db.js';
+import { requireAdmin, requireAuth, optionalAuth } from '../middleware/auth.js';
+import { expireStaleOrders } from '../services/stock.js';
+import { calculateShippingOptions, ShippingPackageInput } from '../services/melhor-envio.js';
+import { discountedUnitPrice, parseTiers, tierFor } from '../utils/wholesale-pricing.js';
 
 export const ordersRouter = Router();
 

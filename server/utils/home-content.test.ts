@@ -6,7 +6,7 @@ import {
   normalizeStoryTitle,
   normalizeTickerMessages,
   parseTickerMessages,
-} from './home-content';
+} from './home-content.js';
 
 describe('normalizeTickerMessages', () => {
   it('limpa espaços, remove vazios e repetidos (sem diferenciar maiúsculas)', () => {

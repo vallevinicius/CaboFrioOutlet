@@ -12,7 +12,7 @@ import {
   resolveBaseUrl,
   safeJsonLd,
   truncate,
-} from './meta';
+} from './meta.js';
 
 const BASE = 'https://loja.com.br';
 const settings = {

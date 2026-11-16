@@ -4,7 +4,7 @@ import {
   clearReviewsCache,
   fetchGoogleReviews,
   mapPlacesResponse,
-} from './google-reviews';
+} from './google-reviews.js';
 
 const PLACE = 'ChIJ-place-id-0001';
 const okResponse = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as Response;

@@ -2,9 +2,9 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Prisma } from '@prisma/client';
-import { prisma } from '../db';
-import { requireAuth, JWT_SECRET } from '../middleware/auth';
-import { isValidCpf, normalizeCpf } from '../utils/cpf';
+import { prisma } from '../db.js';
+import { requireAuth, JWT_SECRET } from '../middleware/auth.js';
+import { isValidCpf, normalizeCpf } from '../utils/cpf.js';
 
 export const authRouter = Router();
 

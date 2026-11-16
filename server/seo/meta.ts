@@ -1,4 +1,4 @@
-import type { OpeningHoursRow } from '../utils/contact';
+import type { OpeningHoursRow } from '../utils/contact.js';
 
 export interface SeoProduct {
   id: string;

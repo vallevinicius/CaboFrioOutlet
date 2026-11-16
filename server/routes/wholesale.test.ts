@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
-import { appWith, tokenFor } from '../test/helpers';
+import { appWith, tokenFor } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
 vi.mock('../db', async () => {
@@ -13,7 +13,7 @@ vi.mock('../db', async () => {
 const notify = vi.hoisted(() => vi.fn());
 vi.mock('../services/wholesale-notifications', () => ({ notifyWholesaleQuote: notify }));
 
-import { wholesaleRouter } from './wholesale';
+import { wholesaleRouter } from './wholesale.js';
 
 const prisma = () => prismaMock.current as ReturnType<typeof mockDeep<PrismaClient>>;
 const app = appWith('/api/wholesale', wholesaleRouter);
