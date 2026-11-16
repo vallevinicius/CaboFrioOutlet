@@ -59,7 +59,7 @@ export class WholesalePage implements OnDestroy {
 
   // ── Montagem do pedido ──
   readonly PAGE_SIZE = 12;
-  readonly products = this.productService.products;
+  readonly products = this.productService.wholesaleProducts;
   readonly productsLoading = this.productService.loading;
   readonly tiers = computed(() => this.settings().wholesaleTiers);
 

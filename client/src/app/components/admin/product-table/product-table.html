@@ -28,7 +28,12 @@
             <td class="px-4 py-3 text-white">{{ formatPrice(product.price) }}</td>
             <td class="px-4 py-3 text-white/60">{{ product.sizes.join(', ') }}</td>
             <td class="px-4 py-3">
-              <div class="flex gap-1.5">
+              <div class="flex flex-wrap gap-1.5">
+                @if (product.channel === 'retail' || product.channel === 'wholesale') {
+                  <span class="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-bold uppercase text-white/80">
+                    {{ product.channel === 'retail' ? 'Só varejo' : 'Só atacado' }}
+                  </span>
+                }
                 @if (product.isNew) {
                   <span class="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold uppercase text-black">
                     Novo

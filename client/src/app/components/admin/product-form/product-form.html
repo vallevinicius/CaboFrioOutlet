@@ -154,11 +154,41 @@
           type="checkbox"
           [checked]="isNew()"
           (change)="isNew.set($any($event.target).checked)"
-          class="h-4 w-4 rounded border-white/25 glass accent-yellow-400"
+          class="h-4 w-4 rounded border-white/25 bg-white/10 accent-yellow-400"
         />
         Marcar como novidade
       </label>
     </div>
+
+    <fieldset>
+      <legend class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Onde vender</legend>
+      <div class="flex flex-wrap gap-2">
+        @for (option of channelOptions; track option.value) {
+          <label class="cursor-pointer">
+            <input
+              type="radio"
+              name="channel"
+              class="peer sr-only"
+              [value]="option.value"
+              [checked]="channel() === option.value"
+              (change)="channel.set(option.value)"
+            />
+            <span
+              class="block rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white/70 transition-colors hover:border-white/50 peer-checked:border-accent peer-checked:bg-accent peer-checked:text-black peer-focus-visible:ring-2 peer-focus-visible:ring-accent"
+            >
+              {{ option.label }}
+            </span>
+          </label>
+        }
+      </div>
+      <p class="mt-2 text-xs text-white/50">
+        @switch (channel()) {
+          @case ('retail') { Aparece só na loja. Não entra na página de atacado. }
+          @case ('wholesale') { Aparece só na página de atacado. Não entra na loja. }
+          @default { Aparece na loja e na página de atacado. }
+        }
+      </p>
+    </fieldset>
 
     <div>
       <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Tamanhos</label>

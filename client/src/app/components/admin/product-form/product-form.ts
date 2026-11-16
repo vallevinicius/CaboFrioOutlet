@@ -6,6 +6,7 @@ import { ToastService } from '../../../services/toast.service';
 import { ApiError } from '../../../services/api-error';
 import { SettingsService } from '../../../services/settings.service';
 import { formatPriceFromNumber, formatPriceInput, parsePriceInput } from '../../../utils/price';
+import { CHANNEL_OPTIONS, SalesChannel } from '../../../utils/channel';
 
 const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
   { label: 'Camisas', value: 'camisas' },
@@ -48,6 +49,9 @@ export class ProductForm implements OnInit {
   discountPercent = signal('');
   description = signal('');
   isNew = signal(false);
+  /** Onde a peça é vendida. Peça nova começa em "ambos" (o padrão do servidor). */
+  channel = signal<SalesChannel>('both');
+  readonly channelOptions = CHANNEL_OPTIONS;
   sizes = signal<string[]>([]);
   sizeInput = signal('');
   initialStock = signal('10');
@@ -67,6 +71,7 @@ export class ProductForm implements OnInit {
     this.discountPercent.set(product.discountPercent ? String(product.discountPercent) : '');
     this.description.set(product.description);
     this.isNew.set(product.isNew ?? false);
+    this.channel.set(product.channel ?? 'both');
     this.sizes.set(product.sizes);
     this.image.set(product.image);
     this.extraImages.set(product.images ?? []);
@@ -182,6 +187,7 @@ export class ProductForm implements OnInit {
       stock,
       discountPercent: discountNum && discountNum > 0 ? discountNum : undefined,
       isNew: this.isNew(),
+      channel: this.channel(),
     });
   }
 }

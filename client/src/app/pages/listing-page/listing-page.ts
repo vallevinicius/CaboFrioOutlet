@@ -62,7 +62,7 @@ export class ListingPage {
   /** Produtos da categoria (antes dos filtros): usados para os tamanhos e para o contador. */
   private inScope = computed(() => {
     const c = this.category();
-    const all = this.productService.products();
+    const all = this.productService.retailProducts();
     return c ? all.filter((p) => p.category === c.value) : all;
   });
   readonly sizeOptions = computed(() => availableSizes(this.inScope()));

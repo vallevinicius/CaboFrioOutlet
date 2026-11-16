@@ -1,3 +1,5 @@
+import type { SalesChannel } from '../utils/channel';
+
 export type ProductCategory = 'bermudas' | 'calças' | 'camisas' | 'bonés';
 
 export interface ProductInput {
@@ -12,6 +14,8 @@ export interface ProductInput {
   sizes: string[];
   discountPercent?: number;
   isNew?: boolean;
+  /** Onde a peça é vendida. Ausente (API antiga) = ambos. */
+  channel?: SalesChannel;
   /** Quantidade disponível por tamanho. */
   stock: Record<string, number>;
 }
