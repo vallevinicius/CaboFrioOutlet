@@ -146,14 +146,29 @@
                   required
                   class="w-full rounded-sm border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
                 />
+                <div class="relative">
                 <input
-                  type="password"
+                  [type]="showPassword() ? 'text' : 'password'"
                   [value]="loginPassword()"
                   (input)="loginPassword.set($any($event.target).value)"
                   placeholder="Senha"
                   required
-                  class="w-full rounded-sm border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
+                  class="w-full rounded-sm border border-slate-300 bg-white py-2.5 pl-3 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-accent focus:outline-none"
                 />
+                <button
+                  type="button"
+                  (click)="showPassword.set(!showPassword())"
+                  [attr.aria-label]="showPassword() ? 'Ocultar senha' : 'Mostrar senha'"
+                  [attr.aria-pressed]="showPassword()"
+                  class="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-500 hover:text-slate-900"
+                >
+                  @if (showPassword()) {
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-6.5 0-10-7-10-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c6.5 0 10 7 10 7a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+                  } @else {
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  }
+                </button>
+              </div>
                 @if (authError()) {
                   <p class="text-xs font-medium text-red-500">{{ authError() }}</p>
                 }
