@@ -22,8 +22,15 @@ export default {
         'toast-in': 'toast-in 0.3s ease-out',
         marquee: 'marquee 32s linear infinite',
         rise: 'rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both',
+        bump: 'bump 0.45s ease-out',
       },
       keyframes: {
+        // Pulinho do ícone do carrinho quando entra uma peça.
+        bump: {
+          '0%': { transform: 'scale(1)' },
+          '35%': { transform: 'scale(1.3)' },
+          '100%': { transform: 'scale(1)' },
+        },
         'slide-in': {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(0)' },

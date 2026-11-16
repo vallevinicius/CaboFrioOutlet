@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, Plus } from 'lucide-angular';
+import { LucideAngularModule, Plus, Check } from 'lucide-angular';
 import { Product } from '../../types/product';
 import { CartService, getDiscountedPrice } from '../../services/cart.service';
 import { ToastService } from '../../services/toast.service';
@@ -23,6 +23,7 @@ export class ProductCard {
   private analytics = inject(AnalyticsService);
 
   readonly Plus = Plus;
+  readonly Check = Check;
   readonly formatPrice = formatPrice;
 
   product = input.required<Product>();
@@ -65,7 +66,18 @@ export class ProductCard {
     const size = this.selectedSize();
     this.cartService.addToCart(product, size);
     this.analytics.addToCart(product, size);
-    this.toastService.showToast('Produto adicionado!', `${product.name} (Tam. ${size})`);
+    this.toastService.showAddedToCart(product.name, size, () => this.cartService.openCart());
+    this.flashAdded();
+  }
+
+  /** Mostra "Adicionado!" no botão por um instante, para o clique ter resposta imediata. */
+  justAdded = signal(false);
+  private justAddedTimer: ReturnType<typeof setTimeout> | undefined;
+
+  private flashAdded(): void {
+    clearTimeout(this.justAddedTimer);
+    this.justAdded.set(true);
+    this.justAddedTimer = setTimeout(() => this.justAdded.set(false), 2000);
   }
 
   openLightbox(event: Event): void {
