@@ -2,6 +2,7 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
+import { createHmac } from 'node:crypto';
 import { appWith } from '../test/helpers.js';
 
 const prismaMock = vi.hoisted(() => ({ current: null as unknown }));
@@ -16,6 +17,8 @@ const notifyOrderConfirmed = vi.hoisted(() => vi.fn());
 vi.mock('../services/order-notifications', () => ({ notifyOrderConfirmed }));
 const restoreStockForOrder = vi.hoisted(() => vi.fn());
 vi.mock('../services/stock', () => ({ restoreStockForOrder }));
+const reconcileOrderThrottled = vi.hoisted(() => vi.fn());
+vi.mock('../services/payment-reconcile', () => ({ reconcileOrderThrottled }));
 
 import { checkoutRouter } from './checkout.js';
 
@@ -35,6 +38,9 @@ beforeEach(() => {
   mpFetch.mockReset();
   notifyOrderConfirmed.mockReset();
   restoreStockForOrder.mockReset();
+  reconcileOrderThrottled.mockReset();
+  reconcileOrderThrottled.mockResolvedValue(false);
+  delete process.env.MP_WEBHOOK_SECRET;
 });
 
 describe('POST /pay: validação', () => {
@@ -195,6 +201,91 @@ describe('POST /pay: motivo da recusa', () => {
     expect(logged).toContain('ord1');
     expect(logged).not.toContain('tok-secreto-123');
     expect(logged).not.toContain('cliente@exemplo.com');
+  });
+});
+
+describe('status do pedido: confere com o Mercado Pago quando está pendente', () => {
+  const pendingWithPayment = { id: 'ord1', status: 'pendente', paymentStatus: 'processing', paymentStatusDetail: null, paymentId: 'PAY1', total: 9 };
+
+  it('pendente com pagamento iniciado: pergunta ao Mercado Pago e devolve o resultado já atualizado', async () => {
+    prisma().order.findUnique
+      .mockResolvedValueOnce(pendingWithPayment as never)
+      .mockResolvedValueOnce({ ...pendingWithPayment, status: 'cancelado', paymentStatus: 'failed', paymentStatusDetail: 'cc_rejected_other_reason' } as never);
+    reconcileOrderThrottled.mockResolvedValue(true);
+    const res = await request(app).get('/api/checkout/orders/ord1/status').expect(200);
+    expect(reconcileOrderThrottled).toHaveBeenCalledWith('ord1');
+    expect(res.body).toMatchObject({ status: 'cancelado', paymentStatus: 'failed', paymentStatusDetail: 'cc_rejected_other_reason' });
+  });
+
+  it('pendente sem pagamento iniciado, ou já resolvido: nem consulta o Mercado Pago', async () => {
+    prisma().order.findUnique.mockResolvedValueOnce({ ...pendingWithPayment, paymentId: null } as never);
+    await request(app).get('/api/checkout/orders/ord1/status').expect(200);
+    prisma().order.findUnique.mockResolvedValueOnce({ ...pendingWithPayment, status: 'confirmado' } as never);
+    await request(app).get('/api/checkout/orders/ord1/status').expect(200);
+    expect(reconcileOrderThrottled).not.toHaveBeenCalled();
+  });
+
+  it('a resposta pública nunca expõe o id do pagamento', async () => {
+    prisma().order.findUnique.mockResolvedValueOnce(pendingWithPayment as never);
+    const res = await request(app).get('/api/checkout/orders/ord1/status').expect(200);
+    expect(res.body).not.toHaveProperty('paymentId');
+    expect(Object.keys(res.body).sort()).toEqual(['id', 'paymentStatus', 'paymentStatusDetail', 'status', 'total']);
+  });
+
+  it('se a conferência falhar, o pedido ainda é devolvido como está (200)', async () => {
+    prisma().order.findUnique.mockResolvedValueOnce(pendingWithPayment as never);
+    reconcileOrderThrottled.mockRejectedValue(new Error('mp fora do ar'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const res = await request(app).get('/api/checkout/orders/ord1/status').expect(200);
+    expect(res.body.status).toBe('pendente');
+  });
+});
+
+describe('webhook: assinatura (chave secreta do webhook)', () => {
+  const SECRET = 'segredo-do-webhook-de-teste';
+  const sign = (dataId: string, requestId: string, ts: string) =>
+    `ts=${ts},v1=${createHmac('sha256', SECRET).update(`id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`).digest('hex')}`;
+  const approved = () => mpFetch.mockResolvedValue({ ok: true, status: 200, body: { external_reference: 'ord1', ...mpApproved('processed').body } });
+
+  beforeEach(() => {
+    process.env.MP_WEBHOOK_SECRET = SECRET;
+    prisma().order.findUnique.mockResolvedValue(pendingOrder as never);
+    prisma().order.updateMany.mockResolvedValue({ count: 1 } as never);
+  });
+
+  it('assinatura válida: processa a notificação', async () => {
+    approved();
+    await request(app)
+      .post('/api/checkout/webhook?data.id=ORD01&type=order')
+      .set('x-request-id', 'req-1')
+      .set('x-signature', sign('ORD01', 'req-1', '1700000000'))
+      .send({ type: 'order', data: { id: 'ORD01' } })
+      .expect(200);
+    await flush();
+    expect(mpFetch).toHaveBeenCalledWith('/v1/orders/ORD01');
+    expect(notifyOrderConfirmed).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['sem assinatura', {}],
+    ['assinatura de outro segredo', { 'x-request-id': 'req-1', 'x-signature': 'ts=1700000000,v1=' + 'a'.repeat(64) }],
+    ['assinatura de outro id', { 'x-request-id': 'req-1', 'x-signature': sign('OUTRO', 'req-1', '1700000000') }],
+  ])('%s: 401 e nada é processado', async (_nome, headers) => {
+    approved();
+    const req = request(app).post('/api/checkout/webhook?data.id=ORD01&type=order');
+    for (const [k, v] of Object.entries(headers)) req.set(k, v as string);
+    await req.send({ type: 'order', data: { id: 'ORD01' } }).expect(401);
+    expect(mpFetch).not.toHaveBeenCalled();
+    expect(notifyOrderConfirmed).not.toHaveBeenCalled();
+  });
+
+  it('sem a chave configurada, a notificação é aceita como antes (o servidor sempre reconfirma o pedido no Mercado Pago)', async () => {
+    delete process.env.MP_WEBHOOK_SECRET;
+    approved();
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await request(app).post('/api/checkout/webhook').send({ type: 'order', data: { id: 'mp1' } }).expect(200);
+    await flush();
+    expect(mpFetch).toHaveBeenCalled();
   });
 });
 
