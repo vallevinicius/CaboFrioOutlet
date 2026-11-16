@@ -20,7 +20,7 @@ seoRouter.get('/robots.txt', (req, res) => {
 });
 
 seoRouter.get('/sitemap.xml', async (req, res) => {
-  const products = await prisma.product.findMany({ select: { id: true, updatedAt: true }, take: 5000 });
+  const products = await prisma.product.findMany({ where: { channel: { not: 'WHOLESALE' } }, select: { id: true, updatedAt: true }, take: 5000 });
   res.type('application/xml').send(buildSitemapXml(baseUrlOf(req), products));
 });
 

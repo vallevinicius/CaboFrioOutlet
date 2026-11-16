@@ -103,6 +103,31 @@ describe('POST /api/orders: preço e estoque', () => {
   });
 });
 
+describe('POST /api/orders: canal de venda', () => {
+  it('produto só de atacado não pode ser comprado no varejo: 400 e nada é reservado', async () => {
+    prisma().product.findUnique.mockResolvedValue({ ...product, channel: 'WHOLESALE' } as never);
+    const res = await request(app).post('/api/orders').send(body()).expect(400);
+    expect(res.body.error).toMatch(/atacado/i);
+    expect(prisma().productSize.update).not.toHaveBeenCalled();
+    expect(prisma().order.create).not.toHaveBeenCalled();
+  });
+  it('pedido de atacado com peça só de varejo é recusado', async () => {
+    prisma().product.findUnique.mockResolvedValue({ ...product, channel: 'RETAIL' } as never);
+    const res = await request(app).post('/api/orders').send(body({ wholesale: true, items: [{ productId: 'p1', size: 'M', quantity: 10 }] })).expect(400);
+    expect(res.body.error).toMatch(/varejo/i);
+    expect(prisma().productSize.update).not.toHaveBeenCalled();
+  });
+  it('produto de varejo ou dos dois canais passa normalmente', async () => {
+    prisma().productSize.findUnique.mockResolvedValue({ id: 's1', stock: 10 } as never);
+    prisma().order.create.mockResolvedValue({ id: 'ord1' } as never);
+    prisma().order.update.mockImplementation((async (args: { data: object }) => ({ id: 'ord1', ...args.data, items: [] })) as never);
+    for (const channel of ['RETAIL', 'BOTH']) {
+      prisma().product.findUnique.mockResolvedValue({ ...product, channel } as never);
+      await request(app).post('/api/orders').send(body()).expect(201);
+    }
+  });
+});
+
 describe('POST /api/orders: atacado', () => {
   const wholesaleBody = (qty: number, over: object = {}) =>
     body({ wholesale: true, items: [{ productId: 'p1', size: 'M', quantity: qty }], ...over });

@@ -82,6 +82,14 @@ describe('POST /api/wholesale/quotes: peças escolhidas no site', () => {
   ];
   const withItems = (items: unknown, over: object = {}) => ({ ...valid, items, ...over });
 
+  it('só busca peças vendidas no atacado (varejo-only fica de fora do orçamento)', async () => {
+    prisma().product.findMany.mockResolvedValue([] as never);
+    prisma().settings.findUnique.mockResolvedValue({ wholesaleTiers: null } as never);
+    await request(app).post('/api/wholesale/quotes').send(withItems([{ productId: 'a', size: 'M', quantity: 10 }])).expect(400);
+    expect(prisma().product.findMany.mock.calls[0][0]!.where).toEqual({ id: { in: ['a'] }, channel: { in: ['WHOLESALE', 'BOTH'] } });
+    expect(prisma().wholesaleQuote.create).not.toHaveBeenCalled();
+  });
+
   it('o servidor precifica pelo catálogo e pelas faixas; preço enviado pelo cliente é ignorado', async () => {
     prisma().product.findMany.mockResolvedValue(catalog as never);
     prisma().settings.findUnique.mockResolvedValue({ wholesaleTiers: null } as never);
