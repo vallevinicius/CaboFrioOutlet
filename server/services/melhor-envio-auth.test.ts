@@ -62,6 +62,17 @@ describe('endereço de retorno e link de autorização', () => {
     expect(redirectUri()).toBe('https://loja.exemplo.com.br/api/shipping/melhor-envio/callback');
   });
 
+  it.each([[undefined], [''], ['   ']])('sem SITE_URL (%s) não existe endereço de retorno: nada de cair em localhost', (value) => {
+    if (value === undefined) delete process.env.SITE_URL;
+    else process.env.SITE_URL = value;
+    expect(redirectUri()).toBeNull();
+  });
+
+  it('sem SITE_URL o link de autorização não é montado (seria recusado pela Melhor Envio como invalid_client)', () => {
+    delete process.env.SITE_URL;
+    expect(() => buildAuthorizeUrl(false, 'x')).toThrow(/SITE_URL/);
+  });
+
   it('o link de autorização leva client_id, retorno, response_type=code, escopo de cotação e o state', () => {
     const url = new URL(buildAuthorizeUrl(false, 'estado-123'));
     expect(url.origin + url.pathname).toBe('https://melhorenvio.com.br/oauth/authorize');
@@ -156,6 +167,12 @@ describe('connectWithCode', () => {
     await expect(connectWithCode('c')).rejects.toThrow(/credenciais/i);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('sem SITE_URL: erro claro, sem chamar a rede (o redirect_uri da troca tem que ser o mesmo da autorização)', async () => {
+    delete process.env.SITE_URL;
+    await expect(connectWithCode('c')).rejects.toThrow(/SITE_URL/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('getAccessToken', () => {
@@ -248,6 +265,14 @@ describe('disconnect e status', () => {
     expect(status).toMatchObject({ configured: true, connected: true, needsReconnect: false, sandbox: false });
     expect(status.expiresAt).toEqual(expect.any(String));
     expect(JSON.stringify(status)).not.toContain('acesso-atual');
+  });
+
+  it('status: diz o que falta para conectar (credenciais do app, SITE_URL ou os dois)', async () => {
+    expect(await getConnectionStatus()).toMatchObject({ configured: true, missing: [] });
+    delete process.env.SITE_URL;
+    expect(await getConnectionStatus()).toMatchObject({ configured: false, missing: ['siteUrl'] });
+    delete process.env.MELHOR_ENVIO_CLIENT_SECRET;
+    expect(await getConnectionStatus()).toMatchObject({ configured: false, missing: ['credentials', 'siteUrl'] });
   });
 
   it('status: token vencido pede reconexão; sem token, não está conectado; sem credenciais, não está configurado', async () => {

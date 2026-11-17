@@ -26,18 +26,25 @@ function credentials(): { clientId: string; clientSecret: string } | null {
   return clientId && clientSecret ? { clientId, clientSecret } : null;
 }
 
-/** Endereço de retorno: precisa ser idêntico ao cadastrado no app da Melhor Envio. */
-export function redirectUri(): string {
-  const site = (process.env.SITE_URL || `http://localhost:${process.env.PORT || 3001}`).replace(/\/+$/, '');
-  return `${site}/api/shipping/melhor-envio/callback`;
+const SITE_URL_MISSING = 'SITE_URL não definida no .env do servidor (ex.: SITE_URL=https://cabofriooutlet.com.br).';
+
+/**
+ * Endereço de retorno: precisa ser idêntico ao cadastrado no app da Melhor Envio. Vem do SITE_URL; sem ele
+ * não existe (null), em vez de cair em localhost: a Melhor Envio responderia só "invalid_client".
+ */
+export function redirectUri(): string | null {
+  const site = process.env.SITE_URL?.trim().replace(/\/+$/, '');
+  return site ? `${site}/api/shipping/melhor-envio/callback` : null;
 }
 
 export function buildAuthorizeUrl(sandbox: boolean, state: string): string {
   const creds = credentials();
   if (!creds) throw new Error('Credenciais do app da Melhor Envio não configuradas no servidor.');
+  const redirect = redirectUri();
+  if (!redirect) throw new Error(SITE_URL_MISSING);
   const params = new URLSearchParams({
     client_id: creds.clientId,
-    redirect_uri: redirectUri(),
+    redirect_uri: redirect,
     response_type: 'code',
     scope: SCOPES,
     state,
@@ -126,12 +133,14 @@ async function saveTokens(reply: TokenReply, previousRefresh?: string): Promise<
 export async function connectWithCode(code: string): Promise<void> {
   const creds = credentials();
   if (!creds) throw new Error('Credenciais do app da Melhor Envio não configuradas no servidor.');
+  const redirect = redirectUri();
+  if (!redirect) throw new Error(SITE_URL_MISSING);
   const settings = await prisma.settings.findUnique({ where: { id: 1 } });
   const reply = await requestTokens(Boolean(settings?.melhorEnvioSandbox), {
     grant_type: 'authorization_code',
     client_id: creds.clientId,
     client_secret: creds.clientSecret,
-    redirect_uri: redirectUri(),
+    redirect_uri: redirect,
     code,
   });
   await saveTokens(reply);
@@ -199,8 +208,10 @@ export async function disconnect(): Promise<void> {
 }
 
 export interface ConnectionStatus {
-  /** Credenciais do app (client id/secret) presentes no servidor. */
+  /** Servidor pronto para conectar: credenciais do app e SITE_URL presentes. */
   configured: boolean;
+  /** O que falta no .env do servidor: credenciais do app (client id e secret) e/ou SITE_URL. */
+  missing: ('credentials' | 'siteUrl')[];
   connected: boolean;
   expiresAt: string | null;
   /** Token vencido e sem como renovar: o dono precisa conectar de novo. */
@@ -212,8 +223,13 @@ export async function getConnectionStatus(): Promise<ConnectionStatus> {
   const settings = await prisma.settings.findUnique({ where: { id: 1 } });
   const connected = Boolean(settings?.melhorEnvioToken);
   const expiresAt = settings?.melhorEnvioTokenExpiresAt ?? null;
+  const missing: ConnectionStatus['missing'] = [
+    ...(credentials() === null ? (['credentials'] as const) : []),
+    ...(redirectUri() === null ? (['siteUrl'] as const) : []),
+  ];
   return {
-    configured: credentials() !== null,
+    configured: missing.length === 0,
+    missing,
     connected,
     expiresAt: connected && expiresAt ? expiresAt.toISOString() : null,
     needsReconnect: connected && expiresAt !== null && expiresAt.getTime() < Date.now(),

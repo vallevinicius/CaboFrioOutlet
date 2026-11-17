@@ -1,13 +1,15 @@
 /** Estado da conexão com a Melhor Envio, como o servidor devolve (nunca inclui os tokens). */
 export interface MelhorEnvioStatus {
-  /** As credenciais do app estão no .env do servidor. */
+  /** O servidor está pronto para conectar: credenciais do app e SITE_URL no .env. */
   configured: boolean;
+  /** O que falta no .env do servidor. */
+  missing: ('credentials' | 'siteUrl')[];
   connected: boolean;
   expiresAt: string | null;
   needsReconnect: boolean;
   sandbox: boolean;
-  /** Precisa ser idêntico ao cadastrado no app da Melhor Envio. */
-  redirectUri: string;
+  /** Precisa ser idêntico ao cadastrado no app da Melhor Envio. Nulo quando falta o SITE_URL. */
+  redirectUri: string | null;
 }
 
 export type ConnectionState = 'nao-configurado' | 'desconectado' | 'conectado' | 'reconectar';
@@ -22,10 +24,14 @@ export interface ConnectionView {
 
 export function describeConnection(status: MelhorEnvioStatus): ConnectionView {
   if (!status.configured) {
+    const problems = [
+      ...(status.missing.includes('credentials') ? ['O Client ID e o Client Secret do app da Melhor Envio ainda não estão no .env do servidor.'] : []),
+      ...(status.missing.includes('siteUrl') ? ['Falta a linha SITE_URL no .env do servidor, com o endereço da loja (ex.: SITE_URL=https://cabofriooutlet.com.br).'] : []),
+    ];
     return {
       state: 'nao-configurado',
-      title: 'Falta configurar o app no servidor',
-      detail: 'O Client ID e o Client Secret do app da Melhor Envio ainda não estão no .env do servidor.',
+      title: 'Falta configurar o servidor',
+      detail: problems.join(' '),
       canConnect: false,
       canDisconnect: false,
     };

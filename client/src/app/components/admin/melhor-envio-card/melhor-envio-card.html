@@ -21,13 +21,11 @@
           </p>
         }
 
-        @if (v.state === 'nao-configurado' && status(); as s) {
-          <ol class="mt-3 list-decimal space-y-1 pl-4 text-xs text-white/60">
-            <li>No app da Melhor Envio, o endereço de retorno deve ser exatamente:
-              <code class="mt-1 block break-all rounded bg-white/10 px-2 py-1 text-white/90 select-all">{{ s.redirectUri }}</code>
-            </li>
-            <li>Coloque o Client ID e o Client Secret do app no <code class="text-white/90">.env</code> do servidor e reinicie.</li>
-          </ol>
+        @if (v.state !== 'conectado' && status()?.redirectUri; as redirect) {
+          <p class="mt-3 text-xs text-white/55">
+            O endereço de retorno do app da Melhor Envio precisa ser exatamente este:
+            <code class="mt-1 block break-all rounded bg-white/10 px-2 py-1 text-white/90 select-all">{{ redirect }}</code>
+          </p>
         }
 
         @if (canEdit() && (v.canConnect || v.canDisconnect)) {
