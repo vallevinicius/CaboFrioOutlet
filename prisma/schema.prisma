@@ -100,7 +100,12 @@ model Settings {
   freeShippingThreshold Float  @default(299)
   shippingFee           Float  @default(19.9)
   originCep             String  @default("")
+  /// Token de acesso da Melhor Envio (OAuth, vale 30 dias), cifrado. Renovado sozinho pelo servidor.
   melhorEnvioToken      String? @db.Text
+  /// Token de renovação (vale 45 dias), cifrado.
+  melhorEnvioRefreshToken String? @db.Text
+  /// Quando o token de acesso vence.
+  melhorEnvioTokenExpiresAt DateTime?
   melhorEnvioSandbox    Boolean @default(true)
   announcementMessages  String @db.Text
   brands                String @db.Text
