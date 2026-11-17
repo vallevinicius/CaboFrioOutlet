@@ -25,7 +25,7 @@ import { melhorEnvioRouter } from './melhor-envio.js';
 
 const prisma = () => prismaMock.current as ReturnType<typeof mockDeep<PrismaClient>>;
 const app = appWith('/api/shipping/melhor-envio', melhorEnvioRouter);
-const status = { configured: true, connected: false, expiresAt: null, needsReconnect: false, sandbox: false };
+const status = { configured: true, missing: [] as string[], connected: false, expiresAt: null, needsReconnect: false, sandbox: false };
 const bearer = (userId: string) => ({ Authorization: tokenFor(userId, true) });
 
 beforeEach(() => {
@@ -71,10 +71,24 @@ describe('POST /connect', () => {
     expect(auth.buildAuthorizeUrl).toHaveBeenCalledWith(false, 'estado-novo');
   });
   it('sem as credenciais do app no servidor: 409 com a explicação', async () => {
-    auth.getConnectionStatus.mockResolvedValue({ ...status, configured: false });
+    auth.getConnectionStatus.mockResolvedValue({ ...status, configured: false, missing: ['credentials'] });
     const res = await request(app).post('/api/shipping/melhor-envio/connect').set(bearer('editor')).expect(409);
-    expect(res.body.error).toMatch(/\.env|servidor/i);
+    expect(res.body.error).toMatch(/credenciais/i);
+    expect(res.body.error).toMatch(/\.env/);
     expect(auth.buildAuthorizeUrl).not.toHaveBeenCalled();
+  });
+  it('sem SITE_URL no servidor: 409 dizendo exatamente o que colocar (em vez de mandar um link que a Melhor Envio recusa)', async () => {
+    auth.getConnectionStatus.mockResolvedValue({ ...status, configured: false, missing: ['siteUrl'] });
+    const res = await request(app).post('/api/shipping/melhor-envio/connect').set(bearer('editor')).expect(409);
+    expect(res.body.error).toMatch(/SITE_URL/);
+    expect(res.body.error).toMatch(/https:\/\//);
+    expect(auth.buildAuthorizeUrl).not.toHaveBeenCalled();
+  });
+  it('faltando as duas coisas, a mensagem cita as duas', async () => {
+    auth.getConnectionStatus.mockResolvedValue({ ...status, configured: false, missing: ['credentials', 'siteUrl'] });
+    const res = await request(app).post('/api/shipping/melhor-envio/connect').set(bearer('editor')).expect(409);
+    expect(res.body.error).toMatch(/credenciais/i);
+    expect(res.body.error).toMatch(/SITE_URL/);
   });
 });
 

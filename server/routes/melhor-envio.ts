@@ -21,7 +21,16 @@ melhorEnvioRouter.get('/status', requirePermission('configuracoes', 'view'), asy
 melhorEnvioRouter.post('/connect', requirePermission('configuracoes', 'edit'), async (_req, res) => {
   const status = await getConnectionStatus();
   if (!status.configured) {
-    return res.status(409).json({ error: 'As credenciais do app da Melhor Envio ainda não estão no .env do servidor.' });
+    // Diz exatamente o que falta, em vez de mandar um link que a Melhor Envio recusa com "invalid_client".
+    const problems = [
+      ...(status.missing.includes('credentials')
+        ? ['As credenciais do app da Melhor Envio (Client ID e Client Secret) ainda não estão no .env do servidor.']
+        : []),
+      ...(status.missing.includes('siteUrl')
+        ? ['Defina SITE_URL no .env do servidor com o endereço público da loja (ex.: https://cabofriooutlet.com.br) e reinicie.']
+        : []),
+    ];
+    return res.status(409).json({ error: problems.join(' ') });
   }
   res.json({ url: buildAuthorizeUrl(status.sandbox, createState()) });
 });

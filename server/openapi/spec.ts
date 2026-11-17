@@ -445,12 +445,13 @@ const PayResult = registry.register(
 const MelhorEnvioStatus = registry.register(
   'MelhorEnvioStatus',
   z.object({
-    configured: z.boolean().openapi({ description: 'As credenciais do app da Melhor Envio estão no .env do servidor' }),
+    configured: z.boolean().openapi({ description: 'Servidor pronto para conectar: credenciais do app e SITE_URL no .env' }),
+    missing: z.array(z.enum(['credentials', 'siteUrl'])).openapi({ description: 'O que falta no .env do servidor' }),
     connected: z.boolean(),
     expiresAt: z.string().datetime().nullable().openapi({ description: 'Quando o acesso vence (é renovado sozinho)' }),
     needsReconnect: z.boolean().openapi({ description: 'Acesso vencido e sem como renovar: conectar de novo' }),
     sandbox: z.boolean(),
-    redirectUri: z.string().openapi({ description: 'Precisa ser idêntico ao cadastrado no app da Melhor Envio' }),
+    redirectUri: z.string().nullable().openapi({ description: 'Precisa ser idêntico ao cadastrado no app da Melhor Envio. Nulo quando falta o SITE_URL' }),
   }),
 );
 
