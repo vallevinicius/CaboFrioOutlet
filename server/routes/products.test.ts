@@ -173,3 +173,55 @@ describe('canal de venda (varejo / atacado / ambos)', () => {
     expect(res.body[0].channel).toBe('retail');
   });
 });
+
+describe('peso e medidas da embalagem (frete)', () => {
+  const created = (over: object = {}) => ({ ...valid, id: 'p1', sizes: [{ id: 's', size: 'M', stock: 3 }], images: [], createdAt: new Date(), brand: null, discountPercent: null, isNew: false, channel: 'BOTH', weightKg: 0.3, heightCm: 4, widthCm: 25, lengthCm: 30, ...over });
+  const measures = { weightKg: 0.8, heightCm: 7, widthCm: 30, lengthCm: 40 };
+  const createData = () => prisma().product.create.mock.calls[0][0].data as Record<string, unknown>;
+
+  it('produto novo sem medidas recebe o padrão da categoria', async () => {
+    prisma().product.create.mockResolvedValue(created() as never);
+    await request(app).post('/api/products').set(admin).send({ ...valid, category: 'calças' }).expect(201);
+    expect(createData()).toMatchObject({ weightKg: 0.7, heightCm: 6, widthCm: 28, lengthCm: 35 });
+  });
+
+  it('com medidas informadas, usa as informadas', async () => {
+    prisma().product.create.mockResolvedValue(created(measures) as never);
+    const res = await request(app).post('/api/products').set(admin).send({ ...valid, ...measures }).expect(201);
+    expect(createData()).toMatchObject(measures);
+    expect(res.body).toMatchObject(measures);
+  });
+
+  it.each([
+    ['peso zero', { weightKg: 0 }],
+    ['peso negativo', { weightKg: -1 }],
+    ['peso acima de 30 kg (limite dos Correios)', { weightKg: 31 }],
+    ['peso como texto', { weightKg: '0.5' }],
+    ['altura zero', { heightCm: 0 }],
+    ['largura acima de 105 cm', { widthCm: 106 }],
+    ['comprimento negativo', { lengthCm: -3 }],
+    ['medida não numérica', { lengthCm: 'grande' }],
+    ['medida infinita', { widthCm: 1e999 }],
+  ])('recusa %s (400) e não grava', async (_nome, bad) => {
+    await request(app).post('/api/products').set(admin).send({ ...valid, ...bad }).expect(400);
+    await request(app).put('/api/products/p1').set(admin).send({ ...valid, ...bad }).expect(400);
+    expect(prisma().product.create).not.toHaveBeenCalled();
+    expect(prisma().$transaction).not.toHaveBeenCalled();
+  });
+
+  it('editar com medidas grava; editar sem medidas NÃO mexe nas que já existem', async () => {
+    prisma().$transaction.mockResolvedValue([] as never);
+    prisma().product.findUniqueOrThrow.mockResolvedValue(created(measures) as never);
+    await request(app).put('/api/products/p1').set(admin).send({ ...valid, ...measures }).expect(200);
+    await request(app).put('/api/products/p1').set(admin).send(valid).expect(200);
+    const updates = prisma().product.update.mock.calls.map((c) => c[0].data as Record<string, unknown>);
+    expect(updates[0]).toMatchObject(measures);
+    for (const key of ['weightKg', 'heightCm', 'widthCm', 'lengthCm']) expect(updates[1]).not.toHaveProperty(key);
+  });
+
+  it('a lista devolve peso e medidas', async () => {
+    prisma().product.findMany.mockResolvedValue([created(measures)] as never);
+    const res = await request(app).get('/api/products').expect(200);
+    expect(res.body[0]).toMatchObject(measures);
+  });
+});

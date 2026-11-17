@@ -132,3 +132,29 @@ describe('PUT /api/settings: validação (admin)', () => {
     expect(prisma().settings.upsert.mock.calls[0][0].update).toMatchObject({ storyBody: null });
   });
 });
+
+describe('PUT /api/settings: Melhor Envio', () => {
+  const admin = { Authorization: tokenFor('admin', true) };
+  const updateData = () => prisma().settings.upsert.mock.calls[0][0].update as Record<string, unknown>;
+
+  it('token colado à mão não é mais aceito (a conexão é feita pelo botão "Conectar", com renovação automática)', async () => {
+    prisma().settings.findUnique.mockResolvedValue({ melhorEnvioSandbox: true } as never);
+    await request(app).put('/api/settings').set(admin).send({ originCep: '28905-000', melhorEnvioToken: 'TOKEN-COLADO' }).expect(200);
+    expect(updateData()).not.toHaveProperty('melhorEnvioToken');
+    expect(JSON.stringify(prisma().settings.upsert.mock.calls[0][0])).not.toContain('TOKEN-COLADO');
+    expect(updateData()['originCep']).toBe('28905000');
+  });
+
+  it('trocar entre teste (sandbox) e produção desconecta: o token de um ambiente não vale no outro', async () => {
+    prisma().settings.findUnique.mockResolvedValue({ melhorEnvioSandbox: true } as never);
+    await request(app).put('/api/settings').set(admin).send({ melhorEnvioSandbox: false }).expect(200);
+    expect(updateData()).toMatchObject({ melhorEnvioSandbox: false, melhorEnvioToken: null, melhorEnvioRefreshToken: null, melhorEnvioTokenExpiresAt: null });
+  });
+
+  it('salvar o mesmo modo não derruba a conexão', async () => {
+    prisma().settings.findUnique.mockResolvedValue({ melhorEnvioSandbox: false } as never);
+    await request(app).put('/api/settings').set(admin).send({ melhorEnvioSandbox: false, storeName: 'Loja' }).expect(200);
+    expect(updateData()).not.toHaveProperty('melhorEnvioToken');
+    expect(updateData()).not.toHaveProperty('melhorEnvioRefreshToken');
+  });
+});
