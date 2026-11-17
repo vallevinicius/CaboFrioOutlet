@@ -8,10 +8,11 @@ import { formatPhone } from '../../../../utils/phone';
 import { moveItem } from '../../../../utils/text';
 import { OpeningHoursRow } from '../../../../types/settings';
 import { AuthService } from '../../../../services/auth.service';
+import { MelhorEnvioCard } from '../../melhor-envio-card/melhor-envio-card';
 
 @Component({
   selector: 'app-settings-tab',
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, MelhorEnvioCard],
   templateUrl: './settings-tab.html',
 })
 export class SettingsTab implements OnInit {
@@ -30,9 +31,9 @@ export class SettingsTab implements OnInit {
   threshold = signal('');
   shippingFee = signal('');
   originCep = signal('');
-  melhorEnvioToken = signal('');
   melhorEnvioSandbox = signal(true);
-  hasMelhorEnvioToken = signal(false);
+  /** Sobe a cada salvamento para o cartão da Melhor Envio reler o estado (trocar o modo desconecta). */
+  saveCount = signal(0);
   messages = signal<string[]>([]);
   messageInput = signal('');
   brands = signal<string[]>([]);
@@ -60,7 +61,6 @@ export class SettingsTab implements OnInit {
     this.shippingFee.set(String(settings.shippingFee));
     this.originCep.set(formatCep(settings.originCep));
     this.melhorEnvioSandbox.set(settings.melhorEnvioSandbox);
-    this.hasMelhorEnvioToken.set(settings.hasMelhorEnvioToken);
     this.messages.set(settings.announcementMessages);
     this.brands.set(settings.brands);
     // O número é salvo com DDI 55; no campo mostramos só DDD + número.
@@ -185,7 +185,6 @@ export class SettingsTab implements OnInit {
         freeShippingThreshold: thresholdNum > 0 ? thresholdNum : current.freeShippingThreshold,
         shippingFee: shippingFeeNum >= 0 ? shippingFeeNum : current.shippingFee,
         originCep: this.originCep().replace(/\D/g, ''),
-        melhorEnvioToken: this.melhorEnvioToken().trim() || undefined,
         melhorEnvioSandbox: this.melhorEnvioSandbox(),
         announcementMessages: this.messages(),
         brands: this.brands(),
@@ -204,7 +203,7 @@ export class SettingsTab implements OnInit {
         storyTitle: this.storyTitle().trim(),
         storyBody: this.storyBody().trim(),
       });
-      this.melhorEnvioToken.set('');
+      this.saveCount.update((n) => n + 1);
       this.toastService.showToast('Configurações salvas!', 'As alterações já estão valendo na loja.');
     } catch (err) {
       this.toastService.showToast(

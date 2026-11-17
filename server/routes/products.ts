@@ -3,6 +3,7 @@ import { Prisma, Product, ProductImage, ProductSize } from '@prisma/client';
 import { prisma } from '../db.js';
 import { requireAnyPermission, requirePermission } from '../middleware/permissions.js';
 import { normalizeImages } from '../utils/product-images.js';
+import { MAX_SIDE_CM, MAX_WEIGHT_KG, packageDefaultsFor } from '../utils/package-defaults.js';
 
 export const productsRouter = Router();
 
@@ -37,6 +38,10 @@ function serializeProduct(product: ProductWithSizes) {
     isNew: product.isNew,
     discountPercent: product.discountPercent ?? undefined,
     channel: CHANNEL_FROM_DB[product.channel],
+    weightKg: product.weightKg,
+    heightCm: product.heightCm,
+    widthCm: product.widthCm,
+    lengthCm: product.lengthCm,
     sizes,
     stock,
   };
@@ -44,6 +49,10 @@ function serializeProduct(product: ProductWithSizes) {
 
 interface ProductPayload {
   channel?: ApiChannel;
+  weightKg?: number;
+  heightCm?: number;
+  widthCm?: number;
+  lengthCm?: number;
   name: string;
   price: number;
   category: string;
@@ -55,6 +64,23 @@ interface ProductPayload {
   stock: Record<string, number>;
   discountPercent?: number;
   isNew?: boolean;
+}
+
+/** Peso e medidas são opcionais; quando vêm, precisam ser números dentro dos limites dos Correios. */
+function validMeasures(p: Partial<ProductPayload>): boolean {
+  const inRange = (value: unknown, max: number) => value === undefined || (typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= max);
+  return inRange(p.weightKg, MAX_WEIGHT_KG) && inRange(p.heightCm, MAX_SIDE_CM) && inRange(p.widthCm, MAX_SIDE_CM) && inRange(p.lengthCm, MAX_SIDE_CM);
+}
+
+type MeasuresInput = { weightKg?: number; heightCm?: number; widthCm?: number; lengthCm?: number };
+
+/** Produto novo: o que foi informado vale; o que faltou recebe o padrão da categoria. */
+function packageMeasures(category: string, given: MeasuresInput) {
+  return { ...packageDefaultsFor(category), ...definedMeasures(given) };
+}
+
+function definedMeasures(m: MeasuresInput): MeasuresInput {
+  return Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined));
 }
 
 function validatePayload(body: unknown): body is ProductPayload {
@@ -71,7 +97,8 @@ function validatePayload(body: unknown): body is ProductPayload {
       Array.isArray(p.sizes) &&
       p.sizes.length > 0 &&
       typeof p.stock === 'object' &&
-      (p.channel === undefined || (typeof p.channel === 'string' && p.channel in CHANNEL_TO_DB))
+      (p.channel === undefined || (typeof p.channel === 'string' && p.channel in CHANNEL_TO_DB)) &&
+      validMeasures(p)
   );
 }
 
@@ -87,7 +114,7 @@ productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res)
   if (!validatePayload(req.body)) {
     return res.status(400).json({ error: 'Dados do produto inválidos.' });
   }
-  const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew, channel } = req.body as ProductPayload;
+  const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew, channel, weightKg, heightCm, widthCm, lengthCm } = req.body as ProductPayload;
   const extraImages = normalizeImages((req.body as ProductPayload).images, image);
   if (extraImages === null) {
     return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
@@ -103,6 +130,7 @@ productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res)
       description: description?.trim() ?? '',
       isNew: Boolean(isNew),
       channel: CHANNEL_TO_DB[channel ?? 'both'],
+      ...packageMeasures(category, { weightKg, heightCm, widthCm, lengthCm }),
       discountPercent: discountPercent && discountPercent > 0 ? discountPercent : null,
       sizes: {
         create: sizes.map((size) => ({ size, stock: Math.max(0, stock[size] ?? 0) })),
@@ -120,7 +148,7 @@ productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, re
     return res.status(400).json({ error: 'Dados do produto inválidos.' });
   }
   const id = req.params.id as string;
-  const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew, channel } = req.body as ProductPayload;
+  const { name, price, category, brand, image, description, sizes, stock, discountPercent, isNew, channel, weightKg, heightCm, widthCm, lengthCm } = req.body as ProductPayload;
   const extraImages = normalizeImages((req.body as ProductPayload).images, image);
   if (extraImages === null) {
     return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
@@ -150,6 +178,8 @@ productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, re
           isNew: Boolean(isNew),
           // Sem canal no corpo = não mexe (clientes antigos não zeram o canal sem querer).
           ...(channel !== undefined ? { channel: CHANNEL_TO_DB[channel] } : {}),
+          // Sem medidas no corpo = não mexe nas que já existem.
+          ...definedMeasures({ weightKg, heightCm, widthCm, lengthCm }),
           discountPercent: discountPercent && discountPercent > 0 ? discountPercent : null,
         },
       }),

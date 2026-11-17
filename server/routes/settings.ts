@@ -94,7 +94,6 @@ settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, 
     freeShippingThreshold,
     shippingFee,
     originCep,
-    melhorEnvioToken,
     melhorEnvioSandbox,
     announcementMessages,
     brands,
@@ -115,7 +114,6 @@ settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, 
     freeShippingThreshold?: number;
     shippingFee?: number;
     originCep?: string;
-    melhorEnvioToken?: string;
     melhorEnvioSandbox?: boolean;
     announcementMessages?: string[];
     brands?: string[];
@@ -210,6 +208,9 @@ settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, 
     contact.googlePlaceId = value;
   }
 
+  const current = typeof melhorEnvioSandbox === 'boolean' ? await prisma.settings.findUnique({ where: { id: 1 }, select: { melhorEnvioSandbox: true } }) : null;
+  const sandboxChanged = current !== null && current.melhorEnvioSandbox !== melhorEnvioSandbox;
+
   const settings = await prisma.settings.upsert({
     where: { id: 1 },
     update: {
@@ -219,10 +220,13 @@ settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, 
         : {}),
       ...(typeof shippingFee === 'number' && shippingFee >= 0 ? { shippingFee } : {}),
       ...(typeof originCep === 'string' ? { originCep: originCep.replace(/\D/g, '') } : {}),
-      // Só atualiza o token se um novo valor não-vazio foi enviado — o campo no admin
-      // fica em branco (não mostra o valor salvo), então não sobrescreve com string vazia.
-      ...(melhorEnvioToken?.trim() ? { melhorEnvioToken: melhorEnvioToken.trim() } : {}),
+      // O token da Melhor Envio não é mais editável aqui: a conexão é feita pelo botão "Conectar"
+      // (OAuth, com renovação automática). Trocar entre teste e produção desconecta, porque o token de
+      // um ambiente não vale no outro.
       ...(typeof melhorEnvioSandbox === 'boolean' ? { melhorEnvioSandbox } : {}),
+      ...(typeof melhorEnvioSandbox === 'boolean' && sandboxChanged
+        ? { melhorEnvioToken: null, melhorEnvioRefreshToken: null, melhorEnvioTokenExpiresAt: null }
+        : {}),
       ...(Array.isArray(announcementMessages)
         ? { announcementMessages: JSON.stringify(announcementMessages) }
         : {}),
@@ -235,7 +239,6 @@ settingsRouter.put('/', requirePermission('configuracoes', 'edit'), async (req, 
       freeShippingThreshold: freeShippingThreshold || undefined,
       shippingFee: typeof shippingFee === 'number' && shippingFee >= 0 ? shippingFee : undefined,
       originCep: originCep?.replace(/\D/g, '') || undefined,
-      melhorEnvioToken: melhorEnvioToken?.trim() || undefined,
       melhorEnvioSandbox: typeof melhorEnvioSandbox === 'boolean' ? melhorEnvioSandbox : undefined,
       announcementMessages: JSON.stringify(announcementMessages ?? []),
       brands: JSON.stringify(brands ?? []),

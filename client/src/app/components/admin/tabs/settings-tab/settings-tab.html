@@ -70,21 +70,6 @@
           />
           <p class="mt-1.5 text-xs text-white/45">CEP de onde os produtos são enviados.</p>
         </div>
-        <div class="flex-1">
-          <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
-            Token da Melhor Envio
-          </label>
-          <input
-            [value]="melhorEnvioToken()"
-            (input)="melhorEnvioToken.set($any($event.target).value)"
-            type="password"
-            [placeholder]="hasMelhorEnvioToken() ? '•••••••• (já configurado)' : 'Cole o token aqui'"
-            class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
-          />
-          <p class="mt-1.5 text-xs text-white/45">
-            Deixe em branco pra manter o token já salvo.
-          </p>
-        </div>
       </div>
       <label class="mt-4 flex items-center gap-2 text-sm text-white/80">
         <input
@@ -95,10 +80,13 @@
         />
         Ambiente de testes (sandbox)
       </label>
+      <p class="mt-1 text-xs text-white/45">Ao trocar entre teste e produção, a conexão com a Melhor Envio é desfeita: conecte de novo.</p>
       <p class="mt-2 text-xs text-white/45">
         Se a Melhor Envio não estiver configurada, a loja usa o frete fixo definido acima como alternativa.
       </p>
     </div>
+
+    <app-melhor-envio-card [refresh]="saveCount()" />
 
     <div class="rounded-lg border border-white/15 p-4">
       <p class="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">

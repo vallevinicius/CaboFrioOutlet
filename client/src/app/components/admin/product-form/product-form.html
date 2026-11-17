@@ -114,7 +114,7 @@
         </label>
         <select
           [value]="category()"
-          (change)="category.set($any($event.target).value)"
+          (change)="onCategoryChange($any($event.target).value)"
           class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         >
           @for (opt of categoryOptions; track opt.value) {
@@ -159,6 +159,35 @@
         Marcar como novidade
       </label>
     </div>
+
+    <fieldset>
+      <legend class="mb-1 block text-xs font-bold uppercase tracking-wider text-white/60">Embalagem (para o frete)</legend>
+      <p class="mb-3 text-xs text-white/50">
+        Peso e medidas da peça já dobrada e embalada. Peso errado faz o frete sair mais barato ou mais caro que o real.
+      </p>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div>
+          <label for="pkg-weight" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-white/60">Peso (kg)</label>
+          <input id="pkg-weight" inputmode="decimal" [value]="weightKg()" (input)="onMeasureInput('weightKg', $any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" />
+        </div>
+        <div>
+          <label for="pkg-height" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-white/60">Altura (cm)</label>
+          <input id="pkg-height" inputmode="decimal" [value]="heightCm()" (input)="onMeasureInput('heightCm', $any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" />
+        </div>
+        <div>
+          <label for="pkg-width" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-white/60">Largura (cm)</label>
+          <input id="pkg-width" inputmode="decimal" [value]="widthCm()" (input)="onMeasureInput('widthCm', $any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" />
+        </div>
+        <div>
+          <label for="pkg-length" class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-white/60">Compr. (cm)</label>
+          <input id="pkg-length" inputmode="decimal" [value]="lengthCm()" (input)="onMeasureInput('lengthCm', $any($event.target).value)"
+            class="w-full rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white focus:border-accent focus:outline-none" />
+        </div>
+      </div>
+    </fieldset>
 
     <fieldset>
       <legend class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Onde vender</legend>

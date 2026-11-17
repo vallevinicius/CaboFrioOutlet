@@ -35,6 +35,10 @@ const Product = registry.register(
     isNew: z.boolean(),
     discountPercent: z.number().optional(),
     channel: SalesChannel,
+    weightKg: z.number().openapi({ description: 'Peso da peça embalada, em kg (usado no frete)', example: 0.3 }),
+    heightCm: z.number().openapi({ description: 'Altura da embalagem, em cm', example: 4 }),
+    widthCm: z.number().openapi({ description: 'Largura da embalagem, em cm', example: 25 }),
+    lengthCm: z.number().openapi({ description: 'Comprimento da embalagem, em cm', example: 30 }),
     sizes: z.array(z.string()).openapi({ example: ['P', 'M', 'G'] }),
     stock: z.record(z.string(), z.number().int()).openapi({ description: 'Quantidade por tamanho', example: { P: 3, M: 5, G: 0 } }),
   }),
@@ -55,6 +59,10 @@ const ProductInput = registry.register(
     discountPercent: z.number().optional(),
     isNew: z.boolean().optional(),
     channel: SalesChannel.optional().openapi({ description: 'Padrão: both ao criar; ao editar, omitir mantém o canal atual' }),
+    weightKg: z.number().positive().max(30).optional().openapi({ description: 'Até 30 kg. Ao criar, omitir usa o padrão da categoria; ao editar, omitir mantém o atual' }),
+    heightCm: z.number().positive().max(105).optional().openapi({ description: 'Até 105 cm' }),
+    widthCm: z.number().positive().max(105).optional().openapi({ description: 'Até 105 cm' }),
+    lengthCm: z.number().positive().max(105).optional().openapi({ description: 'Até 105 cm' }),
   }),
 );
 
@@ -72,7 +80,7 @@ const Settings = registry.register(
     freeShippingThreshold: z.number(),
     shippingFee: z.number(),
     originCep: z.string(),
-    hasMelhorEnvioToken: z.boolean().openapi({ description: 'O token em si nunca é devolvido.' }),
+    hasMelhorEnvioToken: z.boolean().openapi({ description: 'A loja está conectada à Melhor Envio. O token em si nunca é devolvido.' }),
     melhorEnvioSandbox: z.boolean(),
     announcementMessages: z.array(z.string()),
     brands: z.array(z.string()),
@@ -99,7 +107,6 @@ const SettingsUpdate = registry.register(
       freeShippingThreshold: z.number().positive(),
       shippingFee: z.number().min(0),
       originCep: z.string(),
-      melhorEnvioToken: z.string().openapi({ description: 'Só é atualizado se vier preenchido.' }),
       melhorEnvioSandbox: z.boolean(),
       announcementMessages: z.array(z.string()),
       brands: z.array(z.string()),
@@ -435,6 +442,18 @@ const PayResult = registry.register(
   }),
 );
 
+const MelhorEnvioStatus = registry.register(
+  'MelhorEnvioStatus',
+  z.object({
+    configured: z.boolean().openapi({ description: 'As credenciais do app da Melhor Envio estão no .env do servidor' }),
+    connected: z.boolean(),
+    expiresAt: z.string().datetime().nullable().openapi({ description: 'Quando o acesso vence (é renovado sozinho)' }),
+    needsReconnect: z.boolean().openapi({ description: 'Acesso vencido e sem como renovar: conectar de novo' }),
+    sandbox: z.boolean(),
+    redirectUri: z.string().openapi({ description: 'Precisa ser idêntico ao cadastrado no app da Melhor Envio' }),
+  }),
+);
+
 // ───────────────────────── Helpers de rota ─────────────────────────
 
 type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
@@ -526,6 +545,10 @@ doc({ method: 'get', path: '/api/checkout/orders/{id}/status', tag: 'Checkout', 
 doc({ method: 'post', path: '/api/checkout/webhook', tag: 'Checkout', summary: 'Notificação do Mercado Pago', body: z.object({ type: z.string().optional(), data: z.object({ id: z.string() }).optional() }), ok: { description: 'Sempre 200 (evita reenvio em loop)' } });
 
 doc({ method: 'post', path: '/api/shipping/calculate', tag: 'Frete', summary: 'Cotação de frete por CEP', body: ShippingCalculateInput, ok: { schema: ShippingOptions, description: 'Opções de frete' }, errors: [400] });
+doc({ method: 'get', path: '/api/shipping/melhor-envio/status', tag: 'Frete', summary: 'Estado da conexão com a Melhor Envio (nunca devolve os tokens)', access: 'admin', ok: { schema: MelhorEnvioStatus, description: 'Estado da conexão e o endereço de retorno que precisa estar cadastrado no app' } });
+doc({ method: 'post', path: '/api/shipping/melhor-envio/connect', tag: 'Frete', summary: 'Gera o link para autorizar a Melhor Envio (o painel abre esse link)', access: 'admin', ok: { schema: z.object({ url: z.string().url() }), description: 'Link de autorização' }, errors: [409] });
+doc({ method: 'get', path: '/api/shipping/melhor-envio/callback', tag: 'Frete', summary: 'Retorno da Melhor Envio: valida o state, troca o código pelos tokens e volta ao painel', ok: { status: 302, description: 'Redireciona para /admin?frete=conectado, cancelado ou erro' } });
+doc({ method: 'delete', path: '/api/shipping/melhor-envio', tag: 'Frete', summary: 'Desconecta a Melhor Envio (apaga os tokens)', access: 'admin', ok: { status: 204, description: 'Desconectado' } });
 
 doc({ method: 'post', path: '/api/auth/register', tag: 'Conta', summary: 'Cria uma conta de cliente', body: RegisterInput, ok: { status: 201, schema: AuthResponse, description: 'Conta criada' }, errors: [400, 409, 429] });
 doc({ method: 'post', path: '/api/auth/login', tag: 'Conta', summary: 'Entra na conta', body: LoginInput, ok: { schema: AuthResponse, description: 'Token e usuário' }, errors: [400, 401, 429] });

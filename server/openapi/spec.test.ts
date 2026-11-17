@@ -26,6 +26,7 @@ import { uploadRouter } from '../routes/upload.js';
 import { usersRouter } from '../routes/users.js';
 import { rolesRouter } from '../routes/roles.js';
 import { staffRouter } from '../routes/staff.js';
+import { melhorEnvioRouter } from '../routes/melhor-envio.js';
 import { wholesaleRouter } from '../routes/wholesale.js';
 import { seoRouter } from '../seo/routes.js';
 import { mountApiDocs } from './docs.js';
@@ -42,6 +43,7 @@ const MOUNTS: [string, Router][] = [
   ['/api/staff', staffRouter],
   ['/api/hero-slides', heroSlidesRouter],
   ['/api/checkout', checkoutRouter],
+  ['/api/shipping/melhor-envio', melhorEnvioRouter],
   ['/api/shipping', shippingRouter],
   ['/api/reviews', reviewsRouter],
   ['/api/favorites', favoritesRouter],
@@ -102,11 +104,11 @@ describe('OpenAPI: qualidade do documento', () => {
     ),
   );
 
-  it('toda operação tem resumo, tag e resposta de sucesso', () => {
+  it('toda operação tem resumo, tag e resposta de sucesso (2xx, ou 3xx nos retornos que redirecionam o navegador)', () => {
     for (const { key, op } of ops) {
       expect(op.summary, key).toBeTruthy();
       expect(op.tags?.length, key).toBeGreaterThan(0);
-      expect(Object.keys(op.responses).some((c) => c.startsWith('2')), key).toBe(true);
+      expect(Object.keys(op.responses).some((c) => c.startsWith('2') || c.startsWith('3')), key).toBe(true);
     }
   });
 

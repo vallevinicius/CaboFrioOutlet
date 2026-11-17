@@ -16,6 +16,11 @@ export interface ProductInput {
   isNew?: boolean;
   /** Onde a peça é vendida. Ausente (API antiga) = ambos. */
   channel?: SalesChannel;
+  /** Peso (kg) e medidas (cm) da peça embalada: base do cálculo do frete. */
+  weightKg?: number;
+  heightCm?: number;
+  widthCm?: number;
+  lengthCm?: number;
   /** Quantidade disponível por tamanho. */
   stock: Record<string, number>;
 }
