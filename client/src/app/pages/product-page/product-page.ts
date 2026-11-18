@@ -3,7 +3,8 @@ import { AppImageDirective } from '../../directives/app-image.directive';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
-import { LucideAngularModule, Plus, Check, ChevronRight } from 'lucide-angular';
+import { LucideAngularModule, Plus, Check, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-angular';
+import { wrapIndex, zoomOrigin } from '../../utils/gallery';
 import { Navbar } from '../../components/navbar/navbar';
 import { Footer } from '../../components/footer/footer';
 import { CartDrawer } from '../../components/cart-drawer/cart-drawer';
@@ -54,6 +55,8 @@ export class ProductPage {
   readonly Plus = Plus;
   readonly Check = Check;
   readonly ChevronRight = ChevronRight;
+  readonly ChevronLeft = ChevronLeft;
+  readonly Maximize2 = Maximize2;
   readonly formatPrice = formatPrice;
   readonly getDiscountedPrice = getDiscountedPrice;
 
@@ -61,6 +64,14 @@ export class ProductPage {
   lightboxOpen = signal(false);
   sizeGuideOpen = signal(false);
   selectedImageIndex = signal(0);
+
+  // ── Zoom da foto principal ──
+  /** Ponto do zoom em % (null = sem zoom). */
+  zoom = signal<{ x: number; y: number } | null>(null);
+  /** No toque, o zoom liga e desliga com um toque; enquanto ligado, arrastar move o zoom. */
+  touchZoom = signal(false);
+  private lastPointerType = '';
+  private touchStart: { x: number; y: number } | null = null;
   selectedSizeOverride = signal<string | null>(null);
 
   private paramMap = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
@@ -121,6 +132,8 @@ export class ProductPage {
     effect(() => {
       this.productId();
       this.selectedImageIndex.set(0);
+      this.zoom.set(null);
+      this.touchZoom.set(false);
     });
 
     effect(() => {
@@ -168,4 +181,43 @@ export class ProductPage {
     this.justAddedTimer = setTimeout(() => this.justAdded.set(false), 2000);
   }
 
+
+  /** Setas: dá a volta nas pontas e desliga o zoom da foto anterior. */
+  showImage(index: number): void {
+    this.selectedImageIndex.set(wrapIndex(index, this.gallery().length));
+    this.zoom.set(null);
+    this.touchZoom.set(false);
+  }
+
+  private originOf(e: PointerEvent): { x: number; y: number } {
+    return zoomOrigin(e.clientX, e.clientY, (e.currentTarget as HTMLElement).getBoundingClientRect());
+  }
+
+  onZoomPointerDown(e: PointerEvent): void {
+    this.lastPointerType = e.pointerType;
+    if (e.pointerType !== 'mouse') this.touchStart = { x: e.clientX, y: e.clientY };
+  }
+
+  onZoomPointerMove(e: PointerEvent): void {
+    if (e.pointerType === 'mouse' || this.touchZoom()) this.zoom.set(this.originOf(e));
+  }
+
+  onZoomPointerUp(e: PointerEvent): void {
+    if (e.pointerType === 'mouse' || !this.touchStart) return;
+    const moved = Math.hypot(e.clientX - this.touchStart.x, e.clientY - this.touchStart.y);
+    this.touchStart = null;
+    if (moved > 10) return; // arrastou: não é um toque
+    const on = !this.touchZoom();
+    this.touchZoom.set(on);
+    this.zoom.set(on ? this.originOf(e) : null);
+  }
+
+  onZoomPointerLeave(e: PointerEvent): void {
+    if (e.pointerType === 'mouse') this.zoom.set(null);
+  }
+
+  /** Clique com mouse abre a ampliação; no toque, o toque já liga/desliga o zoom. */
+  onZoomClick(): void {
+    if (this.lastPointerType === 'mouse' || this.lastPointerType === '') this.lightboxOpen.set(true);
+  }
 }
