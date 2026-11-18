@@ -16,7 +16,7 @@ import { ToastService } from '../../services/toast.service';
 import { SeoService } from '../../services/seo.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { SettingsService } from '../../services/settings.service';
-import { pathForCategory } from '../../data/categories';
+import { CategoryService } from '../../services/category.service';
 import { lowStockLabel, relatedProducts } from '../../utils/product-list';
 
 function formatPrice(value: number): string {
@@ -81,7 +81,8 @@ export class ProductPage {
   });
   readonly activeImage = computed(() => this.gallery()[this.selectedImageIndex()] ?? this.gallery()[0] ?? '');
 
-  readonly categoryPath = computed(() => pathForCategory(this.product()?.category ?? ''));
+  private categoryService = inject(CategoryService);
+  readonly categoryPath = computed(() => this.categoryService.pathFor(this.product()?.category ?? ''));
 
   readonly related = computed(() => {
     const product = this.product();

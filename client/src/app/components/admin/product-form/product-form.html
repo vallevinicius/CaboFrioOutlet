@@ -117,8 +117,8 @@
           (change)="onCategoryChange($any($event.target).value)"
           class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
         >
-          @for (opt of categoryOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
+          @for (opt of categoryOptions(); track opt.value) {
+            <option [value]="opt.value" [selected]="opt.value === category()">{{ opt.label }}</option>
           }
         </select>
       </div>

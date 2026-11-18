@@ -14,7 +14,7 @@ const q: QuoteInput = {
   estimatedPieces: 50,
   message: 'Quero o catálogo',
 };
-const opts = { storeName: 'Cabo Frio Outlet', adminUrl: 'https://loja.com.br/admin' };
+const opts = { storeName: 'Cabo Frio Outlet', adminUrl: 'https://loja.com.br/admin', categoryLabels: { camisas: 'Camisas', 'bonés': 'Bonés' } };
 
 describe('buildWholesaleQuoteEmail: peças escolhidas', () => {
   const extras = {
@@ -58,6 +58,10 @@ describe('buildWholesaleQuoteEmail', () => {
     expect(html).not.toContain('<script>');
     expect(html).not.toContain('<b>x</b>');
     expect(html).toContain('&lt;script&gt;');
+  });
+  it('categoria sem nome conhecido aparece pela key', () => {
+    const { html } = buildWholesaleQuoteEmail({ ...q, interests: ['jaquetas'] }, opts);
+    expect(html).toContain('jaquetas');
   });
   it('campos opcionais vazios aparecem como traço e sem bloco de mensagem', () => {
     const { html } = buildWholesaleQuoteEmail({ ...q, company: '', cnpj: '', estimatedPieces: null, message: '', interests: [] }, opts);

@@ -7,14 +7,9 @@ import { SettingsService } from '../../../services/settings.service';
 import { formatPriceFromNumber, formatPriceInput, parsePriceInput } from '../../../utils/price';
 import { CHANNEL_OPTIONS, SalesChannel } from '../../../utils/channel';
 import { oversizeMessage, uploadErrorMessage } from '../../../utils/upload-error';
+import { CategoryService } from '../../../services/category.service';
 import { MAX_SIDE_CM, MAX_WEIGHT_KG, PackageMeasures, packageDefaultsFor, parseMeasure } from '../../../utils/package-defaults';
 
-const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
-  { label: 'Camisas', value: 'camisas' },
-  { label: 'Calças', value: 'calças' },
-  { label: 'Bermudas', value: 'bermudas' },
-  { label: 'Bonés', value: 'bonés' },
-];
 
 @Component({
   selector: 'app-product-form',
@@ -25,11 +20,13 @@ export class ProductForm implements OnInit {
   private api = inject(ApiService);
   private toastService = inject(ToastService);
   private settingsService = inject(SettingsService);
+  private categoryService = inject(CategoryService);
 
   readonly X = X;
   readonly Upload = Upload;
   readonly Plus = Plus;
-  readonly categoryOptions = CATEGORY_OPTIONS;
+  /** Todas as categorias do painel, inclusive ocultas (peça pode ser cadastrada antes de a categoria ir ao ar). */
+  categoryOptions = signal<{ label: string; value: ProductCategory }[]>([]);
 
   product = input.required<Product | null>();
   formSubmit = output<ProductInput>();
@@ -72,6 +69,7 @@ export class ProductForm implements OnInit {
   error = signal('');
 
   ngOnInit(): void {
+    void this.loadCategories();
     const product = this.product();
     if (!product) {
       this.showMeasures(packageDefaultsFor(this.category()));
@@ -107,6 +105,21 @@ export class ProductForm implements OnInit {
     this.heightCm.set(text(m.heightCm));
     this.widthCm.set(text(m.widthCm));
     this.lengthCm.set(text(m.lengthCm));
+  }
+
+  private async loadCategories(): Promise<void> {
+    try {
+      const all = await this.categoryService.listAll();
+      this.categoryOptions.set(all.map((c) => ({ value: c.key, label: c.active ? c.name : `${c.name} (oculta)` })));
+    } catch {
+      // Sem acesso à lista completa: usa as categorias visíveis no site.
+      this.categoryOptions.set(this.categoryService.categories().map((c) => ({ value: c.value, label: c.label })));
+    }
+    // Produto novo: começa na primeira categoria da lista.
+    const options = this.categoryOptions();
+    if (!this.product() && options.length > 0 && !options.some((o) => o.value === this.category())) {
+      this.onCategoryChange(options[0].value);
+    }
   }
 
   onCategoryChange(value: ProductCategory): void {

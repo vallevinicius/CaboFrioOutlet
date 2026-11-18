@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Images,
   Shirt,
+  Tags,
   Package,
   ShoppingBag,
   Store,
@@ -28,19 +29,23 @@ import { OrdersTab } from '../tabs/orders-tab/orders-tab';
 import { CustomersTab } from '../tabs/customers-tab/customers-tab';
 import { SettingsTab } from '../tabs/settings-tab/settings-tab';
 import { StaffTab } from '../tabs/staff-tab/staff-tab';
+import { CategoriesTab } from '../tabs/categories-tab/categories-tab';
 
-type TabKey = Section | 'equipe';
+type TabKey = Section | 'equipe' | 'categorias';
 
 interface TabDef {
   key: TabKey;
   label: string;
   icon: typeof LayoutDashboard;
+  /** Permissão que libera a aba, quando não é a própria key (Categorias usa a de Produtos). */
+  section?: Section;
 }
 
 const TABS: TabDef[] = [
   { key: 'inicio', label: 'Visão geral', icon: LayoutDashboard },
   { key: 'banners', label: 'Banners', icon: Images },
   { key: 'produtos', label: 'Produtos', icon: Shirt },
+  { key: 'categorias', label: 'Categorias', icon: Tags, section: 'produtos' },
   { key: 'estoque', label: 'Estoque', icon: Package },
   { key: 'pedidos', label: 'Pedidos', icon: ShoppingBag },
   { key: 'atacado', label: 'Atacado', icon: Store },
@@ -52,7 +57,7 @@ const TEAM_TAB: TabDef = { key: 'equipe', label: 'Equipe', icon: ShieldCheck };
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, LucideAngularModule, OverviewTab, BannersTab, ProductsTab, StockTab, OrdersTab, WholesaleTab, CustomersTab, SettingsTab, StaffTab],
+  imports: [RouterLink, LucideAngularModule, OverviewTab, BannersTab, ProductsTab, CategoriesTab, StockTab, OrdersTab, WholesaleTab, CustomersTab, SettingsTab, StaffTab],
   templateUrl: './admin-dashboard.html',
 })
 export class AdminDashboard {
@@ -71,7 +76,7 @@ export class AdminDashboard {
   readonly wordmark = computed(() => splitStoreName(this.settingsService.settings().storeName));
 
   /** Só as telas em que o perfil tem ao menos "ver". */
-  readonly visibleTabs = computed(() => TABS.filter((t) => this.authService.can(t.key as Section, 'view')));
+  readonly visibleTabs = computed(() => TABS.filter((t) => this.authService.can(t.section ?? (t.key as Section), 'view')));
   readonly teamTab = TEAM_TAB;
   readonly roleLabel = computed(() => (this.isSuperAdmin() ? 'Admin supremo' : 'Equipe'));
 

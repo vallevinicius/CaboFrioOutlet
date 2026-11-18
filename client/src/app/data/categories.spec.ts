@@ -1,36 +1,46 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_PRODUCTS_PATH, CATEGORY_PAGES, categoryByPath, categoryBySlug, categoryByValue, pathForCategory } from './categories';
+import { ALL_PRODUCTS_PATH, findByPath, findBySlug, findByValue, pathForCategory, toCategoryPage } from './categories';
+import { Category } from '../types/category';
 
-describe('páginas de categoria', () => {
-  it('cobre as 4 categorias do catálogo, com slug sem acento e caminho coerente', () => {
-    expect(CATEGORY_PAGES.map((c) => c.value)).toEqual(['camisas', 'calças', 'bermudas', 'bonés']);
-    for (const c of CATEGORY_PAGES) {
-      expect(c.slug, c.value).toMatch(/^[a-z]+$/);
-      expect(c.path).toBe(`/${c.slug}`);
-      expect(c.intro.length).toBeGreaterThan(10);
-      expect(c.description.length).toBeGreaterThan(20);
-    }
+const api = (key: string, slug: string, name: string, order: number): Category => ({
+  id: `cat_${slug}`,
+  key,
+  slug,
+  name,
+  intro: `Frase de ${name}`,
+  description: `Descrição de ${name}`,
+  image: `/placeholders/cat-${slug}.jpg`,
+  order,
+  active: true,
+});
+
+const list = [api('camisas', 'camisas', 'Camisas', 0), api('calças', 'calcas', 'Calças', 1), api('bonés', 'bones', 'Bonés', 2)].map(toCategoryPage);
+
+describe('páginas de categoria (vindas da API)', () => {
+  it('toCategoryPage monta valor, caminho e rótulo a partir da API', () => {
+    expect(list[1]).toEqual({
+      id: 'cat_calcas',
+      value: 'calças',
+      slug: 'calcas',
+      path: '/calcas',
+      label: 'Calças',
+      intro: 'Frase de Calças',
+      description: 'Descrição de Calças',
+      image: '/placeholders/cat-calcas.jpg',
+    });
   });
 
-  it('slugs e caminhos são únicos e não colidem com outras rotas', () => {
-    const slugs = CATEGORY_PAGES.map((c) => c.slug);
-    expect(new Set(slugs).size).toBe(slugs.length);
-    for (const reserved of ['admin', 'checkout', 'atacado', 'favoritos', 'produto', 'produtos', 'minha-conta']) {
-      expect(slugs).not.toContain(reserved);
-    }
+  it('acha por valor, slug e caminho (ignorando query, hash e barra final)', () => {
+    expect(findByValue(list, 'calças')?.slug).toBe('calcas');
+    expect(findBySlug(list, 'bones')?.value).toBe('bonés');
+    expect(findByPath(list, '/camisas')?.value).toBe('camisas');
+    expect(findByPath(list, '/calcas/?busca=x#topo')?.value).toBe('calças');
+    expect(findByPath(list, '/produtos')).toBeUndefined();
+    expect(findBySlug(list, undefined)).toBeUndefined();
   });
 
-  it('acha a categoria por valor, slug e caminho (ignorando query, hash e barra final)', () => {
-    expect(categoryByValue('calças')?.slug).toBe('calcas');
-    expect(categoryBySlug('bones')?.value).toBe('bonés');
-    expect(categoryByPath('/camisas')?.value).toBe('camisas');
-    expect(categoryByPath('/bermudas/?busca=x#topo')?.value).toBe('bermudas');
-    expect(categoryByPath('/produtos')).toBeUndefined();
-    expect(categoryBySlug(undefined)).toBeUndefined();
-  });
-
-  it('pathForCategory devolve a página, ou "todos os produtos" para valor desconhecido', () => {
-    expect(pathForCategory('calças')).toBe('/calcas');
-    expect(pathForCategory('outra')).toBe(ALL_PRODUCTS_PATH);
+  it('pathForCategory devolve a página, ou "todos os produtos" para valor desconhecido ou oculto', () => {
+    expect(pathForCategory(list, 'calças')).toBe('/calcas');
+    expect(pathForCategory(list, 'outra')).toBe(ALL_PRODUCTS_PATH);
   });
 });

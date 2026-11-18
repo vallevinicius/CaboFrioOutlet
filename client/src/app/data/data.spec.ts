@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { FOOTER_COLUMNS } from './footer-links';
+import { footerColumns } from './footer-links';
+import { CategoryPage } from './categories';
+
+const cat = (value: string, slug: string, label: string): CategoryPage => ({ id: slug, value, slug, path: `/${slug}`, label, intro: '', description: '', image: '' });
+const CATS = [cat('camisas', 'camisas', 'Camisas'), cat('jaquetas', 'jaquetas', 'Jaquetas')];
+const FOOTER_COLUMNS = footerColumns(CATS);
 import { INSTITUTIONAL_PAGES, findInstitutionalPage } from './institutional-pages';
 import { STORE_INFO, STORE_MAPS_URL } from './store-info';
 
@@ -8,7 +13,7 @@ describe('páginas institucionais', () => {
     // /atacado tem página própria (formulário), fora do conteúdo institucional estático.
     const PAGES_WITH_OWN_COMPONENT = ['/atacado'];
     const internal = FOOTER_COLUMNS.flatMap((c) => c.links)
-      .filter((l) => !['/camisas', '/calcas', '/bermudas', '/bones', '/produtos'].includes(l.path))
+      .filter((l) => !['/camisas', '/jaquetas', '/produtos'].includes(l.path))
       .filter((l) => !PAGES_WITH_OWN_COMPONENT.includes(l.path));
     expect(internal.length).toBe(6);
     for (const link of internal) {
@@ -43,8 +48,8 @@ describe('páginas institucionais', () => {
 
   it('categorias do rodapé apontam para as páginas de cada categoria e para todos os produtos', () => {
     const cats = FOOTER_COLUMNS.find((c) => c.title === 'Categorias')!.links;
-    expect(cats.map((l) => l.path)).toEqual(['/camisas', '/calcas', '/bermudas', '/bones', '/produtos']);
-    expect(cats.map((l) => l.label)).toEqual(['Camisas', 'Calças', 'Bermudas', 'Bonés', 'Todos os produtos']);
+    expect(cats.map((l) => l.path)).toEqual(['/camisas', '/jaquetas', '/produtos']);
+    expect(cats.map((l) => l.label)).toEqual(['Camisas', 'Jaquetas', 'Todos os produtos']);
   });
 
   it('link do mapa codifica o endereço da loja', () => {

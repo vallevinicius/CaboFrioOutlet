@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import { prisma } from '../db.js';
 import { parseOpeningHours } from '../utils/contact.js';
+import { listActiveCategories } from '../routes/categories.js';
 import {
   SeoProduct,
   buildRobotsTxt,
@@ -20,8 +21,11 @@ seoRouter.get('/robots.txt', (req, res) => {
 });
 
 seoRouter.get('/sitemap.xml', async (req, res) => {
-  const products = await prisma.product.findMany({ where: { channel: { not: 'WHOLESALE' } }, select: { id: true, updatedAt: true }, take: 5000 });
-  res.type('application/xml').send(buildSitemapXml(baseUrlOf(req), products));
+  const [products, categories] = await Promise.all([
+    prisma.product.findMany({ where: { channel: { not: 'WHOLESALE' } }, select: { id: true, updatedAt: true }, take: 5000 }),
+    listActiveCategories(),
+  ]);
+  res.type('application/xml').send(buildSitemapXml(baseUrlOf(req), products, categories));
 });
 
 async function loadProduct(id: string): Promise<SeoProduct | null> {
@@ -51,6 +55,12 @@ async function loadProduct(id: string): Promise<SeoProduct | null> {
   };
 }
 
+/** Só categorias ativas viram página; oculta ou inexistente cai no 404 do Angular. */
+async function loadActiveCategory(slug: string) {
+  const category = await prisma.category.findUnique({ where: { slug }, select: { name: true, description: true, active: true } });
+  return category?.active ? { name: category.name, description: category.description } : null;
+}
+
 /** Entrega o index.html do Angular com as tags de SEO da rota já preenchidas. */
 export function sendIndexWithSeo(indexPath: string) {
   return async (req: Request, res: Response) => {
@@ -71,6 +81,8 @@ export function sendIndexWithSeo(indexPath: string) {
       const path = req.path.replace(/\/+$/, '') || '/';
       const productMatch = path.match(/^\/produto\/([A-Za-z0-9_-]{1,64})$/);
       const product = productMatch ? await loadProduct(productMatch[1]) : null;
+      const slugMatch = path.match(/^\/([a-z0-9-]{1,60})$/);
+      const category = slugMatch ? await loadActiveCategory(slugMatch[1]) : null;
       html = injectSeo(
         html,
         buildSeoHead({
@@ -78,6 +90,7 @@ export function sendIndexWithSeo(indexPath: string) {
           path,
           settings,
           product,
+          category,
           siteVerification: process.env.GOOGLE_SITE_VERIFICATION?.trim() || undefined,
         }),
       );

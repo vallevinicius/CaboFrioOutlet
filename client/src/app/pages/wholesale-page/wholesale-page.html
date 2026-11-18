@@ -102,7 +102,7 @@
               <button type="button" (click)="setPickerCategory('todos')" [attr.aria-pressed]="pickerCategory() === 'todos'"
                 class="rounded-sm border px-3 py-2 text-xs font-bold uppercase tracking-wide transition-colors duration-300"
                 [class]="pickerCategory() === 'todos' ? 'border-accent bg-accent text-black' : 'border-zinc-600 text-zinc-300 hover:border-white hover:text-white'">Todas</button>
-              @for (opt of categoryOptions; track opt.value) {
+              @for (opt of categoryOptions(); track opt.value) {
                 <button type="button" (click)="setPickerCategory(opt.value)" [attr.aria-pressed]="pickerCategory() === opt.value"
                   class="rounded-sm border px-3 py-2 text-xs font-bold uppercase tracking-wide transition-colors duration-300"
                   [class]="pickerCategory() === opt.value ? 'border-accent bg-accent text-black' : 'border-zinc-600 text-zinc-300 hover:border-white hover:text-white'">{{ opt.label }}</button>
@@ -303,7 +303,7 @@
           <fieldset class="mt-6">
             <legend class="mb-2 text-sm font-semibold text-slate-900">O que você procura?</legend>
             <div class="flex flex-wrap gap-2">
-              @for (opt of categoryOptions; track opt.value) {
+              @for (opt of categoryOptions(); track opt.value) {
                 <button
                   type="button"
                   (click)="toggleInterest(opt.value)"

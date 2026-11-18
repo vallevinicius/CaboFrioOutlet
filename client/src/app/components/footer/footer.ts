@@ -3,7 +3,8 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Instagram, ArrowRight, MapPin } from 'lucide-angular';
 import { ToastService } from '../../services/toast.service';
 import { SettingsService, splitStoreName } from '../../services/settings.service';
-import { FOOTER_COLUMNS } from '../../data/footer-links';
+import { footerColumns } from '../../data/footer-links';
+import { CategoryService } from '../../services/category.service';
 import { STORE_INFO } from '../../data/store-info';
 import { AnalyticsService } from '../../services/analytics.service';
 
@@ -20,7 +21,8 @@ export class Footer {
   readonly Instagram = Instagram;
   readonly ArrowRight = ArrowRight;
   readonly MapPin = MapPin;
-  readonly linkColumns = FOOTER_COLUMNS;
+  private categories = inject(CategoryService).categories;
+  readonly linkColumns = computed(() => footerColumns(this.categories()));
   readonly splitStoreName = splitStoreName;
   readonly currentYear = new Date().getFullYear();
   readonly instagramUrl = STORE_INFO.instagramUrl;

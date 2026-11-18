@@ -10,16 +10,19 @@ export interface QuoteExtras {
 
 const brl = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const CATEGORY_LABEL: Record<string, string> = { camisas: 'Camisas', 'calças': 'Calças', bermudas: 'Bermudas', 'bonés': 'Bonés' };
-
 function formatCnpj(d: string): string {
   return d.length === 14 ? `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}` : d;
 }
 
 /** E-mail enviado à LOJA avisando de um novo pedido de orçamento. Tudo que veio do formulário é escapado. */
-export function buildWholesaleQuoteEmail(q: QuoteInput, opts: { storeName: string; adminUrl: string }, extras?: QuoteExtras) {
+/** `categoryLabels`: key → nome da categoria (do banco); sem nome, mostra a key. */
+export function buildWholesaleQuoteEmail(
+  q: QuoteInput,
+  opts: { storeName: string; adminUrl: string; categoryLabels?: Record<string, string> },
+  extras?: QuoteExtras,
+) {
   const lines = extras?.lines ?? [];
-  const interests = q.interests.map((i) => CATEGORY_LABEL[i] ?? i).join(', ') || 'Não informado';
+  const interests = q.interests.map((i) => opts.categoryLabels?.[i] ?? i).join(', ') || 'Não informado';
   const rows: [string, string][] = [
     ['Nome', q.name],
     ['Loja/empresa', q.company || '—'],

@@ -1,7 +1,8 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../types/product';
-import { ALL_PRODUCTS_PATH, CATEGORY_PAGES } from '../../data/categories';
+import { ALL_PRODUCTS_PATH } from '../../data/categories';
+import { CategoryService } from '../../services/category.service';
 import { totalStock } from '../../utils/product-list';
 import { ProductCard } from '../product-card/product-card';
 
@@ -18,9 +19,10 @@ export class CategoryShowcase {
   loading = input(false);
 
   readonly allPath = ALL_PRODUCTS_PATH;
+  private categories = inject(CategoryService).categories;
 
   readonly sections = computed(() =>
-    CATEGORY_PAGES.map((page) => ({
+    this.categories().map((page) => ({
       page,
       items: this.products()
         .filter((p) => p.category === page.value && totalStock(p) > 0)

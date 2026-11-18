@@ -30,6 +30,8 @@ const valid = {
 beforeEach(() => {
   mockReset(prisma());
   mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
+  // Por padrão a categoria do produto existe (categorias vêm do banco).
+  prisma().category.findUnique.mockResolvedValue({ id: 'cat_camisas', key: 'camisas' } as never);
 });
 
 describe('produtos: acesso', () => {
@@ -47,6 +49,15 @@ describe('produtos: acesso', () => {
 });
 
 describe('produtos: validação', () => {
+  it('categoria que não existe no banco → 400 e nada é gravado', async () => {
+    prisma().category.findUnique.mockResolvedValue(null);
+    const res = await request(app).post('/api/products').set(admin).send({ ...valid, category: 'inventada' }).expect(400);
+    expect(res.body.error).toBe('Categoria inválida.');
+    expect(prisma().category.findUnique.mock.calls[0][0]).toEqual({ where: { key: 'inventada' } });
+    await request(app).put('/api/products/p1').set(admin).send({ ...valid, category: 'inventada' }).expect(400);
+    expect(prisma().product.create).not.toHaveBeenCalled();
+    expect(prisma().$transaction).not.toHaveBeenCalled();
+  });
   it('rejeita dados incompletos e preço inválido', async () => {
     await request(app).post('/api/products').set(admin).send({ ...valid, name: ' ' }).expect(400);
     await request(app).post('/api/products').set(admin).send({ ...valid, price: 0 }).expect(400);

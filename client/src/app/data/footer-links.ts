@@ -1,4 +1,4 @@
-import { CATEGORY_PAGES, ALL_PRODUCTS_PATH } from './categories';
+import { ALL_PRODUCTS_PATH, CategoryPage } from './categories';
 
 export interface FooterLink {
   label: string;
@@ -11,7 +11,9 @@ export interface FooterColumn {
   links: FooterLink[];
 }
 
-export const FOOTER_COLUMNS: FooterColumn[] = [
+/** Colunas do rodapé; a de categorias vem do painel (só as ativas). */
+export function footerColumns(categories: CategoryPage[]): FooterColumn[] {
+  return [
   {
     title: 'Institucional',
     links: [
@@ -32,8 +34,9 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: 'Categorias',
     links: [
-      ...CATEGORY_PAGES.map((c) => ({ label: c.label, path: c.path })),
+      ...categories.map((c) => ({ label: c.label, path: c.path })),
       { label: 'Todos os produtos', path: ALL_PRODUCTS_PATH },
     ],
   },
-];
+  ];
+}

@@ -12,6 +12,7 @@ import { SeoService } from '../../services/seo.service';
 import { WholesaleService } from '../../services/wholesale.service';
 import { ApiError } from '../../services/api-error';
 import { ProductCategory } from '../../types/product';
+import { CategoryService } from '../../services/category.service';
 import { formatCnpj } from '../../utils/cnpj';
 import { formatPhone } from '../../utils/phone';
 import { whatsappUrl } from '../../utils/whatsapp';
@@ -22,12 +23,6 @@ import { Product } from '../../types/product';
 type CategoryOrAll = ProductCategory | 'todos';
 
 const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
-const CATEGORY_OPTIONS: { value: ProductCategory; label: string }[] = [
-  { value: 'camisas', label: 'Camisas' },
-  { value: 'calças', label: 'Calças' },
-  { value: 'bermudas', label: 'Bermudas' },
-  { value: 'bonés', label: 'Bonés' },
-];
 
 @Component({
   selector: 'app-wholesale-page',
@@ -47,7 +42,9 @@ export class WholesalePage implements OnDestroy {
   readonly ufs = UFS;
   readonly Math = Math;
   readonly getDiscountedPrice = getDiscountedPrice;
-  readonly categoryOptions = CATEGORY_OPTIONS;
+  private categoryService = inject(CategoryService);
+  /** Categorias ativas do painel, no formato dos botões de filtro e de interesse. */
+  readonly categoryOptions = computed(() => this.categoryService.categories().map((c) => ({ value: c.value, label: c.label })));
 
   readonly settings = this.settingsService.settings;
   readonly minPieces = computed(() => this.settings().wholesaleMinPieces);

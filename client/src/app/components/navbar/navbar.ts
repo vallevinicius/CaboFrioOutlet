@@ -22,7 +22,8 @@ import { AuthService } from '../../services/auth.service';
 import { ApiError } from '../../services/api-error';
 import { SettingsService, splitStoreName, storeInitials } from '../../services/settings.service';
 import { SearchService } from '../../services/search.service';
-import { ALL_PRODUCTS_PATH, CATEGORY_PAGES, categoryByPath } from '../../data/categories';
+import { ALL_PRODUCTS_PATH } from '../../data/categories';
+import { CategoryService } from '../../services/category.service';
 import { formatPercent, maxDiscount } from '../../utils/wholesale-pricing';
 import { RegisterModal } from '../register-modal/register-modal';
 
@@ -73,7 +74,8 @@ export class Navbar {
   readonly Truck = Truck;
   readonly Instagram = Instagram;
   readonly ShieldCheck = ShieldCheck;
-  readonly categories = CATEGORY_PAGES;
+  private categoryService = inject(CategoryService);
+  readonly categories = this.categoryService.categories;
   readonly storeInitials = storeInitials;
   readonly whatsappUrl = WHATSAPP_URL;
   readonly instagramUrl = INSTAGRAM_URL;
@@ -93,7 +95,7 @@ export class Navbar {
     { initialValue: this.router.url.split(/[?#]/)[0] },
   );
   readonly isHome = computed(() => this.currentPath() === '/');
-  readonly activeCategory = computed(() => categoryByPath(this.currentPath())?.value ?? null);
+  readonly activeCategory = computed(() => this.categoryService.byPath(this.currentPath())?.value ?? null);
 
   /** Ex.: "até 15% off" — vem das faixas de atacado do admin. */
   readonly wholesaleBadge = computed(() => {
@@ -123,7 +125,7 @@ export class Navbar {
   onSearchInput(value: string): void {
     this.search.set(value);
     const path = this.currentPath();
-    const onListing = path === ALL_PRODUCTS_PATH || categoryByPath(path) !== undefined;
+    const onListing = path === ALL_PRODUCTS_PATH || this.categoryService.byPath(path) !== undefined;
     if (!onListing && value.trim() !== '') {
       this.router.navigate([ALL_PRODUCTS_PATH], { queryParams: { busca: value } });
     }
