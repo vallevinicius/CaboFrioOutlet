@@ -236,3 +236,43 @@ describe('peso e medidas da embalagem (frete)', () => {
     expect(res.body[0]).toMatchObject(measures);
   });
 });
+
+describe('subcategoria do produto', () => {
+  const created = (over: object = {}) => ({ ...valid, id: 'p1', sizes: [{ id: 's', size: 'M', stock: 3 }], images: [], createdAt: new Date(), brand: null, discountPercent: null, isNew: false, channel: 'BOTH', subcategoryId: null, ...over });
+  const basicas = { id: 'sub_basicas', categoryId: 'cat_camisas', category: { key: 'camisas' } };
+
+  it('cria com subcategoria da mesma categoria e devolve o id', async () => {
+    prisma().subcategory.findUnique.mockResolvedValue(basicas as never);
+    prisma().product.create.mockResolvedValue(created({ subcategoryId: 'sub_basicas' }) as never);
+    const res = await request(app).post('/api/products').set(admin).send({ ...valid, subcategoryId: 'sub_basicas' }).expect(201);
+    expect(prisma().subcategory.findUnique.mock.calls[0][0]).toEqual({ where: { id: 'sub_basicas' }, include: { category: { select: { key: true } } } });
+    expect((prisma().product.create.mock.calls[0][0].data as { subcategoryId: string }).subcategoryId).toBe('sub_basicas');
+    expect(res.body.subcategoryId).toBe('sub_basicas');
+  });
+
+  it('subcategoria de outra categoria ou inexistente → 400 e nada é gravado', async () => {
+    prisma().subcategory.findUnique.mockResolvedValue({ ...basicas, category: { key: 'calças' } } as never);
+    const r = await request(app).post('/api/products').set(admin).send({ ...valid, subcategoryId: 'sub_basicas' }).expect(400);
+    expect(r.body.error).toBe('Subcategoria inválida.');
+    prisma().subcategory.findUnique.mockResolvedValue(null);
+    await request(app).put('/api/products/p1').set(admin).send({ ...valid, subcategoryId: 'nao' }).expect(400);
+    expect(prisma().product.create).not.toHaveBeenCalled();
+    expect(prisma().$transaction).not.toHaveBeenCalled();
+  });
+
+  it('editar: null limpa a subcategoria; sem o campo, não mexe', async () => {
+    prisma().$transaction.mockResolvedValue([] as never);
+    prisma().product.findUniqueOrThrow.mockResolvedValue(created() as never);
+    await request(app).put('/api/products/p1').set(admin).send({ ...valid, subcategoryId: null }).expect(200);
+    await request(app).put('/api/products/p1').set(admin).send(valid).expect(200);
+    const updates = prisma().product.update.mock.calls.map((c) => c[0].data as { subcategoryId?: string | null });
+    expect(updates[0].subcategoryId).toBeNull();
+    expect(updates[1]).not.toHaveProperty('subcategoryId');
+  });
+
+  it('a lista devolve subcategoryId (null quando não tem)', async () => {
+    prisma().product.findMany.mockResolvedValue([created()] as never);
+    const res = await request(app).get('/api/products').expect(200);
+    expect(res.body[0].subcategoryId).toBeNull();
+  });
+});

@@ -31,6 +31,7 @@ function serializeProduct(product: ProductWithSizes) {
     name: product.name,
     price: product.price,
     category: product.category,
+    subcategoryId: product.subcategoryId ?? null,
     brand: product.brand ?? undefined,
     image: product.image,
     images: product.images.map((i) => i.url),
@@ -56,6 +57,8 @@ interface ProductPayload {
   name: string;
   price: number;
   category: string;
+  /** null limpa; ausente (no PUT) não mexe. */
+  subcategoryId?: string | null;
   brand?: string;
   image: string;
   images?: string[];
@@ -98,8 +101,16 @@ function validatePayload(body: unknown): body is ProductPayload {
       p.sizes.length > 0 &&
       typeof p.stock === 'object' &&
       (p.channel === undefined || (typeof p.channel === 'string' && p.channel in CHANNEL_TO_DB)) &&
+      (p.subcategoryId === undefined || p.subcategoryId === null || typeof p.subcategoryId === 'string') &&
       validMeasures(p)
   );
+}
+
+/** Subcategoria informada precisa existir e ser da mesma categoria do produto. */
+async function subcategoryFits(id: string | null | undefined, categoryKey: string): Promise<boolean> {
+  if (id === undefined || id === null) return true;
+  const sub = await prisma.subcategory.findUnique({ where: { id }, include: { category: { select: { key: true } } } });
+  return sub !== null && sub.category.key === categoryKey;
 }
 
 /** A categoria do produto precisa estar cadastrada (aba Categorias do painel), mesmo que oculta. */
@@ -127,6 +138,10 @@ productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res)
   if (!(await categoryExists(category))) {
     return res.status(400).json({ error: 'Categoria inválida.' });
   }
+  const { subcategoryId } = req.body as ProductPayload;
+  if (!(await subcategoryFits(subcategoryId, category))) {
+    return res.status(400).json({ error: 'Subcategoria inválida.' });
+  }
 
   const product = await prisma.product.create({
     data: {
@@ -138,6 +153,7 @@ productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res)
       description: description?.trim() ?? '',
       isNew: Boolean(isNew),
       channel: CHANNEL_TO_DB[channel ?? 'both'],
+      subcategoryId: subcategoryId ?? null,
       ...packageMeasures(category, { weightKg, heightCm, widthCm, lengthCm }),
       discountPercent: discountPercent && discountPercent > 0 ? discountPercent : null,
       sizes: {
@@ -164,6 +180,10 @@ productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, re
   if (!(await categoryExists(category))) {
     return res.status(400).json({ error: 'Categoria inválida.' });
   }
+  const { subcategoryId } = req.body as ProductPayload;
+  if (!(await subcategoryFits(subcategoryId, category))) {
+    return res.status(400).json({ error: 'Subcategoria inválida.' });
+  }
 
   try {
     await prisma.$transaction([
@@ -187,6 +207,8 @@ productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, re
           image,
           description: description?.trim() ?? '',
           isNew: Boolean(isNew),
+          // Sem subcategoria no corpo = não mexe; null limpa.
+          ...(subcategoryId !== undefined ? { subcategoryId } : {}),
           // Sem canal no corpo = não mexe (clientes antigos não zeram o canal sem querer).
           ...(channel !== undefined ? { channel: CHANNEL_TO_DB[channel] } : {}),
           // Sem medidas no corpo = não mexe nas que já existem.

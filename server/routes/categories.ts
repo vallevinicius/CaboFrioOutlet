@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Category, Prisma } from '@prisma/client';
+import { Category, Prisma, Subcategory } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../db.js';
 import { requirePermission } from '../middleware/permissions.js';
@@ -10,6 +10,10 @@ export const categoriesRouter = Router();
 /** Categorias visíveis no site, em ordem. Usada também pelo SEO, sitemap e atacado. */
 export function listActiveCategories(): Promise<Category[]> {
   return prisma.category.findMany({ where: { active: true }, orderBy: { order: 'asc' } });
+}
+
+function serializeSub(s: Subcategory) {
+  return { id: s.id, slug: s.slug, name: s.name, order: s.order, active: s.active };
 }
 
 function serialize(c: Category) {
@@ -41,17 +45,30 @@ const isPrismaError = (err: unknown, code: string) =>
   err instanceof Prisma.PrismaClientKnownRequestError && err.code === code;
 
 categoriesRouter.get('/', async (_req, res) => {
-  const categories = await listActiveCategories();
-  res.json(categories.map(serialize));
+  const categories = await prisma.category.findMany({
+    where: { active: true },
+    orderBy: { order: 'asc' },
+    include: { subcategories: { where: { active: true }, orderBy: { order: 'asc' } } },
+  });
+  // No site, a subcategoria só precisa de id, slug (link ?tipo=) e nome.
+  res.json(categories.map((c) => ({ ...serialize(c), subcategories: c.subcategories.map(({ id, slug, name }) => ({ id, slug, name })) })));
 });
 
 categoriesRouter.get('/all', requirePermission('produtos', 'view'), async (_req, res) => {
-  const [categories, counts] = await Promise.all([
-    prisma.category.findMany({ orderBy: { order: 'asc' } }),
+  const [categories, counts, subCounts] = await Promise.all([
+    prisma.category.findMany({ orderBy: { order: 'asc' }, include: { subcategories: { orderBy: { order: 'asc' } } } }),
     prisma.product.groupBy({ by: ['category'], _count: { _all: true } }),
+    prisma.product.groupBy({ by: ['subcategoryId'], _count: { _all: true } }),
   ]);
   const byKey = new Map(counts.map((c) => [c.category, c._count._all]));
-  res.json(categories.map((c) => ({ ...serialize(c), productCount: byKey.get(c.key) ?? 0 })));
+  const bySub = new Map(subCounts.map((c) => [c.subcategoryId, c._count._all]));
+  res.json(
+    categories.map((c) => ({
+      ...serialize(c),
+      productCount: byKey.get(c.key) ?? 0,
+      subcategories: c.subcategories.map((s) => ({ ...serializeSub(s), productCount: bySub.get(s.id) ?? 0 })),
+    })),
+  );
 });
 
 categoriesRouter.post('/', requirePermission('produtos', 'edit'), async (req, res) => {
@@ -121,6 +138,82 @@ categoriesRouter.delete('/:id', requirePermission('produtos', 'edit'), async (re
       error: `Esta categoria tem ${products} produto(s). Mova os produtos para outra categoria ou oculte a categoria.`,
     });
   }
-  await prisma.category.delete({ where: { id: category.id } });
+  // Sem peças na categoria, as subcategorias dela também estão vazias: saem juntas.
+  await prisma.$transaction([
+    prisma.subcategory.deleteMany({ where: { categoryId: category.id } }),
+    prisma.category.delete({ where: { id: category.id } }),
+  ]);
+  res.status(204).end();
+});
+
+// ───────────────────────── Subcategorias ─────────────────────────
+
+const subName = z.object({ name: text(60).min(1, 'Informe o nome da subcategoria.') });
+const subUpdate = z.object({ name: text(60).min(1, 'Informe o nome da subcategoria.'), active: z.boolean() });
+
+categoriesRouter.post('/:id/subcategories', requirePermission('produtos', 'edit'), async (req, res) => {
+  const parsed = subName.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: firstError(parsed.error) });
+  const category = await prisma.category.findUnique({ where: { id: req.params.id as string } });
+  if (!category) return res.status(404).json({ error: 'Categoria não encontrada.' });
+
+  const slug = slugify(parsed.data.name);
+  if (!slug) return res.status(400).json({ error: 'Escolha um nome com letras ou números.' });
+
+  const last = await prisma.subcategory.findFirst({ where: { categoryId: category.id }, orderBy: { order: 'desc' } });
+  try {
+    const created = await prisma.subcategory.create({
+      data: { categoryId: category.id, slug, name: parsed.data.name, order: (last?.order ?? -1) + 1, active: true },
+    });
+    res.status(201).json(serializeSub(created));
+  } catch (err) {
+    if (isPrismaError(err, 'P2002')) {
+      return res.status(409).json({ error: `Já existe a subcategoria "${parsed.data.name}" em ${category.name}.` });
+    }
+    throw err;
+  }
+});
+
+categoriesRouter.put('/subcategories/:subId', requirePermission('produtos', 'edit'), async (req, res) => {
+  const parsed = subUpdate.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: firstError(parsed.error) });
+  try {
+    // O slug fica de fora: ele vai nos links ?tipo= já compartilhados.
+    const updated = await prisma.subcategory.update({ where: { id: req.params.subId as string }, data: parsed.data });
+    res.json(serializeSub(updated));
+  } catch (err) {
+    if (isPrismaError(err, 'P2025')) return res.status(404).json({ error: 'Subcategoria não encontrada.' });
+    throw err;
+  }
+});
+
+categoriesRouter.patch('/subcategories/:subId/move', requirePermission('produtos', 'edit'), async (req, res) => {
+  const { direction } = (req.body ?? {}) as { direction?: unknown };
+  if (direction !== 'up' && direction !== 'down') {
+    return res.status(400).json({ error: 'Informe a direção up ou down.' });
+  }
+  const current = await prisma.subcategory.findUnique({ where: { id: req.params.subId as string } });
+  if (!current) return res.status(404).json({ error: 'Subcategoria não encontrada.' });
+
+  const siblings = await prisma.subcategory.findMany({ where: { categoryId: current.categoryId }, orderBy: { order: 'asc' } });
+  const index = siblings.findIndex((s) => s.id === current.id);
+  const other = siblings[direction === 'up' ? index - 1 : index + 1];
+  if (other) {
+    await prisma.$transaction([
+      prisma.subcategory.update({ where: { id: current.id }, data: { order: other.order } }),
+      prisma.subcategory.update({ where: { id: other.id }, data: { order: current.order } }),
+    ]);
+  }
+  res.json({ ok: true });
+});
+
+categoriesRouter.delete('/subcategories/:subId', requirePermission('produtos', 'edit'), async (req, res) => {
+  const sub = await prisma.subcategory.findUnique({ where: { id: req.params.subId as string } });
+  if (!sub) return res.status(404).json({ error: 'Subcategoria não encontrada.' });
+  const products = await prisma.product.count({ where: { subcategoryId: sub.id } });
+  if (products > 0) {
+    return res.status(409).json({ error: `Esta subcategoria tem ${products} produto(s). Mova os produtos ou oculte a subcategoria.` });
+  }
+  await prisma.subcategory.delete({ where: { id: sub.id } });
   res.status(204).end();
 });
