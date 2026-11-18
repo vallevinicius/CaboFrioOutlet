@@ -6,8 +6,11 @@
   <app-hero />
   <app-ticker />
   <app-wholesale-banner />
-  <app-new-arrivals [products]="newArrivals()" />
-  <app-category-showcase [products]="products()" [loading]="loading()" />
+  <!-- Destino do botão "Ver produtos" do hero. scroll-mt: o título não some atrás do cabeçalho fixo. -->
+  <div id="produtos" class="scroll-mt-28 sm:scroll-mt-40 md:scroll-mt-52">
+    <app-new-arrivals [products]="newArrivals()" />
+    <app-category-showcase [products]="products()" [loading]="loading()" />
+  </div>
   <app-category-tiles [counts]="categoryCounts()" />
   <app-brand-showcase />
   <app-brand-story />
