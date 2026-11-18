@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { AppImageDirective } from '../../../directives/app-image.directive';
 import { LucideAngularModule, X, Upload, Plus } from 'lucide-angular';
 import { Product, ProductCategory, ProductInput } from '../../../types/product';
 import { ApiService } from '../../../services/api.service';
@@ -13,7 +14,7 @@ import { MAX_SIDE_CM, MAX_WEIGHT_KG, PackageMeasures, packageDefaultsFor, parseM
 
 @Component({
   selector: 'app-product-form',
-  imports: [LucideAngularModule],
+  imports: [AppImageDirective, LucideAngularModule],
   templateUrl: './product-form.html',
 })
 export class ProductForm implements OnInit {

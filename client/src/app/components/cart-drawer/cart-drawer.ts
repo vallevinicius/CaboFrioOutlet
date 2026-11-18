@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { LucideAngularModule, X, Minus, Plus, Trash2, ShoppingBag, Lock } from 'lucide-angular';
@@ -12,7 +13,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-cart-drawer',
-  imports: [LucideAngularModule, DecimalPipe],
+  imports: [AppImageDirective, LucideAngularModule, DecimalPipe],
   templateUrl: './cart-drawer.html',
 })
 export class CartDrawer {

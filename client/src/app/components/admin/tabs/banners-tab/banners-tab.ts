@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../../../directives/app-image.directive';
 import { LucideAngularModule, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Image } from 'lucide-angular';
 import { HeroSlide, HeroSlideInput } from '../../../../types/hero-slide';
 import { HeroSlideService } from '../../../../services/hero-slide.service';
@@ -9,7 +10,7 @@ import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-banners-tab',
-  imports: [LucideAngularModule, BannerForm],
+  imports: [AppImageDirective, LucideAngularModule, BannerForm],
   templateUrl: './banners-tab.html',
 })
 export class BannersTab {

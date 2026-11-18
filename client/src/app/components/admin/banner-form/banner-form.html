@@ -19,7 +19,7 @@
       <div class="flex items-center gap-4">
         <div class="flex h-24 w-40 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-accent">
           @if (image()) {
-            <img [src]="image()" alt="" class="h-full w-full object-cover opacity-70" />
+            <img [appImage]="image()" alt="" class="h-full w-full object-cover opacity-70" />
           } @else {
             <lucide-icon [img]="Upload" class="h-5 w-5 text-white/60" />
           }

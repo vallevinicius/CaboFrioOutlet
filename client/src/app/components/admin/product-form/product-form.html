@@ -19,7 +19,7 @@
       <div class="flex items-center gap-4">
         <div class="flex h-24 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-white/5">
           @if (image()) {
-            <img [src]="image()" alt="" class="h-full w-full object-cover" />
+            <img [appImage]="image()" alt="" class="h-full w-full object-cover" />
           } @else {
             <lucide-icon [img]="Upload" class="h-5 w-5 text-white/45" />
           }
@@ -44,7 +44,7 @@
       <div class="flex flex-wrap items-center gap-3">
         @for (img of extraImages(); track img; let i = $index) {
           <div class="relative h-20 w-16 overflow-hidden rounded-lg border border-white/15">
-            <img [src]="img" alt="" class="h-full w-full object-cover" />
+            <img [appImage]="img" alt="" class="h-full w-full object-cover" />
             <button
               type="button"
               (click)="removeExtraImage(i)"

@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
@@ -25,7 +26,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-page',
-  imports: [
+  imports: [AppImageDirective, 
     LucideAngularModule,
     RouterLink,
     Navbar,

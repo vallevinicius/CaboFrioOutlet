@@ -1,4 +1,5 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { LucideAngularModule, ChevronLeft, ChevronRight, Truck, RefreshCcw, CreditCard, Store } from 'lucide-angular';
 import { RouterLink } from '@angular/router';
 import { HeroSlideService } from '../../services/hero-slide.service';
@@ -43,7 +44,7 @@ const INTRO_MS = 1600;
 
 @Component({
   selector: 'app-hero',
-  imports: [LucideAngularModule, RouterLink],
+  imports: [AppImageDirective, LucideAngularModule, RouterLink],
   templateUrl: './hero.html',
 })
 export class Hero implements OnDestroy {

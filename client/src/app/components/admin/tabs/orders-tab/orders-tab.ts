@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { AppImageDirective } from '../../../../directives/app-image.directive';
 import { LucideAngularModule, ChevronDown, ChevronUp, Receipt, Clock, CircleCheckBig } from 'lucide-angular';
 import { Order, OrderStatus } from '../../../../types/order';
 import { ApiService } from '../../../../services/api.service';
@@ -16,7 +17,7 @@ const STATUS_OPTIONS: { value: OrderStatus; label: string }[] = (
 
 @Component({
   selector: 'app-orders-tab',
-  imports: [LucideAngularModule, StatCard, OrderDetails],
+  imports: [AppImageDirective, LucideAngularModule, StatCard, OrderDetails],
   templateUrl: './orders-tab.html',
 })
 export class OrdersTab implements OnInit {

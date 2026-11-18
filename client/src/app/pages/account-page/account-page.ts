@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import {
@@ -42,7 +43,7 @@ interface ViaCepResponse {
 
 @Component({
   selector: 'app-account-page',
-  imports: [LucideAngularModule, Navbar, Footer, CartDrawer],
+  imports: [AppImageDirective, LucideAngularModule, Navbar, Footer, CartDrawer],
   templateUrl: './account-page.html',
 })
 export class AccountPage implements OnInit {

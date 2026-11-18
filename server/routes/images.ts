@@ -5,8 +5,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { CLIENT_DIST, IMAGE_CACHE_DIR, UPLOADS_DIR } from '../paths.js';
 
-/** Larguras servidas: 480 para cartões e miniaturas, 1200 para a foto grande. */
-export const IMAGE_WIDTHS = [480, 1200] as const;
+/** Larguras servidas: 480 (miniaturas e cartões), 800 (cartões em tela de alta densidade), 1200 (foto grande). */
+export const IMAGE_WIDTHS = [480, 800, 1200] as const;
 const WEBP_QUALITY = 78;
 const FILE_RE = /^[A-Za-z0-9._-]{1,120}\.(jpe?g|png|webp)$/i;
 

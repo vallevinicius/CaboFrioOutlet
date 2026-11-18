@@ -1,9 +1,10 @@
 import { Component, HostListener, input, output } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { LucideAngularModule, X } from 'lucide-angular';
 
 @Component({
   selector: 'app-image-lightbox',
-  imports: [LucideAngularModule],
+  imports: [AppImageDirective, LucideAngularModule],
   templateUrl: './image-lightbox.html',
 })
 export class ImageLightbox {

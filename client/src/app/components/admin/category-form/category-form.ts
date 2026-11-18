@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { AppImageDirective } from '../../../directives/app-image.directive';
 import { LucideAngularModule, X, Upload } from 'lucide-angular';
 import { AdminCategory, CategoryInput } from '../../../types/category';
 import { ApiService } from '../../../services/api.service';
@@ -10,7 +11,7 @@ export type CategoryFormValue = CategoryInput & { active: boolean };
 
 @Component({
   selector: 'app-category-form',
-  imports: [LucideAngularModule],
+  imports: [AppImageDirective, LucideAngularModule],
   templateUrl: './category-form.html',
 })
 export class CategoryForm implements OnInit {

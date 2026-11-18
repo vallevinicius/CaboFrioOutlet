@@ -623,7 +623,7 @@ registry.registerPath({
   summary: 'Foto em WebP na largura pedida (gerada na primeira vez e guardada em cache)',
   request: {
     params: z.object({
-      width: z.enum(['480', '1200']),
+      width: z.enum(['480', '800', '1200']),
       dir: z.enum(['uploads', 'placeholders']),
       file: z.string().openapi({ example: 'cae59a8b-f70a-4cbc-a02a-24bdf8b6d503.jpg' }),
     }),

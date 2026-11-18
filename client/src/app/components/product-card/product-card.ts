@@ -1,4 +1,5 @@
 import { Component, computed, inject, input, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Plus, Check } from 'lucide-angular';
 import { Product } from '../../types/product';
@@ -14,7 +15,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-card',
-  imports: [LucideAngularModule, RouterLink, ImageLightbox, FavoriteButton],
+  imports: [AppImageDirective, LucideAngularModule, RouterLink, ImageLightbox, FavoriteButton],
   templateUrl: './product-card.html',
 })
 export class ProductCard {

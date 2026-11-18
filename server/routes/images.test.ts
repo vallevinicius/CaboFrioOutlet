@@ -42,8 +42,8 @@ const fetchImage = (url: string) =>
     });
 
 describe('GET /img/:width/:dir/:file', () => {
-  it('larguras liberadas: 480 e 1200', () => {
-    expect(IMAGE_WIDTHS).toEqual([480, 1200]);
+  it('larguras liberadas: 480, 800 e 1200', () => {
+    expect(IMAGE_WIDTHS).toEqual([480, 800, 1200]);
   });
 
   it('gera WebP na largura pedida, com cache longo para uploads', async () => {

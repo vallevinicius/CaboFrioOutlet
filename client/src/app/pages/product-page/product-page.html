@@ -17,7 +17,8 @@
         <div>
           <div class="relative aspect-[4/5] overflow-hidden rounded-sm bg-slate-100">
             <img
-              [src]="activeImage()"
+              [appImage]="activeImage()"
+              imageSize="full"
               [alt]="product.name"
               (click)="lightboxOpen.set(true)"
               class="h-full w-full cursor-zoom-in object-cover"
@@ -56,7 +57,7 @@
                     class="aspect-square w-full overflow-hidden rounded-sm border-2 transition-colors duration-300"
                     [class]="selectedImageIndex() === i ? 'border-slate-900' : 'border-transparent hover:border-accent'"
                   >
-                    <img [src]="img" alt="" loading="lazy" class="h-full w-full object-cover" />
+                    <img [appImage]="img" alt="" loading="lazy" class="h-full w-full object-cover" />
                   </button>
                 </li>
               }

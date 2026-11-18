@@ -118,7 +118,7 @@
             <ul class="flex flex-col divide-y divide-zinc-800 rounded-sm border border-zinc-700 bg-zinc-900">
               @for (p of visiblePickerProducts(); track p.id) {
                 <li class="flex flex-col gap-4 p-4 sm:flex-row sm:items-start">
-                  <img [src]="p.image" [alt]="p.name" loading="lazy" class="h-28 w-24 flex-shrink-0 rounded-sm object-cover" />
+                  <img [appImage]="p.image" [alt]="p.name" loading="lazy" class="h-28 w-24 flex-shrink-0 rounded-sm object-cover" />
                   <div class="min-w-0 flex-1">
                     <p class="font-semibold text-white">{{ p.name }}</p>
                     <p class="mt-0.5 text-sm text-zinc-300">
