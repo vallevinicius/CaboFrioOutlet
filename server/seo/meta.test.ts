@@ -62,12 +62,27 @@ describe('buildOpeningHoursSpec', () => {
 describe('buildSeoHead', () => {
   it('home: título, canonical, Open Graph e LocalBusiness com telefone e horários', () => {
     const head = buildSeoHead(ctx());
-    expect(head).toContain('<title>Cabo Frio Outlet | Moda urbana em Cabo Frio</title>');
+    expect(head).toContain('<title>Cabo Frio Outlet | Outlet multimarcas em Cabo Frio – RJ</title>');
+    expect(head).toMatch(/<meta name="description" content="[^"]*multimarcas[^"]*Cabo Frio/);
     expect(head).toContain(`<link rel="canonical" href="${BASE}">`);
     expect(head).toContain('property="og:image" content="https://loja.com.br/og-default.jpg"');
     expect(head).toContain('"@type":"ClothingStore"');
     expect(head).toContain('"telephone":"+5522999991234"');
     expect(head).toContain('"openingHoursSpecification"');
+  });
+  it('home: loja local com área atendida, mapa e site com nome alternativo', () => {
+    const head = buildSeoHead(ctx());
+    expect(head).toContain('"addressLocality":"Cabo Frio"');
+    expect(head).toContain('"areaServed"');
+    expect(head).toContain('"Região dos Lagos"');
+    expect(head).toContain('"hasMap":"https://www.google.com/maps/search/');
+    expect(head).toContain('"@type":"WebSite"');
+    expect(head).toContain('"alternateName"');
+  });
+  it('meta de verificação do Google só aparece quando configurada, com valor escapado', () => {
+    expect(buildSeoHead(ctx())).not.toContain('google-site-verification');
+    const head = buildSeoHead(ctx({ siteVerification: 'abc"><x' }));
+    expect(head).toContain('<meta name="google-site-verification" content="abc&quot;&gt;&lt;x">');
   });
   it('LocalBusiness omite telefone quando não configurado', () => {
     const head = buildSeoHead(ctx({ settings: { ...settings, whatsapp: '' } }));
@@ -81,7 +96,7 @@ describe('buildSeoHead', () => {
   });
   it('página de categoria usa título, descrição e canonical próprios', () => {
     const head = buildSeoHead(ctx({ path: '/calcas' }));
-    expect(head).toContain('<title>Calças | Cabo Frio Outlet</title>');
+    expect(head).toContain('<title>Calças jeans e sarja multimarcas | Cabo Frio Outlet</title>');
     expect(head).toContain('Calças jeans');
     expect(head).toContain(`href="${BASE}/calcas"`);
     expect(head).not.toContain('noindex');
