@@ -3,13 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  /* overflow-x: clip impede a página de "balançar" para o lado no celular quando algo passa da
+     borda. Não usar hidden: ele quebra o position: sticky do cabeçalho da loja. */
   html {
     font-family: 'Inter', system-ui, sans-serif;
     scroll-behavior: smooth;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-white text-slate-900 antialiased;
+    overflow-x: clip;
   }
 
   ::selection {
