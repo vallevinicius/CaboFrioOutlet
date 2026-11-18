@@ -15,7 +15,8 @@ vi.mock('../paths.js', async () => {
   const dist = path.join(dirs.root, 'dist');
   fs.mkdirSync(uploads);
   fs.mkdirSync(path.join(dist, 'placeholders'), { recursive: true });
-  return { UPLOADS_DIR: uploads, CLIENT_DIST: dist, IMAGE_CACHE_DIR: path.join(dirs.root, 'cache') };
+  // Mesmo padrão de produção: cache dentro de uploads, numa pasta com ponto.
+  return { UPLOADS_DIR: uploads, CLIENT_DIST: dist, IMAGE_CACHE_DIR: path.join(uploads, '.variants') };
 });
 
 import { IMAGE_WIDTHS, imagesRouter } from './images.js';
@@ -72,7 +73,7 @@ describe('GET /img/:width/:dir/:file', () => {
 
   it('guarda a versão em disco e reaproveita no próximo pedido', async () => {
     await fetchImage('/img/480/uploads/foto.jpg').expect(200);
-    const cached = path.join(dirs.root, 'cache', '480', 'uploads', 'foto.jpg.webp');
+    const cached = path.join(dirs.root, 'uploads', '.variants', '480', 'uploads', 'foto.jpg.webp');
     expect(fs.existsSync(cached)).toBe(true);
     const before = fs.statSync(cached).mtimeMs;
     await fetchImage('/img/480/uploads/foto.jpg').expect(200);
