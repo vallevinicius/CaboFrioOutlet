@@ -75,16 +75,19 @@
         <span>{{ shortDate(d.overview.series[d.overview.series.length - 1].date) }}</span>
       </div>
 
-      <!-- Mesma informação do gráfico, para leitores de tela -->
-      <table class="sr-only">
-        <caption>Receita por dia</caption>
-        <thead><tr><th scope="col">Dia</th><th scope="col">Pedidos</th><th scope="col">Receita</th></tr></thead>
-        <tbody>
-          @for (point of d.overview.series; track point.date) {
-            <tr><td>{{ shortDate(point.date) }}</td><td>{{ point.orders }}</td><td>{{ money(point.revenue) }}</td></tr>
-          }
-        </tbody>
-      </table>
+      <!-- Mesma informação do gráfico, para leitores de tela. O sr-only fica num div e não na
+           <table>: tabela ignora height: 1px e overflow, e esticava a página (área branca no celular). -->
+      <div class="sr-only">
+        <table>
+          <caption>Receita por dia</caption>
+          <thead><tr><th scope="col">Dia</th><th scope="col">Pedidos</th><th scope="col">Receita</th></tr></thead>
+          <tbody>
+            @for (point of d.overview.series; track point.date) {
+              <tr><td>{{ shortDate(point.date) }}</td><td>{{ point.orders }}</td><td>{{ money(point.revenue) }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <div class="mt-8 grid gap-8 lg:grid-cols-2">
