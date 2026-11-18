@@ -71,7 +71,16 @@ export function sendIndexWithSeo(indexPath: string) {
       const path = req.path.replace(/\/+$/, '') || '/';
       const productMatch = path.match(/^\/produto\/([A-Za-z0-9_-]{1,64})$/);
       const product = productMatch ? await loadProduct(productMatch[1]) : null;
-      html = injectSeo(html, buildSeoHead({ baseUrl: baseUrlOf(req), path, settings, product }));
+      html = injectSeo(
+        html,
+        buildSeoHead({
+          baseUrl: baseUrlOf(req),
+          path,
+          settings,
+          product,
+          siteVerification: process.env.GOOGLE_SITE_VERIFICATION?.trim() || undefined,
+        }),
+      );
     } catch (err) {
       // SEO é um extra: se o banco falhar, ainda entregamos o app normalmente.
       console.error('Falha ao montar SEO:', err instanceof Error ? err.message : err);

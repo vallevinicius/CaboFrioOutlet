@@ -35,7 +35,7 @@ export const INSTITUTIONAL_PAGES: InstitutionalPageContent[] = [
       { type: 'heading', text: 'Nossa história' },
       {
         type: 'paragraph',
-        text: `A Cabo Frio Outlet nasceu no coração de ${STORE_INFO.city} e, há ${STORE_INFO.yearsInBusiness} anos, é parada certa de quem busca vestuário urbano com preço de outlet. Começamos como uma loja de bairro e crescemos junto com os nossos clientes.`,
+        text: `A Cabo Frio Outlet nasceu no coração de ${STORE_INFO.city} e, há ${STORE_INFO.yearsInBusiness} anos, é a loja multimarcas onde quem busca vestuário urbano encontra preço de outlet. Começamos como uma loja de bairro e crescemos junto com os nossos clientes.`,
       },
       {
         type: 'paragraph',

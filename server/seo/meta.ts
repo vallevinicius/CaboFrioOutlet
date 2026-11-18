@@ -22,52 +22,63 @@ export interface SeoContext {
   path: string;
   settings: SeoSettings;
   product?: SeoProduct | null;
+  /** Código da meta tag de verificação do Google Search Console (GOOGLE_SITE_VERIFICATION). */
+  siteVerification?: string;
 }
 
 export const STORE_ADDRESS = {
-  streetAddress: 'Avenida Júlia Kubitschek, 16, Edifício Premier Center, lojas 3 e 4',
+  streetAddress: 'Avenida Júlia Kubitschek, 16, Edifício Premier Center, lojas 3 e 4, Centro',
   addressLocality: 'Cabo Frio',
   addressRegion: 'RJ',
   postalCode: '28905-000',
   addressCountry: 'BR',
 };
 export const INSTAGRAM_URL = 'https://www.instagram.com/cabofrio.outlet';
+export const STORE_MAPS_URL =
+  'https://www.google.com/maps/search/?api=1&query=' +
+  encodeURIComponent('Edifício Premier Center, Avenida Júlia Kubitschek, 16, Centro, Cabo Frio - RJ');
+
+/** Como as pessoas procuram a loja no Google: entra no JSON-LD como nome alternativo. */
+const ALTERNATE_NAMES = ['Outlet Cabo Frio', 'Cabo Frio Outlet Multimarcas'];
+
+/** Cidades da Região dos Lagos atendidas pela loja física (área de busca local). */
+const AREA_SERVED = ['Cabo Frio', 'Arraial do Cabo', 'Armação dos Búzios', 'São Pedro da Aldeia', 'Iguaba Grande', 'Região dos Lagos'];
 
 const DEFAULT_DESCRIPTION =
-  'Cabo Frio Outlet: vestuário urbano com preço de outlet. Camisas, calças, bermudas e bonés. Há 10 anos no Centro de Cabo Frio.';
+  'Outlet multimarcas em Cabo Frio/RJ: camisas, calças, bermudas e bonés das marcas que a rua usa, com preço de outlet. Há 10 anos no Centro de Cabo Frio.';
 
 /** Título e descrição das páginas institucionais (espelha as rotas do client). */
 export const PAGE_META: Record<string, { title: string; description: string }> = {
   '/sobre-nos': {
     title: 'Sobre nós',
-    description: 'Há 10 anos vestindo Cabo Frio com moda urbana e preço de outlet. Conheça a nossa história e venha nos visitar.',
+    description: 'Loja multimarcas há 10 anos no Centro de Cabo Frio, com moda urbana e preço de outlet para toda a Região dos Lagos. Conheça a nossa história.',
   },
   '/contato': {
     title: 'Contato',
-    description: 'Endereço, horário de funcionamento, WhatsApp e e-mail da Cabo Frio Outlet, no Centro de Cabo Frio.',
+    description: 'Endereço, horário, WhatsApp e e-mail da Cabo Frio Outlet: Av. Júlia Kubitschek, 16, Centro de Cabo Frio/RJ, em frente à Prontomed.',
   },
   '/produtos': {
-    title: 'Todos os produtos',
-    description: 'Todas as peças da Cabo Frio Outlet: camisas, calças, bermudas e bonés com preço de outlet.',
+    title: 'Roupas multimarcas com preço de outlet',
+    description: 'Todas as peças da Cabo Frio Outlet, loja multimarcas em Cabo Frio: camisas, calças, bermudas e bonés com preço de outlet.',
   },
   '/camisas': {
-    title: 'Camisas',
-    description: 'Camisas e camisetas urbanas em Cabo Frio: básicas, oversized e estampadas, com preço de outlet.',
+    title: 'Camisas e camisetas multimarcas',
+    description: 'Camisas e camisetas multimarcas em Cabo Frio: básicas, oversized e estampadas, com preço de outlet.',
   },
   '/calcas': {
-    title: 'Calças',
-    description: 'Calças jeans, de sarja e modelos urbanos em Cabo Frio, com preço de outlet.',
+    title: 'Calças jeans e sarja multimarcas',
+    description: 'Calças jeans, de sarja e modelos urbanos multimarcas em Cabo Frio, com preço de outlet.',
   },
   '/bermudas': {
-    title: 'Bermudas',
-    description: 'Bermudas urbanas e confortáveis em Cabo Frio, com preço de outlet.',
+    title: 'Bermudas multimarcas',
+    description: 'Bermudas urbanas e confortáveis multimarcas em Cabo Frio, com preço de outlet.',
   },
   '/bones': {
-    title: 'Bonés',
-    description: 'Bonés de aba curva, aba reta e trucker em Cabo Frio, com preço de outlet.',
+    title: 'Bonés multimarcas',
+    description: 'Bonés multimarcas de aba curva, aba reta e trucker em Cabo Frio, com preço de outlet.',
   },
   '/atacado': {
-    title: 'Atacado',
+    title: 'Atacado de moda urbana',
     description: 'Compre moda urbana no atacado em Cabo Frio: camisas, calças, bermudas e bonés. Peça um orçamento para a sua loja.',
   },
   '/trabalhe-conosco': {
@@ -191,14 +202,32 @@ export function buildLocalBusinessJsonLd(ctx: SeoContext) {
     '@type': 'ClothingStore',
     '@id': `${baseUrl}/#loja`,
     name: settings.storeName,
+    alternateName: ALTERNATE_NAMES,
     url: baseUrl,
     image: absoluteUrl(baseUrl, '/Logo%20Preto.png'),
+    logo: absoluteUrl(baseUrl, '/Logo%20Preto.png'),
     description: DEFAULT_DESCRIPTION,
     address: { '@type': 'PostalAddress', ...STORE_ADDRESS },
+    hasMap: STORE_MAPS_URL,
+    areaServed: AREA_SERVED.map((name) => ({ '@type': 'Place', name })),
     sameAs: [INSTAGRAM_URL],
     priceRange: '$$',
+    currenciesAccepted: 'BRL',
     ...(settings.whatsapp ? { telephone: `+${settings.whatsapp}` } : {}),
     ...(hours.length > 0 ? { openingHoursSpecification: hours } : {}),
+  };
+}
+
+/** Ajuda o Google a mostrar o nome do site nos resultados ("Cabo Frio Outlet"). */
+export function buildWebSiteJsonLd(ctx: SeoContext) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${ctx.baseUrl}/#site`,
+    name: ctx.settings.storeName,
+    alternateName: ALTERNATE_NAMES,
+    url: `${ctx.baseUrl}/`,
+    inLanguage: 'pt-BR',
   };
 }
 
@@ -254,12 +283,12 @@ function resolvePageMeta(ctx: SeoContext): PageMeta {
   }
   const isHome = path === '/';
   return {
-    title: isHome ? `${store} | Moda urbana em Cabo Frio` : store,
+    title: isHome ? `${store} | Outlet multimarcas em Cabo Frio – RJ` : store,
     description: DEFAULT_DESCRIPTION,
     image: logo,
     type: 'website',
     noindex,
-    jsonLd: isHome ? [buildLocalBusinessJsonLd(ctx)] : [],
+    jsonLd: isHome ? [buildLocalBusinessJsonLd(ctx), buildWebSiteJsonLd(ctx)] : [],
   };
 }
 
@@ -272,6 +301,7 @@ export function buildSeoHead(ctx: SeoContext): string {
   const lines = [
     `<title>${t}</title>`,
     `<meta name="description" content="${d}">`,
+    ...(ctx.siteVerification ? [`<meta name="google-site-verification" content="${escapeHtml(ctx.siteVerification)}">`] : []),
     ...(meta.noindex ? ['<meta name="robots" content="noindex, nofollow">'] : [`<link rel="canonical" href="${escapeHtml(canonical)}">`]),
     `<meta property="og:site_name" content="${escapeHtml(ctx.settings.storeName)}">`,
     '<meta property="og:locale" content="pt_BR">',
