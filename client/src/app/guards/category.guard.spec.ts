@@ -21,7 +21,7 @@ describe('categoryExists (rota /:categoria)', () => {
   it('espera as categorias chegarem e só casa com slug de categoria ativa', async () => {
     const pending = run('jaquetas');
     http.expectOne('/api/categories').flush([
-      { id: 'c1', key: 'jaquetas', slug: 'jaquetas', name: 'Jaquetas', intro: '', description: '', image: '', order: 0, active: true },
+      { id: 'c1', key: 'jaquetas', slug: 'jaquetas', name: 'Jaquetas', intro: '', description: '', image: '', order: 0, active: true, subcategories: [] },
     ]);
     expect(await pending).toBe(true);
     expect(await run('inventada')).toBe(false);

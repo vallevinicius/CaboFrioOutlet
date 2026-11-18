@@ -12,6 +12,7 @@ const api = (key: string, slug: string, name: string, order: number): Category =
   image: `/placeholders/cat-${slug}.jpg`,
   order,
   active: true,
+  subcategories: [],
 });
 
 const list = [api('camisas', 'camisas', 'Camisas', 0), api('calças', 'calcas', 'Calças', 1), api('bonés', 'bones', 'Bonés', 2)].map(toCategoryPage);
@@ -27,6 +28,7 @@ describe('páginas de categoria (vindas da API)', () => {
       intro: 'Frase de Calças',
       description: 'Descrição de Calças',
       image: '/placeholders/cat-calcas.jpg',
+      subcategories: [],
     });
   });
 

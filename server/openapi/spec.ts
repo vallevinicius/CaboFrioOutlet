@@ -28,6 +28,7 @@ const Product = registry.register(
     name: z.string().openapi({ example: 'Camisa Oversized' }),
     price: z.number().openapi({ example: 99.9 }),
     category: Category,
+    subcategoryId: z.string().nullable().openapi({ description: 'Subcategoria (da mesma categoria) ou null' }),
     brand: z.string().optional().openapi({ example: 'Marca' }),
     image: z.string().openapi({ description: 'Foto de capa', example: '/uploads/capa.jpg' }),
     images: z.array(z.string()).openapi({ description: 'Fotos adicionais (até 8)' }),
@@ -50,6 +51,7 @@ const ProductInput = registry.register(
     name: z.string().min(1),
     price: z.number().positive(),
     category: Category,
+    subcategoryId: z.string().nullable().optional().openapi({ description: 'null limpa; ausente no PUT não mexe' }),
     brand: z.string().optional(),
     image: z.string().min(1),
     images: z.array(z.string()).max(8).optional().openapi({ description: 'Caminhos /uploads/... ou URLs http(s)' }),
@@ -558,6 +560,12 @@ doc({ method: 'get', path: '/api/categories/all', tag: 'Categorias', summary: 'L
 doc({ method: 'post', path: '/api/categories', tag: 'Categorias', summary: 'Cria uma categoria (o endereço é gerado do nome)', access: 'admin', body: CategoryCreate, ok: { status: 201, schema: CategoryOut, description: 'Categoria criada' }, errors: [400, 409] });
 doc({ method: 'put', path: '/api/categories/{id}', tag: 'Categorias', summary: 'Edita nome, textos, foto e visibilidade (key e slug não mudam)', access: 'admin', params: idParam, body: CategoryUpdate, ok: { schema: CategoryOut, description: 'Categoria atualizada' }, errors: [400, 404] });
 doc({ method: 'patch', path: '/api/categories/{id}/move', tag: 'Categorias', summary: 'Sobe ou desce uma categoria na ordem', access: 'admin', params: idParam, body: z.object({ direction: z.enum(['up', 'down']) }), ok: { schema: z.array(CategoryOut), description: 'Nova ordem' }, errors: [400, 404] });
+const SubcategoryOut = z.object({ id: Id, slug: z.string().openapi({ example: 'basicas' }), name: z.string().openapi({ example: 'Básicas' }), order: z.number().int(), active: z.boolean() });
+const subIdParam = z.object({ subId: Id });
+doc({ method: 'post', path: '/api/categories/{id}/subcategories', tag: 'Categorias', summary: 'Cria uma subcategoria (endereço ?tipo= gerado do nome)', access: 'admin', params: idParam, body: z.object({ name: z.string().min(1).max(60) }), ok: { status: 201, schema: SubcategoryOut, description: 'Subcategoria criada' }, errors: [400, 404, 409] });
+doc({ method: 'put', path: '/api/categories/subcategories/{subId}', tag: 'Categorias', summary: 'Renomeia ou oculta uma subcategoria (o endereço não muda)', access: 'admin', params: subIdParam, body: z.object({ name: z.string().min(1).max(60), active: z.boolean() }), ok: { schema: SubcategoryOut, description: 'Subcategoria atualizada' }, errors: [400, 404] });
+doc({ method: 'patch', path: '/api/categories/subcategories/{subId}/move', tag: 'Categorias', summary: 'Sobe ou desce uma subcategoria dentro da categoria', access: 'admin', params: subIdParam, body: z.object({ direction: z.enum(['up', 'down']) }), ok: { schema: z.object({ ok: z.boolean() }), description: 'Ordem atualizada' }, errors: [400, 404] });
+doc({ method: 'delete', path: '/api/categories/subcategories/{subId}', tag: 'Categorias', summary: 'Apaga uma subcategoria sem produtos', access: 'admin', params: subIdParam, ok: { status: 204, description: 'Apagada' }, errors: [404, 409] });
 doc({ method: 'delete', path: '/api/categories/{id}', tag: 'Categorias', summary: 'Apaga uma categoria sem produtos', access: 'admin', params: idParam, ok: { status: 204, description: 'Apagada' }, errors: [404, 409] });
 
 doc({ method: 'get', path: '/api/hero-slides', tag: 'Banners', summary: 'Lista os banners da home', ok: { schema: z.array(HeroSlide), description: 'Banners em ordem' } });

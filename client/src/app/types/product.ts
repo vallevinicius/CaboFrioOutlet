@@ -7,6 +7,8 @@ export interface ProductInput {
   name: string;
   price: number;
   category: ProductCategory;
+  /** Subcategoria (da mesma categoria) ou null. */
+  subcategoryId?: string | null;
   brand?: string;
   image: string;
   /** Fotos adicionais (a capa é `image`). */

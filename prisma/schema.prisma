@@ -12,6 +12,9 @@ model Product {
   name            String
   price           Float
   category        String
+  /// Subcategoria opcional, sempre da mesma categoria do produto (validado na API).
+  subcategoryId   String?
+  subcategory     Subcategory?  @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
   brand           String?
   image           String
   description     String        @db.Text
@@ -28,6 +31,8 @@ model Product {
   sizes           ProductSize[]
   images          ProductImage[]
   favorites       Favorite[]
+
+  @@index([subcategoryId])
   orderItems      OrderItem[]
 }
 
@@ -263,5 +268,24 @@ model Category {
   /// Oculta: some do site, continua no painel.
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
+  subcategories Subcategory[]
   updatedAt   DateTime @updatedAt
+}
+
+/// Subcategorias de uma categoria (ex.: Camisas → Básicas, Estampadas). Aba Categorias do painel.
+model Subcategory {
+  id         String    @id @default(cuid())
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  /// Gerado do nome; único dentro da categoria; não muda (vai no link ?tipo=).
+  slug       String
+  name       String
+  order      Int       @default(0)
+  /// Oculta: some do site, continua no painel.
+  active     Boolean   @default(true)
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([categoryId, slug])
 }

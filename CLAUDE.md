@@ -9,6 +9,7 @@ Loja virtual da **Cabo Frio Outlet**, loja **multimarcas** de moda urbana (camis
 - **Varejo:** vitrine, carrinho, checkout com Mercado Pago (cartão parcelado, Pix etc.) e frete pela Melhor Envio.
 - **Atacado:** página `/atacado` com formulário de orçamento (`WholesaleQuote`). Cada produto tem um canal de venda (`SalesChannel`: `RETAIL`, `WHOLESALE` ou `BOTH`); peças só de atacado não aparecem no varejo nem no sitemap.
 - **Categorias:** cadastradas no painel (tabela `Category`), não no código. Cada uma tem `key` (valor gravado em `Product.category`, nunca muda; as antigas são `camisas`, `calças`, `bermudas`, `bonés`), `slug` (endereço `/<slug>`, nunca muda), nome, foto do quadro da home, frase, descrição para o Google, ordem e ativa/oculta. Oculta some do site (página vira 404), mas as peças continuam em `/produtos`. Só dá para apagar sem peças.
+- **Subcategorias:** cada categoria pode ter subcategorias (tabela `Subcategory`, slug único por categoria e fixo), criadas na aba Categorias. O produto tem `subcategoryId` opcional, sempre da mesma categoria (validado na API). No site não têm página própria: viram a fileira de botões na página da categoria (`/camisas?tipo=basicas`) e o painel do menu (hover no computador, setinha no celular). Só aparecem as que têm peças (`utils/subcategories.ts`).
 - **Admin (`/admin`):** produtos, categorias, estoque por tamanho, banners da home, pedidos, orçamentos de atacado, clientes, configurações da loja e equipe com perfis de acesso.
 - **Domínio de produção:** `https://cabofriooutlet.com.br` (sem `www`).
 
@@ -80,7 +81,8 @@ Pontos importantes:
 | `/shipping/melhor-envio` | `GET /status`, `POST /connect`, `GET /callback`, `DELETE /` | `configuracoes` (callback OAuth público) |
 | `/settings` | `GET /`, `PUT /` | público / `configuracoes` edit |
 | `/hero-slides` | `GET /`; `POST`, `PUT /:id`, `PATCH /:id/move`, `DELETE /:id` | público / `banners` edit |
-| `/categories` | `GET /` (ativas); `GET /all` (todas, com nº de peças); `POST`, `PUT /:id`, `PATCH /:id/move`, `DELETE /:id` (409 se houver peças) | público / `produtos` view / `produtos` edit |
+| `/categories` | `GET /` (ativas, com subcategorias ativas); `GET /all` (todas, com nº de peças e subcategorias); `POST`, `PUT /:id`, `PATCH /:id/move`, `DELETE /:id` (409 se houver peças) | público / `produtos` view / `produtos` edit |
+| `/categories` (subcategorias) | `POST /:id/subcategories`; `PUT`, `PATCH .../move`, `DELETE /subcategories/:subId` (409 se houver peças) | `produtos` edit |
 | `/upload` | `POST /` | `produtos`, `banners` ou `configuracoes` edit |
 | `/favorites` | `GET /`, `POST /merge`, `PUT/DELETE /:productId` | logado |
 | `/reviews` | `GET /` | público (Google Places) |

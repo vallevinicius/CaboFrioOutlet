@@ -13,6 +13,7 @@ import {
   Truck,
   Instagram,
   ShieldCheck,
+  ChevronDown,
   Heart,
 } from 'lucide-angular';
 import { FavoritesService } from '../../services/favorites.service';
@@ -24,6 +25,8 @@ import { SettingsService, splitStoreName, storeInitials } from '../../services/s
 import { SearchService } from '../../services/search.service';
 import { ALL_PRODUCTS_PATH } from '../../data/categories';
 import { CategoryService } from '../../services/category.service';
+import { ProductService } from '../../services/product.service';
+import { visibleSubcategories } from '../../utils/subcategories';
 import { formatPercent, maxDiscount } from '../../utils/wholesale-pricing';
 import { RegisterModal } from '../register-modal/register-modal';
 
@@ -76,6 +79,15 @@ export class Navbar {
   readonly ShieldCheck = ShieldCheck;
   private categoryService = inject(CategoryService);
   readonly categories = this.categoryService.categories;
+  private productService = inject(ProductService);
+  readonly ChevronDown = ChevronDown;
+  /** Subcategorias com peça de cada categoria (key → lista), para o painel do menu. */
+  readonly subcategoriesByCategory = computed(() => {
+    const products = this.productService.retailProducts();
+    return new Map(this.categories().map((c) => [c.value, visibleSubcategories(c, products)]));
+  });
+  /** Categoria com as subcategorias abertas no menu do celular. */
+  mobileExpanded = signal<string | null>(null);
   readonly storeInitials = storeInitials;
   readonly whatsappUrl = WHATSAPP_URL;
   readonly instagramUrl = INSTAGRAM_URL;

@@ -1,4 +1,6 @@
-import { Category } from '../types/category';
+import { Category, SubcategoryRef } from '../types/category';
+
+export type { SubcategoryRef };
 
 /** Categoria pronta para o site (menu, rodapé, home, listagem). Vem da API, aba Categorias do painel. */
 export interface CategoryPage {
@@ -15,6 +17,8 @@ export interface CategoryPage {
   description: string;
   /** Foto do quadro em "Escolha o seu estilo" (vazia = sem foto). */
   image: string;
+  /** Subcategorias ativas, em ordem (filtro ?tipo= na página da categoria). */
+  subcategories: SubcategoryRef[];
 }
 
 export const ALL_PRODUCTS_PATH = '/produtos';
@@ -29,6 +33,7 @@ export function toCategoryPage(c: Category): CategoryPage {
     intro: c.intro,
     description: c.description,
     image: c.image,
+    subcategories: c.subcategories ?? [],
   };
 }
 
