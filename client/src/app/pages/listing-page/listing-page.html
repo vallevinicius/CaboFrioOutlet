@@ -27,7 +27,7 @@
             Tudo
           </a>
         </li>
-        @for (c of categories; track c.value) {
+        @for (c of categories(); track c.value) {
           <li>
             <a
               [routerLink]="c.path"

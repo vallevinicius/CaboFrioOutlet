@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ProductService } from '../../services/product.service';
 import { SettingsService } from '../../services/settings.service';
-import { CATEGORY_PAGES, categoryByValue } from '../../data/categories';
+import { CategoryService } from '../../services/category.service';
 import { totalStock } from '../../utils/product-list';
 import { Navbar } from '../../components/navbar/navbar';
 import { AnnouncementBar } from '../../components/announcement-bar/announcement-bar';
@@ -45,6 +45,7 @@ import { StoreLocation } from '../../components/store-location/store-location';
 export class StorefrontPage {
   private productService = inject(ProductService);
   private settingsService = inject(SettingsService);
+  private categoryService = inject(CategoryService);
   private titleService = inject(Title);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -57,7 +58,8 @@ export class StorefrontPage {
     // Links antigos (/?categoria=camisas) levam para a página da categoria.
     effect(() => {
       const old = this.queryParams()?.get('categoria');
-      const page = old ? categoryByValue(old) : undefined;
+      // byValue lê um signal: o efeito roda de novo quando as categorias chegam da API.
+      const page = old ? this.categoryService.byValue(old) : undefined;
       if (page) this.router.navigateByUrl(page.path, { replaceUrl: true });
     });
 
@@ -75,7 +77,7 @@ export class StorefrontPage {
 
   readonly categoryCounts = computed(() => {
     const counts: Record<string, number> = {};
-    for (const c of CATEGORY_PAGES) counts[c.value] = 0;
+    for (const c of this.categoryService.categories()) counts[c.value] = 0;
     for (const p of this.products()) counts[p.category] = (counts[p.category] ?? 0) + 1;
     return counts;
   });

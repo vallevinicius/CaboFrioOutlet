@@ -1,6 +1,7 @@
 import type { SalesChannel } from '../utils/channel';
 
-export type ProductCategory = 'bermudas' | 'calças' | 'camisas' | 'bonés';
+/** Key de uma categoria cadastrada no painel (ex.: 'camisas', 'calças'). */
+export type ProductCategory = string;
 
 export interface ProductInput {
   name: string;

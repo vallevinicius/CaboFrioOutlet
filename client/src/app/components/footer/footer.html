@@ -46,7 +46,7 @@
         </div>
       </div>
 
-      @for (col of linkColumns; track col.title) {
+      @for (col of linkColumns(); track col.title) {
         <div>
           <h4 class="font-display text-base font-semibold uppercase tracking-wide text-white">{{ col.title }}</h4>
           <ul class="mt-4 flex flex-col gap-2.5 text-sm">

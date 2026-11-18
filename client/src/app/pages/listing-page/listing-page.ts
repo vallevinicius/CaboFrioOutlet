@@ -11,7 +11,8 @@ import { ProductService } from '../../services/product.service';
 import { SettingsService } from '../../services/settings.service';
 import { SearchService } from '../../services/search.service';
 import { SeoService } from '../../services/seo.service';
-import { ALL_PRODUCTS_PATH, CATEGORY_PAGES, categoryBySlug } from '../../data/categories';
+import { ALL_PRODUCTS_PATH } from '../../data/categories';
+import { CategoryService } from '../../services/category.service';
 import {
   DEFAULT_FILTERS,
   PAGE_SIZE,
@@ -36,17 +37,18 @@ export class ListingPage {
   private seo = inject(SeoService);
   readonly search = inject(SearchService);
 
-  readonly categories = CATEGORY_PAGES;
+  private categoryService = inject(CategoryService);
+  readonly categories = this.categoryService.categories;
   readonly allPath = ALL_PRODUCTS_PATH;
 
-  private routeData = toSignal(this.route.data, { initialValue: this.route.snapshot.data });
+  private params = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   private queryParams = toSignal(this.route.queryParamMap, { initialValue: this.route.snapshot.queryParamMap });
 
   /** Categoria da página atual; indefinida em /produtos. */
-  readonly category = computed(() => categoryBySlug(this.routeData()['slug'] as string | undefined));
+  readonly category = computed(() => this.categoryService.bySlug(this.params().get('categoria') ?? undefined));
   readonly title = computed(() => this.category()?.label ?? 'Todos os produtos');
   readonly intro = computed(
-    () => this.category()?.intro ?? 'Tudo o que a loja tem: camisas, calças, bermudas e bonés.',
+    () => this.category()?.intro || 'Tudo o que a loja tem, com preço de outlet.',
   );
 
   readonly loading = this.productService.loading;
@@ -99,7 +101,8 @@ export class ListingPage {
     effect(() => {
       const title = this.title();
       this.titleService.setTitle(`${title} | ${this.settingsService.settings().storeName}`);
-      this.seo.setDescription(this.category()?.description ?? 'Camisas, calças, bermudas e bonés com preço de outlet.');
+      const c = this.category();
+      this.seo.setDescription(c ? c.description || `${c.label} multimarcas em Cabo Frio, com preço de outlet.` : 'Roupas multimarcas com preço de outlet em Cabo Frio.');
     });
 
     // Qualquer mudança de filtro volta para a primeira página.

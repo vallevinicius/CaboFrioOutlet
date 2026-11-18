@@ -265,7 +265,7 @@
           [class]="isHome() ? 'w-full' : 'w-0 group-hover:w-full'"
         ></span>
       </a>
-      @for (cat of categories; track cat.value) {
+      @for (cat of categories(); track cat.value) {
         <a
           [routerLink]="cat.path"
           class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
@@ -301,7 +301,7 @@
       >
         Início
       </a>
-      @for (cat of categories; track cat.value) {
+      @for (cat of categories(); track cat.value) {
         <a
           [routerLink]="cat.path"
           (click)="closeMobileMenu()"
