@@ -15,7 +15,7 @@ registry.registerComponent('securitySchemes', 'bearerAuth', {
 // ───────────────────────── Schemas (DTOs — nunca entidades do banco) ─────────────────────────
 
 const Id = z.string().openapi({ example: 'cmu4stwin0000nknffustupxu' });
-const Category = z.enum(['camisas', 'calças', 'bermudas', 'bonés']);
+const Category = z.string().openapi({ description: 'Valor (key) de uma categoria cadastrada em /api/categories', example: 'camisas' });
 const SalesChannel = z.enum(['retail', 'wholesale', 'both']).openapi({ description: 'Onde a peça é vendida: retail = só varejo (loja), wholesale = só atacado, both = nos dois', example: 'both' });
 const OrderStatus = z.enum(['pendente', 'confirmado', 'enviado', 'entregue', 'cancelado']);
 
@@ -528,6 +528,37 @@ doc({ method: 'delete', path: '/api/products/{id}', tag: 'Produtos', summary: 'A
 
 doc({ method: 'get', path: '/api/settings', tag: 'Configurações', summary: 'Configurações públicas da loja', ok: { schema: Settings, description: 'Configurações (sem segredos)' } });
 doc({ method: 'put', path: '/api/settings', tag: 'Configurações', summary: 'Atualiza as configurações', access: 'admin', body: SettingsUpdate, ok: { schema: Settings, description: 'Configurações atualizadas' }, errors: [400] });
+
+const CategoryOut = registry.register(
+  'Categoria',
+  z.object({
+    id: Id,
+    key: z.string().openapi({ description: 'Valor gravado em Produto.category; não muda', example: 'calças' }),
+    slug: z.string().openapi({ description: 'Endereço da página (/slug); não muda', example: 'calcas' }),
+    name: z.string().openapi({ example: 'Calças' }),
+    intro: z.string().openapi({ description: 'Frase do topo da página' }),
+    description: z.string().openapi({ description: 'Descrição para o Google' }),
+    image: z.string().openapi({ description: 'Foto do quadro na home', example: '/placeholders/cat-calcas.jpg' }),
+    order: z.number().int(),
+    active: z.boolean().openapi({ description: 'false = oculta no site' }),
+  }),
+);
+const CategoryWithCount = CategoryOut.extend({ productCount: z.number().int() });
+const CategoryFields = {
+  name: z.string().min(1).max(60),
+  intro: z.string().max(500).optional(),
+  description: z.string().max(500).optional(),
+  image: z.string().optional(),
+};
+const CategoryCreate = registry.register('CategoriaNova', z.object(CategoryFields));
+const CategoryUpdate = registry.register('CategoriaEdicao', z.object({ ...CategoryFields, active: z.boolean() }));
+
+doc({ method: 'get', path: '/api/categories', tag: 'Categorias', summary: 'Lista as categorias visíveis no site', ok: { schema: z.array(CategoryOut), description: 'Categorias ativas em ordem' } });
+doc({ method: 'get', path: '/api/categories/all', tag: 'Categorias', summary: 'Lista todas as categorias (inclusive ocultas) com o número de peças', access: 'admin', ok: { schema: z.array(CategoryWithCount), description: 'Categorias em ordem' } });
+doc({ method: 'post', path: '/api/categories', tag: 'Categorias', summary: 'Cria uma categoria (o endereço é gerado do nome)', access: 'admin', body: CategoryCreate, ok: { status: 201, schema: CategoryOut, description: 'Categoria criada' }, errors: [400, 409] });
+doc({ method: 'put', path: '/api/categories/{id}', tag: 'Categorias', summary: 'Edita nome, textos, foto e visibilidade (key e slug não mudam)', access: 'admin', params: idParam, body: CategoryUpdate, ok: { schema: CategoryOut, description: 'Categoria atualizada' }, errors: [400, 404] });
+doc({ method: 'patch', path: '/api/categories/{id}/move', tag: 'Categorias', summary: 'Sobe ou desce uma categoria na ordem', access: 'admin', params: idParam, body: z.object({ direction: z.enum(['up', 'down']) }), ok: { schema: z.array(CategoryOut), description: 'Nova ordem' }, errors: [400, 404] });
+doc({ method: 'delete', path: '/api/categories/{id}', tag: 'Categorias', summary: 'Apaga uma categoria sem produtos', access: 'admin', params: idParam, ok: { status: 204, description: 'Apagada' }, errors: [404, 409] });
 
 doc({ method: 'get', path: '/api/hero-slides', tag: 'Banners', summary: 'Lista os banners da home', ok: { schema: z.array(HeroSlide), description: 'Banners em ordem' } });
 doc({ method: 'post', path: '/api/hero-slides', tag: 'Banners', summary: 'Cria um banner', access: 'admin', body: HeroSlideInput, ok: { status: 201, schema: HeroSlide, description: 'Banner criado' }, errors: [400] });

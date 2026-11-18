@@ -16,6 +16,7 @@ import { authRouter } from '../routes/auth.js';
 import { checkoutRouter } from '../routes/checkout.js';
 import { favoritesRouter } from '../routes/favorites.js';
 import { heroSlidesRouter } from '../routes/hero-slides.js';
+import { categoriesRouter } from '../routes/categories.js';
 import { ordersRouter } from '../routes/orders.js';
 import { productsRouter } from '../routes/products.js';
 import { reportsRouter } from '../routes/reports.js';
@@ -42,6 +43,7 @@ const MOUNTS: [string, Router][] = [
   ['/api/roles', rolesRouter],
   ['/api/staff', staffRouter],
   ['/api/hero-slides', heroSlidesRouter],
+  ['/api/categories', categoriesRouter],
   ['/api/checkout', checkoutRouter],
   ['/api/shipping/melhor-envio', melhorEnvioRouter],
   ['/api/shipping', shippingRouter],
