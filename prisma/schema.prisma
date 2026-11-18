@@ -244,3 +244,24 @@ model WholesaleQuote {
 
   @@index([handled, createdAt])
 }
+
+/// Categorias da loja, gerenciadas no painel (aba Categorias).
+model Category {
+  id          String   @id @default(cuid())
+  /// Valor gravado em Product.category. Nunca muda depois de criada.
+  key         String   @unique
+  /// Endereço da página (/<slug>). Nunca muda depois de criada, para não quebrar links.
+  slug        String   @unique
+  name        String
+  /// Frase do topo da página da categoria.
+  intro       String   @default("") @db.VarChar(500)
+  /// Descrição para o Google (meta description).
+  description String   @default("") @db.VarChar(500)
+  /// Foto do quadro em "Escolha o seu estilo".
+  image       String   @default("")
+  order       Int      @default(0)
+  /// Oculta: some do site, continua no painel.
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
