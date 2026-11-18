@@ -37,6 +37,10 @@ describe('filterProducts', () => {
     expect(filterProducts(all, f({ category: 'camisas' })).map((p) => p.id)).toEqual(['a', 'd']);
     expect(filterProducts(all, f({ brand: 'Adidas' })).map((p) => p.id)).toEqual(['b']);
   });
+  it('marca ignora maiúsculas e espaços (a vitrine da home junta "Nike" e " NIKE ")', () => {
+    const e = make({ id: 'e', name: 'Boné', brand: ' NIKE ' });
+    expect(filterProducts([...all, e], f({ brand: 'Nike' })).map((p) => p.id)).toEqual(['a', 'd', 'e']);
+  });
   it('tamanho só vale com estoque naquele tamanho', () => {
     expect(filterProducts(all, f({ sizes: ['P'] })).map((p) => p.id)).toEqual(['a', 'd']); // b tem P zerado
     expect(filterProducts(all, f({ sizes: ['M'] })).map((p) => p.id)).toEqual(['a', 'b', 'd']);
