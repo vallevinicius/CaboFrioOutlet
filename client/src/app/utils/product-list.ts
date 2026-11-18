@@ -1,4 +1,5 @@
 import { Product } from '../types/product';
+import { brandKey } from './brands';
 
 export type SortKey = 'relevancia' | 'novidades' | 'menor-preco' | 'maior-preco';
 
@@ -55,7 +56,7 @@ export function filterProducts(products: Product[], f: ListFilters): Product[] {
   const query = f.query.trim().toLowerCase();
   return products.filter((p) => {
     if (f.category !== 'todos' && p.category !== f.category) return false;
-    if (f.brand !== 'todos' && p.brand !== f.brand) return false;
+    if (f.brand !== 'todos' && brandKey(p.brand) !== brandKey(f.brand)) return false;
     // Tamanho conta só se houver estoque nele.
     if (f.sizes.length > 0 && !f.sizes.some((s) => (p.stock[s] ?? 0) > 0)) return false;
     const price = effectivePrice(p);
