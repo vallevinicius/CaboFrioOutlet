@@ -56,7 +56,8 @@ Pontos importantes:
 - **Categorias no client:** `CategoryService` carrega `/api/categories` (só ativas) e é a única fonte de categorias do site: menu, rodapé, home, listagem, produto e atacado. A rota `/:categoria` usa `canMatch` (`category.guard.ts`) e fica antes do `**`; por isso slugs de páginas fixas são reservados (`server/utils/category-slug.ts`). Nada de lista fixa de categorias no código.
 - **Permissões:** a autorização é sempre no backend e lida do banco a cada requisição (não do token). Seções: `inicio`, `banners`, `produtos` (vale também para a aba Categorias), `estoque`, `pedidos`, `atacado`, `clientes`, `configuracoes`, cada uma com nível `view` ou `edit`. Use `requirePermission(secao, nivel)` / `requireAnyPermission(...)`; equipe e perfis exigem `requireSuperAdmin`. Rotas do cliente usam `requireAuth` e checam o dono do recurso no serviço.
 - **CPF cifrado:** o CPF é guardado com AES-256-GCM (`DATA_ENCRYPTION_KEY`) mais um hash para busca. Nunca trocar a chave de um banco que já tem CPFs cifrados.
-- **Upload de fotos:** até 20 MB (`MAX_UPLOAD_BYTES`, igual em `server/routes/upload.ts` e `client/src/app/utils/upload-error.ts`). O `sharp` aplica a orientação EXIF e salva JPG de até 1000px. Acima do limite, a API responde 413 em português; um 413 sem JSON vem do Nginx, e o front pede para aumentar o `client_max_body_size`.
+- **Upload de fotos:** até 20 MB (`MAX_UPLOAD_BYTES`, igual em `server/routes/upload.ts` e `client/src/app/utils/upload-error.ts`). O `sharp` aplica a orientação EXIF e salva JPG de até 1600px (a original: e-mail, Open Graph e origem das versões). Acima do limite, a API responde 413 em português; um 413 sem JSON vem do Nginx, e o front pede para aumentar o `client_max_body_size`.
+- **Fotos no tamanho certo:** `GET /img/<480|800|1200>/<uploads|placeholders>/<arquivo>` gera WebP (q72) na primeira vez e guarda em `IMAGE_CACHE_DIR` (padrão `uploads/.variants`, que pode ser apagado: é refeito sob demanda). No client, use `<img [appImage]="url" imageSize="thumb|card|full">` (diretiva em `directives/app-image.directive.ts`), nunca `[src]` direto para foto de produto/categoria/banner. `card` usa `srcset` 480/800/1200; URL externa passa intacta.
 - **Conciliação de pagamentos:** ao subir, o servidor confere a cada 2 minutos no Mercado Pago os pedidos pendentes (webhook perdido, página fechada).
 
 ## Convenções
@@ -89,7 +90,7 @@ Pontos importantes:
 | `/staff`, `/roles` | CRUD da equipe e dos perfis | super admin |
 | `/health` | `GET /` | público |
 
-Fora de `/api`: `GET /robots.txt`, `GET /sitemap.xml`. Documentação: Swagger UI em `/api/docs` fora de produção; em produção só `/api/docs.json`, para super admin.
+Fora de `/api`: `GET /robots.txt`, `GET /sitemap.xml`, `GET /img/:width/:dir/:file` (versões WebP das fotos). Documentação: Swagger UI em `/api/docs` fora de produção; em produção só `/api/docs.json`, para super admin.
 
 ## Variáveis de ambiente
 
@@ -103,6 +104,7 @@ Arquivo `.env` na raiz (modelo em `.env.example`, sempre atualizado e sem valore
 | `TRUST_PROXY` | `1` atrás de Nginx/proxy, para o rate limit ver o IP real |
 | `SITE_URL` | URL pública sem barra final. Usada em canonical, sitemap, robots e no retorno OAuth da Melhor Envio. Produção: `https://cabofriooutlet.com.br` |
 | `UPLOADS_DIR` | pasta das fotos (padrão `server/uploads`); aponte para disco persistente em produção |
+| `IMAGE_CACHE_DIR` | opcional; pasta das versões WebP de `/img` (padrão `UPLOADS_DIR/.variants`) |
 | `JWT_SECRET` | segredo dos tokens |
 | `ADMIN_EMAIL`, `ADMIN_DEFAULT_PASSWORD` | primeiro super admin (criado pelo seed) |
 | `DATA_ENCRYPTION_KEY` | 32 bytes em base64 (`openssl rand -base64 32`). **Obrigatória**; guardar cópia: perdida, os CPFs não voltam |

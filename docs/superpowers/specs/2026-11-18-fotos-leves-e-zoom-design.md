@@ -28,7 +28,9 @@ O Vinicius quer carregamento rápido sem perder muita qualidade. Na página do p
   - Qualquer outra coisa → 404.
   - Sem `/` nem `..`, o que impede path traversal.
 - **Origem do arquivo:** `uploads` → `UPLOADS_DIR`; `placeholders` → `CLIENT_DIST/placeholders`. Origem inexistente → 404.
-- **Saída:** `sharp(src).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 78 })`.
+- **Saída:** `sharp(src).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 72, smartSubsample: true, effort: 6 })`.
+  - Q72 em vez de 78, depois de testar com as 9 fotos reais: 26% menor sem diferença visível.
+  - Largura 800 adicionada: cartão em celular de tela 3× sem baixar a de 1200.
 - **Cache em disco** em `IMAGE_CACHE_DIR` (padrão `<UPLOADS_DIR>/.variants/<width>/<dir>/<file>.webp`).
   - Gravação em arquivo temporário seguida de `rename`, para dois pedidos simultâneos não corromperem o arquivo.
   - O cache é regerado se a origem for mais nova que ele.
