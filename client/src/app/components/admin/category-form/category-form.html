@@ -1,0 +1,128 @@
+<div class="fixed inset-0 z-[60] bg-black/60" (click)="formClose.emit()" aria-hidden="true"></div>
+<aside
+  class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg animate-slide-in flex-col overflow-y-auto border-l border-white/15 glass"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="isEditing() ? 'Editar categoria' : 'Nova categoria'"
+>
+  <div class="flex items-center justify-between border-b border-white/15 px-6 py-4">
+    <h2 class="text-base font-bold text-white">{{ isEditing() ? 'Editar categoria' : 'Nova categoria' }}</h2>
+    <button
+      (click)="formClose.emit()"
+      class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 transition-colors duration-300 hover:bg-white/10 hover:text-white"
+      aria-label="Fechar"
+    >
+      <lucide-icon [img]="X" class="h-5 w-5" />
+    </button>
+  </div>
+
+  <form (submit)="handleSubmit($event)" class="flex flex-1 flex-col gap-5 px-6 py-6">
+    <div>
+      <label for="categoria-nome" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Nome</label>
+      <input
+        id="categoria-nome"
+        [value]="name()"
+        (input)="name.set($any($event.target).value)"
+        maxlength="60"
+        placeholder="Ex: Jaquetas"
+        class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+      />
+      <p class="mt-1.5 text-xs text-white/45">
+        @if (path()) {
+          Endereço da página: <span class="font-mono text-white/70">{{ path() }}</span>.
+        }
+        @if (isEditing()) {
+          O endereço não muda ao trocar o nome, para não quebrar links já compartilhados.
+        } @else {
+          O endereço sai do nome e não muda depois.
+        }
+      </p>
+    </div>
+
+    <div>
+      <span class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">Foto do quadro na home</span>
+      <div class="flex items-center gap-4">
+        <div class="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/15 bg-white/10">
+          @if (image()) {
+            <img [src]="image()" alt="" class="h-full w-full object-cover" />
+          } @else {
+            <lucide-icon [img]="Upload" class="h-5 w-5 text-white/60" />
+          }
+        </div>
+        <label class="flex cursor-pointer items-center justify-center rounded-full border border-white/25 px-4 py-2 text-xs font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent">
+          {{ uploading() ? 'Enviando...' : image() ? 'Trocar foto' : 'Enviar foto' }}
+          <input type="file" accept="image/*" class="hidden" (change)="handleFileChange($event)" [disabled]="uploading()" />
+        </label>
+      </div>
+      <p class="mt-1.5 text-xs text-white/45">Aparece em "Escolha o seu estilo". Sem foto, o quadro mostra só o nome.</p>
+    </div>
+
+    <div>
+      <label for="categoria-frase" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
+        Frase do topo da página (opcional)
+      </label>
+      <textarea
+        id="categoria-frase"
+        [value]="intro()"
+        (input)="intro.set($any($event.target).value)"
+        rows="2"
+        maxlength="500"
+        placeholder="Ex: Jaquetas de couro, jeans e corta-vento para os dias frios."
+        class="w-full resize-none rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+      ></textarea>
+    </div>
+
+    <div>
+      <label for="categoria-descricao" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
+        Descrição para o Google (opcional)
+      </label>
+      <textarea
+        id="categoria-descricao"
+        [value]="description()"
+        (input)="description.set($any($event.target).value)"
+        rows="3"
+        maxlength="500"
+        placeholder="Ex: Jaquetas multimarcas em Cabo Frio, com preço de outlet."
+        class="w-full resize-none rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+      ></textarea>
+      <p class="mt-1.5 text-xs text-white/45">
+        Texto que aparece embaixo do link nos resultados de busca. Até 160 caracteres aparecem inteiros. Vazio, usamos
+        "{{ name().trim() || 'Nome' }} multimarcas em Cabo Frio, com preço de outlet."
+      </p>
+    </div>
+
+    @if (isEditing()) {
+      <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-white/15 p-4">
+        <input type="checkbox" [checked]="active()" (change)="active.set($any($event.target).checked)" class="mt-0.5 h-4 w-4 accent-yellow-400" />
+        <span>
+          <span class="block text-sm font-bold text-white">Mostrar no site</span>
+          <span class="block text-xs text-white/55">
+            Desmarcada, a categoria some do menu, da home e do atacado, e a página dela sai do ar. As peças continuam em "Todos os
+            produtos".
+          </span>
+        </span>
+      </label>
+    }
+
+    @if (error()) {
+      <p class="text-xs font-medium text-red-400" role="alert">{{ error() }}</p>
+    }
+
+    <div class="flex gap-3 pt-2">
+      <button
+        type="button"
+        (click)="formClose.emit()"
+        class="flex-1 rounded-full border border-white/25 py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors duration-300 hover:border-accent"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        [disabled]="uploading()"
+        class="flex-1 rounded-full bg-yellow-400 py-3 text-sm font-bold uppercase tracking-wide text-black transition-colors duration-300 hover:bg-accent hover:text-black disabled:opacity-50"
+      >
+        {{ isEditing() ? 'Salvar' : 'Criar categoria' }}
+      </button>
+    </div>
+  </form>
+</aside>
