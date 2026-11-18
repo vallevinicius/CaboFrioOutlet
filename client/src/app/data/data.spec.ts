@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { footerColumns } from './footer-links';
 import { CategoryPage } from './categories';
 
-const cat = (value: string, slug: string, label: string): CategoryPage => ({ id: slug, value, slug, path: `/${slug}`, label, intro: '', description: '', image: '' });
+const cat = (value: string, slug: string, label: string): CategoryPage => ({ id: slug, value, slug, path: `/${slug}`, label, intro: '', description: '', image: '', subcategories: [] });
 const CATS = [cat('camisas', 'camisas', 'Camisas'), cat('jaquetas', 'jaquetas', 'Jaquetas')];
 const FOOTER_COLUMNS = footerColumns(CATS);
 import { INSTITUTIONAL_PAGES, findInstitutionalPage } from './institutional-pages';

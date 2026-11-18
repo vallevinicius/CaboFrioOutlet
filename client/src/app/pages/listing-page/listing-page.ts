@@ -13,6 +13,7 @@ import { SearchService } from '../../services/search.service';
 import { SeoService } from '../../services/seo.service';
 import { ALL_PRODUCTS_PATH } from '../../data/categories';
 import { CategoryService } from '../../services/category.service';
+import { visibleSubcategories } from '../../utils/subcategories';
 import {
   DEFAULT_FILTERS,
   PAGE_SIZE,
@@ -61,11 +62,21 @@ export class ListingPage {
   priceMax = signal<number | null>(null);
   visibleCount = signal(PAGE_SIZE);
 
+  /** Subcategorias com peça, para a fileira "Todas · Básicas · Estampadas". */
+  readonly subcategories = computed(() => {
+    const c = this.category();
+    return c ? visibleSubcategories(c, this.productService.retailProducts()) : [];
+  });
+  /** Subcategoria do ?tipo= (desconhecida ou de outra categoria = todas). */
+  readonly subcategory = computed(() => this.subcategories().find((s) => s.slug === this.queryParams().get('tipo')));
+
   /** Produtos da categoria (antes dos filtros): usados para os tamanhos e para o contador. */
   private inScope = computed(() => {
     const c = this.category();
+    const sub = this.subcategory();
     const all = this.productService.retailProducts();
-    return c ? all.filter((p) => p.category === c.value) : all;
+    if (!c) return all;
+    return all.filter((p) => p.category === c.value && (!sub || p.subcategoryId === sub.id));
   });
   readonly sizeOptions = computed(() => availableSizes(this.inScope()));
 
@@ -108,6 +119,7 @@ export class ListingPage {
     // Qualquer mudança de filtro volta para a primeira página.
     effect(() => {
       this.category();
+      this.subcategory();
       this.brand();
       this.sizes();
       this.priceMin();

@@ -266,18 +266,40 @@
         ></span>
       </a>
       @for (cat of categories(); track cat.value) {
-        <a
-          [routerLink]="cat.path"
-          class="group relative py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="activeCategory() === cat.value ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'"
-          [attr.aria-current]="activeCategory() === cat.value ? 'page' : null"
-        >
-          {{ cat.label }}
-          <span
-            class="absolute -bottom-0.5 left-0 h-0.5 bg-accent transition-all duration-300"
-            [class]="activeCategory() === cat.value ? 'w-full' : 'w-0 group-hover:w-full'"
-          ></span>
-        </a>
+        @let subs = subcategoriesByCategory().get(cat.value) ?? [];
+        <!-- Com subcategorias, o painel desce ao passar o mouse (ou com o foco do teclado). -->
+        <div class="group/menu relative flex h-full items-center">
+          <a
+            [routerLink]="cat.path"
+            class="group relative flex items-center gap-1 py-1 text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
+            [class]="activeCategory() === cat.value ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+            [attr.aria-current]="activeCategory() === cat.value ? 'page' : null"
+            [attr.aria-haspopup]="subs.length > 0 ? 'true' : null"
+          >
+            {{ cat.label }}
+            @if (subs.length > 0) {
+              <lucide-icon [img]="ChevronDown" class="h-3.5 w-3.5 transition-transform duration-300 group-hover/menu:rotate-180" />
+            }
+            <span
+              class="absolute -bottom-0.5 left-0 h-0.5 bg-accent transition-all duration-300"
+              [class]="activeCategory() === cat.value ? 'w-full' : 'w-0 group-hover:w-full'"
+            ></span>
+          </a>
+          @if (subs.length > 0) {
+            <div class="invisible absolute left-1/2 top-full z-30 -translate-x-1/2 pt-2 opacity-0 transition-all duration-200 group-hover/menu:visible group-hover/menu:opacity-100 group-focus-within/menu:visible group-focus-within/menu:opacity-100">
+              <ul class="min-w-48 rounded-sm border border-slate-200 bg-white py-2 shadow-xl" [attr.aria-label]="'Tipos de ' + cat.label">
+                <li>
+                  <a [routerLink]="cat.path" class="block px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-100">Ver todas</a>
+                </li>
+                @for (s of subs; track s.id) {
+                  <li>
+                    <a [routerLink]="cat.path" [queryParams]="{ tipo: s.slug }" class="block px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900">{{ s.name }}</a>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
       }
       <a
         routerLink="/atacado"
@@ -302,14 +324,40 @@
         Início
       </a>
       @for (cat of categories(); track cat.value) {
-        <a
-          [routerLink]="cat.path"
-          (click)="closeMobileMenu()"
-          class="px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
-          [class]="activeCategory() === cat.value ? 'bg-slate-100 text-slate-900' : 'text-slate-600'"
-        >
-          {{ cat.label }}
-        </a>
+        @let subs = subcategoriesByCategory().get(cat.value) ?? [];
+        <div class="flex items-stretch" [class]="activeCategory() === cat.value ? 'bg-slate-100' : ''">
+          <a
+            [routerLink]="cat.path"
+            (click)="closeMobileMenu()"
+            class="flex-1 px-6 py-3 text-left text-sm font-semibold uppercase tracking-wide transition-colors duration-300"
+            [class]="activeCategory() === cat.value ? 'text-slate-900' : 'text-slate-600'"
+          >
+            {{ cat.label }}
+          </a>
+          @if (subs.length > 0) {
+            <!-- No celular não existe "passar por cima": a setinha abre e fecha as subcategorias. -->
+            <button
+              type="button"
+              (click)="mobileExpanded.set(mobileExpanded() === cat.value ? null : cat.value)"
+              [attr.aria-expanded]="mobileExpanded() === cat.value"
+              [attr.aria-label]="(mobileExpanded() === cat.value ? 'Fechar tipos de ' : 'Ver tipos de ') + cat.label"
+              class="flex w-14 items-center justify-center text-slate-600"
+            >
+              <lucide-icon [img]="ChevronDown" class="h-4 w-4 transition-transform duration-300" [class.rotate-180]="mobileExpanded() === cat.value" />
+            </button>
+          }
+        </div>
+        @if (mobileExpanded() === cat.value) {
+          <ul class="bg-slate-50 pb-2" [attr.aria-label]="'Tipos de ' + cat.label">
+            @for (s of subs; track s.id) {
+              <li>
+                <a [routerLink]="cat.path" [queryParams]="{ tipo: s.slug }" (click)="closeMobileMenu()" class="block py-2.5 pl-10 pr-6 text-sm text-slate-600">
+                  {{ s.name }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
       }
       <a
         routerLink="/atacado"
