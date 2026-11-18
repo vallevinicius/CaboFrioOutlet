@@ -54,6 +54,7 @@ Pontos importantes:
 - **Sem SSR:** o Angular renderiza no navegador. O que buscadores leem com certeza é o `<head>` injetado pelo servidor (`server/seo/meta.ts`). Página nova que deve ser indexada precisa de entrada em `PAGE_META` (e entra no sitemap automaticamente).
 - **Permissões:** a autorização é sempre no backend e lida do banco a cada requisição (não do token). Seções: `inicio`, `banners`, `produtos`, `estoque`, `pedidos`, `atacado`, `clientes`, `configuracoes`, cada uma com nível `view` ou `edit`. Use `requirePermission(secao, nivel)` / `requireAnyPermission(...)`; equipe e perfis exigem `requireSuperAdmin`. Rotas do cliente usam `requireAuth` e checam o dono do recurso no serviço.
 - **CPF cifrado:** o CPF é guardado com AES-256-GCM (`DATA_ENCRYPTION_KEY`) mais um hash para busca. Nunca trocar a chave de um banco que já tem CPFs cifrados.
+- **Upload de fotos:** até 20 MB (`MAX_UPLOAD_BYTES`, igual em `server/routes/upload.ts` e `client/src/app/utils/upload-error.ts`). O `sharp` aplica a orientação EXIF e salva JPG de até 1000px. Acima do limite, a API responde 413 em português; um 413 sem JSON vem do Nginx, e o front pede para aumentar o `client_max_body_size`.
 - **Conciliação de pagamentos:** ao subir, o servidor confere a cada 2 minutos no Mercado Pago os pedidos pendentes (webhook perdido, página fechada).
 
 ## Convenções
@@ -125,6 +126,7 @@ npm run db:encrypt-cpf                       # migração única: cifra CPFs ant
 Produção:
 - `.env` com `NODE_ENV=production`, `TRUST_PROXY=1` e `SITE_URL=https://cabofriooutlet.com.br`.
 - Redirecionar `www.cabofriooutlet.com.br` para o domínio sem `www`.
+- Nginx com `client_max_body_size 21m;` (o padrão de 1 MB barra as fotos do celular).
 - Google Search Console: verificar o domínio e enviar `https://cabofriooutlet.com.br/sitemap.xml`.
 - O Perfil da Empresa no Google precisa ter o mesmo nome, endereço e telefone do site (busca local por "outlet em Cabo Frio" / "multimarcas em Cabo Frio").
 

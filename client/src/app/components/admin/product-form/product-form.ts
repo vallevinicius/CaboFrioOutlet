@@ -3,10 +3,10 @@ import { LucideAngularModule, X, Upload, Plus } from 'lucide-angular';
 import { Product, ProductCategory, ProductInput } from '../../../types/product';
 import { ApiService } from '../../../services/api.service';
 import { ToastService } from '../../../services/toast.service';
-import { ApiError } from '../../../services/api-error';
 import { SettingsService } from '../../../services/settings.service';
 import { formatPriceFromNumber, formatPriceInput, parsePriceInput } from '../../../utils/price';
 import { CHANNEL_OPTIONS, SalesChannel } from '../../../utils/channel';
+import { oversizeMessage, uploadErrorMessage } from '../../../utils/upload-error';
 import { MAX_SIDE_CM, MAX_WEIGHT_KG, PackageMeasures, packageDefaultsFor, parseMeasure } from '../../../utils/package-defaults';
 
 const CATEGORY_OPTIONS: { label: string; value: ProductCategory }[] = [
@@ -149,6 +149,12 @@ export class ProductForm implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    const tooBig = oversizeMessage(file);
+    if (tooBig) {
+      this.showUploadError('Foto grande demais', tooBig);
+      input.value = '';
+      return;
+    }
     this.uploading.set(true);
     try {
       const formData = new FormData();
@@ -156,7 +162,7 @@ export class ProductForm implements OnInit {
       const { url } = await this.api.post<{ url: string }>('/upload', formData);
       this.image.set(url);
     } catch (err) {
-      this.toastService.showToast('Erro ao enviar imagem', err instanceof ApiError ? err.message : undefined);
+      this.showUploadError('Erro ao enviar a foto', uploadErrorMessage(err, file));
     } finally {
       this.uploading.set(false);
       input.value = '';
@@ -169,18 +175,31 @@ export class ProductForm implements OnInit {
     if (files.length === 0) return;
     this.uploading.set(true);
     try {
+      // Uma foto que falha não descarta as que já subiram, e o aviso diz qual foi.
       for (const file of files) {
-        const formData = new FormData();
-        formData.append('image', file);
-        const { url } = await this.api.post<{ url: string }>('/upload', formData);
-        this.extraImages.update((prev) => [...prev, url]);
+        const tooBig = oversizeMessage(file);
+        if (tooBig) {
+          this.showUploadError(`Foto grande demais: "${file.name}"`, tooBig);
+          continue;
+        }
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const { url } = await this.api.post<{ url: string }>('/upload', formData);
+          this.extraImages.update((prev) => [...prev, url]);
+        } catch (err) {
+          this.showUploadError(`Erro ao enviar "${file.name}"`, uploadErrorMessage(err, file));
+        }
       }
-    } catch (err) {
-      this.toastService.showToast('Erro ao enviar imagem', err instanceof ApiError ? err.message : undefined);
     } finally {
       this.uploading.set(false);
       input.value = '';
     }
+  }
+
+  /** Erro de foto fica 10 s na tela: a mensagem explica o que fazer e precisa dar tempo de ler. */
+  private showUploadError(title: string, description: string): void {
+    this.toastService.showToast(title, description, { durationMs: 10_000 });
   }
 
   removeExtraImage(index: number): void {
