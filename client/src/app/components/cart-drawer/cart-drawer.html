@@ -1,13 +1,15 @@
+<!-- O estado fechado fica nas classes fixas: a sacola nasce fechada ao trocar de página
+     (sem isso ela aparecia deslizando para fora). O aberto entra pelo data-open. -->
 <div
-  class="fixed inset-0 z-[60] bg-slate-900/50 transition-opacity duration-300"
-  [class]="cartService.isCartOpen() ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'"
+  class="pointer-events-none fixed inset-0 z-[60] bg-slate-900/50 opacity-0 transition-opacity duration-300 data-[open=true]:pointer-events-auto data-[open=true]:opacity-100"
+  [attr.data-open]="cartService.isCartOpen()"
   (click)="cartService.closeCart()"
   aria-hidden="true"
 ></div>
 
 <aside
-  class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md flex-col bg-white border-l border-slate-200 shadow-2xl transition-transform duration-300"
-  [class]="cartService.isCartOpen() ? 'translate-x-0' : 'translate-x-full'"
+  class="fixed right-0 top-0 z-[70] flex h-full w-full max-w-md translate-x-full flex-col bg-white border-l border-slate-200 shadow-2xl transition-transform duration-300 data-[open=true]:translate-x-0"
+  [attr.data-open]="cartService.isCartOpen()"
   role="dialog"
   aria-modal="true"
   aria-label="Carrinho de compras"
