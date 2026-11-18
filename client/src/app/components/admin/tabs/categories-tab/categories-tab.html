@@ -27,7 +27,8 @@
   } @else {
     <ul class="flex flex-col gap-3" [attr.aria-busy]="busy()">
       @for (c of categories(); track c.id; let i = $index; let last = $last) {
-        <li class="flex flex-col gap-3 rounded-2xl border border-white/15 p-4 sm:flex-row sm:items-center" [class.opacity-60]="!c.active">
+        <li class="rounded-2xl border border-white/15 p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center" [class.opacity-60]="!c.active">
           <div class="flex min-w-0 flex-1 items-center gap-4">
             <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
               @if (c.image) {
@@ -45,6 +46,15 @@
               </p>
               <p class="truncate font-mono text-xs text-white/55">/{{ c.slug }}</p>
               <p class="text-xs text-white/55">{{ c.productCount }} {{ c.productCount === 1 ? 'peça' : 'peças' }}</p>
+              <button
+                type="button"
+                (click)="toggleSubs(c)"
+                [attr.aria-expanded]="openSubs() === c.id"
+                class="mt-1.5 flex items-center gap-1.5 text-xs font-bold text-yellow-300 hover:text-yellow-200"
+              >
+                <lucide-icon [img]="ListTree" class="h-3.5 w-3.5" />
+                Subcategorias ({{ c.subcategories.length }})
+              </button>
             </div>
           </div>
 
@@ -91,6 +101,78 @@
               >
                 <lucide-icon [img]="Trash2" class="h-4 w-4" />
               </button>
+            </div>
+          }
+          </div>
+
+          @if (openSubs() === c.id) {
+            <div class="mt-4 border-t border-white/10 pt-4">
+              @if (c.subcategories.length === 0) {
+                <p class="text-xs text-white/55">Nenhuma subcategoria. Ex.: Básicas, Estampadas, Oversized.</p>
+              } @else {
+                <ul class="flex flex-col gap-1.5" [attr.aria-label]="'Subcategorias de ' + c.name">
+                  @for (s of c.subcategories; track s.id; let si = $index; let slast = $last) {
+                    <li class="flex items-center gap-2 rounded-xl bg-white/5 py-1.5 pl-3 pr-1.5" [class.opacity-60]="!s.active">
+                      @if (renaming() === s.id) {
+                        <form class="flex flex-1 items-center gap-1" (submit)="saveRename(s, $event)">
+                          <input
+                            [value]="renameValue()"
+                            (input)="renameValue.set($any($event.target).value)"
+                            maxlength="60"
+                            [attr.aria-label]="'Novo nome de ' + s.name"
+                            class="min-w-0 flex-1 rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-sm text-white focus:border-accent focus:outline-none"
+                          />
+                          <button type="submit" aria-label="Salvar nome" class="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10"><lucide-icon [img]="Check" class="h-4 w-4" /></button>
+                          <button type="button" (click)="renaming.set(null)" aria-label="Cancelar" class="flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10"><lucide-icon [img]="X" class="h-4 w-4" /></button>
+                        </form>
+                      } @else {
+                        <div class="min-w-0 flex-1">
+                          <p class="flex flex-wrap items-center gap-2 text-sm font-semibold text-white">
+                            {{ s.name }}
+                            @if (!s.active) {
+                              <span class="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white/80">Oculta</span>
+                            }
+                          </p>
+                          <p class="text-[11px] text-white/50">{{ s.productCount }} {{ s.productCount === 1 ? 'peça' : 'peças' }} · ?tipo={{ s.slug }}</p>
+                        </div>
+                        @if (canEdit()) {
+                          <button (click)="moveSub(s, 'up')" [disabled]="si === 0 || busy()" [attr.aria-label]="'Subir ' + s.name" class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-white/10 disabled:opacity-30"><lucide-icon [img]="ChevronUp" class="h-4 w-4" /></button>
+                          <button (click)="moveSub(s, 'down')" [disabled]="slast || busy()" [attr.aria-label]="'Descer ' + s.name" class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-white/10 disabled:opacity-30"><lucide-icon [img]="ChevronDown" class="h-4 w-4" /></button>
+                          <button (click)="toggleSub(s)" [disabled]="busy()" [attr.aria-label]="(s.active ? 'Ocultar ' : 'Mostrar ') + s.name + ' no site'" class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-white/10 disabled:opacity-30"><lucide-icon [img]="s.active ? Eye : EyeOff" class="h-4 w-4" /></button>
+                          <button (click)="startRename(s)" [attr.aria-label]="'Renomear ' + s.name" class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-white/10"><lucide-icon [img]="Pencil" class="h-4 w-4" /></button>
+                          <button
+                            (click)="deleteSub(s)"
+                            [disabled]="s.productCount > 0 || busy()"
+                            [attr.aria-label]="'Apagar ' + s.name"
+                            [attr.title]="s.productCount > 0 ? 'Tem peças: mova as peças ou oculte a subcategoria' : 'Apagar subcategoria'"
+                            class="flex h-9 w-9 items-center justify-center rounded-full text-white/60 hover:bg-red-500/15 hover:text-red-300 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-white/60"
+                          ><lucide-icon [img]="Trash2" class="h-4 w-4" /></button>
+                        }
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+              @if (canEdit()) {
+                <form class="mt-3 flex gap-2" (submit)="addSub(c, $event)">
+                  <input
+                    [value]="newSubName()"
+                    (input)="newSubName.set($any($event.target).value)"
+                    maxlength="60"
+                    [placeholder]="'Nova subcategoria de ' + c.name"
+                    [attr.aria-label]="'Nova subcategoria de ' + c.name"
+                    class="min-w-0 flex-1 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-accent focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    [disabled]="busy() || !newSubName().trim()"
+                    class="flex items-center gap-1.5 rounded-full bg-yellow-400 px-4 text-xs font-bold uppercase tracking-wide text-black disabled:opacity-50"
+                  >
+                    <lucide-icon [img]="Plus" class="h-4 w-4" />
+                    Adicionar
+                  </button>
+                </form>
+              }
             </div>
           }
         </li>

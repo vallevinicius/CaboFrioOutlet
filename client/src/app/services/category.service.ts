@@ -70,4 +70,26 @@ export class CategoryService {
     await this.api.delete(`/categories/${id}`);
     await this.refresh();
   }
+
+  // ── Subcategorias (painel) ──
+
+  async createSub(categoryId: string, name: string): Promise<void> {
+    await this.api.post(`/categories/${categoryId}/subcategories`, { name });
+    await this.refresh();
+  }
+
+  async updateSub(id: string, input: { name: string; active: boolean }): Promise<void> {
+    await this.api.put(`/categories/subcategories/${id}`, input);
+    await this.refresh();
+  }
+
+  async moveSub(id: string, direction: 'up' | 'down'): Promise<void> {
+    await this.api.patch(`/categories/subcategories/${id}/move`, { direction });
+    await this.refresh();
+  }
+
+  async removeSub(id: string): Promise<void> {
+    await this.api.delete(`/categories/subcategories/${id}`);
+    await this.refresh();
+  }
 }

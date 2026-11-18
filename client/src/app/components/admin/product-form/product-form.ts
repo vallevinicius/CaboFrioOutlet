@@ -9,6 +9,7 @@ import { formatPriceFromNumber, formatPriceInput, parsePriceInput } from '../../
 import { CHANNEL_OPTIONS, SalesChannel } from '../../../utils/channel';
 import { oversizeMessage, uploadErrorMessage } from '../../../utils/upload-error';
 import { CategoryService } from '../../../services/category.service';
+import { AdminCategory } from '../../../types/category';
 import { MAX_SIDE_CM, MAX_WEIGHT_KG, PackageMeasures, packageDefaultsFor, parseMeasure } from '../../../utils/package-defaults';
 
 
@@ -28,6 +29,16 @@ export class ProductForm implements OnInit {
   readonly Plus = Plus;
   /** Todas as categorias do painel, inclusive ocultas (peça pode ser cadastrada antes de a categoria ir ao ar). */
   categoryOptions = signal<{ label: string; value: ProductCategory }[]>([]);
+  /** Lista completa do painel (com subcategorias), para o campo Subcategoria. */
+  private allCategories = signal<AdminCategory[]>([]);
+  subcategoryId = signal<string | null>(null);
+  /** Subcategorias da categoria escolhida, inclusive ocultas. */
+  readonly subcategoryOptions = computed(() =>
+    (this.allCategories().find((c) => c.key === this.category())?.subcategories ?? []).map((s) => ({
+      value: s.id,
+      label: s.active ? s.name : `${s.name} (oculta)`,
+    })),
+  );
 
   product = input.required<Product | null>();
   formSubmit = output<ProductInput>();
@@ -78,6 +89,7 @@ export class ProductForm implements OnInit {
     }
     this.name.set(product.name);
     this.category.set(product.category);
+    this.subcategoryId.set(product.subcategoryId ?? null);
     this.brand.set(product.brand ?? '');
     this.price.set(formatPriceFromNumber(product.price));
     this.discountPercent.set(product.discountPercent ? String(product.discountPercent) : '');
@@ -111,6 +123,7 @@ export class ProductForm implements OnInit {
   private async loadCategories(): Promise<void> {
     try {
       const all = await this.categoryService.listAll();
+      this.allCategories.set(all);
       this.categoryOptions.set(all.map((c) => ({ value: c.key, label: c.active ? c.name : `${c.name} (oculta)` })));
     } catch {
       // Sem acesso à lista completa: usa as categorias visíveis no site.
@@ -124,6 +137,8 @@ export class ProductForm implements OnInit {
   }
 
   onCategoryChange(value: ProductCategory): void {
+    // Subcategoria é sempre da categoria: trocou a categoria, limpa.
+    if (value !== this.category()) this.subcategoryId.set(null);
     this.category.set(value);
     // Sugere as medidas da categoria, a menos que o dono já tenha ajustado.
     if (!this.measuresTouched) this.showMeasures(packageDefaultsFor(value));
@@ -267,6 +282,7 @@ export class ProductForm implements OnInit {
     this.formSubmit.emit({
       name: this.name().trim(),
       category: this.category(),
+      subcategoryId: this.subcategoryId(),
       brand: this.brand().trim() || undefined,
       price: priceNum,
       image: this.image(),

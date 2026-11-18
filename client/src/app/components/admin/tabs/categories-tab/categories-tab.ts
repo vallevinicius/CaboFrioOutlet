@@ -1,7 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { AppImageDirective } from '../../../../directives/app-image.directive';
-import { LucideAngularModule, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Tags } from 'lucide-angular';
-import { AdminCategory } from '../../../../types/category';
+import { LucideAngularModule, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Tags, ListTree, Check, X } from 'lucide-angular';
+import { AdminCategory, AdminSubcategory } from '../../../../types/category';
 import { CategoryService } from '../../../../services/category.service';
 import { ToastService } from '../../../../services/toast.service';
 import { AuthService } from '../../../../services/auth.service';
@@ -30,6 +30,16 @@ export class CategoriesTab implements OnInit {
   readonly Eye = Eye;
   readonly EyeOff = EyeOff;
   readonly Tags = Tags;
+  readonly ListTree = ListTree;
+  readonly Check = Check;
+  readonly X = X;
+
+  /** Categoria com a lista de subcategorias aberta. */
+  openSubs = signal<string | null>(null);
+  newSubName = signal('');
+  /** Subcategoria sendo renomeada (id) e o texto do campo. */
+  renaming = signal<string | null>(null);
+  renameValue = signal('');
 
   categories = signal<AdminCategory[]>([]);
   loading = signal(true);
@@ -95,6 +105,58 @@ export class CategoriesTab implements OnInit {
       this.run(async () => {
         await this.categoryService.remove(category.id);
         this.toastService.showToast('Categoria apagada.');
+      }),
+    );
+  }
+
+  toggleSubs(category: AdminCategory): void {
+    this.openSubs.set(this.openSubs() === category.id ? null : category.id);
+    this.newSubName.set('');
+    this.renaming.set(null);
+  }
+
+  async addSub(category: AdminCategory, event: Event): Promise<void> {
+    event.preventDefault();
+    const name = this.newSubName().trim();
+    if (!name) return;
+    await this.run(async () => {
+      await this.categoryService.createSub(category.id, name);
+      this.newSubName.set('');
+      this.toastService.showToast(`"${name}" criada em ${category.name}.`, 'Ela aparece no site quando tiver alguma peça.', { variant: 'success' });
+    });
+  }
+
+  startRename(sub: AdminSubcategory): void {
+    this.renaming.set(sub.id);
+    this.renameValue.set(sub.name);
+  }
+
+  async saveRename(sub: AdminSubcategory, event: Event): Promise<void> {
+    event.preventDefault();
+    const name = this.renameValue().trim();
+    if (!name || name === sub.name) {
+      this.renaming.set(null);
+      return;
+    }
+    await this.run(async () => {
+      await this.categoryService.updateSub(sub.id, { name, active: sub.active });
+      this.renaming.set(null);
+    });
+  }
+
+  async toggleSub(sub: AdminSubcategory): Promise<void> {
+    await this.run(() => this.categoryService.updateSub(sub.id, { name: sub.name, active: !sub.active }));
+  }
+
+  async moveSub(sub: AdminSubcategory, direction: 'up' | 'down'): Promise<void> {
+    await this.run(() => this.categoryService.moveSub(sub.id, direction));
+  }
+
+  deleteSub(sub: AdminSubcategory): void {
+    this.toastService.showConfirm(`Apagar a subcategoria "${sub.name}"?`, 'Essa ação não pode ser desfeita.', () =>
+      this.run(async () => {
+        await this.categoryService.removeSub(sub.id);
+        this.toastService.showToast('Subcategoria apagada.');
       }),
     );
   }

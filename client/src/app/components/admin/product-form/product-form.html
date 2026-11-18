@@ -136,6 +136,24 @@
       </div>
     </div>
 
+    @if (subcategoryOptions().length > 0) {
+      <div>
+        <label for="produto-subcategoria" class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
+          Subcategoria (opcional)
+        </label>
+        <select
+          id="produto-subcategoria"
+          (change)="subcategoryId.set($any($event.target).value || null)"
+          class="w-full rounded-lg border border-white/25 bg-white/10 px-4 py-2.5 text-sm text-white focus:border-accent focus:outline-none"
+        >
+          <option value="" [selected]="!subcategoryId()">Nenhuma</option>
+          @for (opt of subcategoryOptions(); track opt.value) {
+            <option [value]="opt.value" [selected]="opt.value === subcategoryId()">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    }
+
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-white/60">
