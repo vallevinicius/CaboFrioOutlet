@@ -73,7 +73,7 @@
               <ul class="flex flex-col gap-3">
                 @for (item of order.items; track item.id) {
                   <li class="flex items-center gap-3 text-sm">
-                    <img [src]="item.image" alt="" class="h-12 w-10 flex-shrink-0 rounded-md object-cover" />
+                    <img [appImage]="item.image" alt="" class="h-12 w-10 flex-shrink-0 rounded-md object-cover" />
                     <div class="flex-1">
                       <p class="font-semibold text-white">{{ item.productName }}</p>
                       <p class="text-xs text-white/60">

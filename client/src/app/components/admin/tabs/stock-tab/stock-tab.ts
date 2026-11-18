@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../../../directives/app-image.directive';
 import { LucideAngularModule, Boxes, TriangleAlert, CircleX, Plus, X } from 'lucide-angular';
 import { ProductService } from '../../../../services/product.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -21,7 +22,7 @@ function stockOf(stock: Record<string, number>, size: string): number {
 
 @Component({
   selector: 'app-stock-tab',
-  imports: [LucideAngularModule, StatCard, StockInput],
+  imports: [AppImageDirective, LucideAngularModule, StatCard, StockInput],
   templateUrl: './stock-tab.html',
 })
 export class StockTab {

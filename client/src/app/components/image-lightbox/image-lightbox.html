@@ -12,7 +12,8 @@
   </button>
 
   <img
-    [src]="image()"
+    [appImage]="image()"
+    imageSize="full"
     [alt]="alt()"
     (click)="$event.stopPropagation()"
     class="max-h-full max-w-full rounded-sm object-contain"

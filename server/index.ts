@@ -12,6 +12,7 @@ import { CLIENT_DIST, UPLOADS_DIR } from './paths.js';
 import { usersRouter } from './routes/users.js';
 import { heroSlidesRouter } from './routes/hero-slides.js';
 import { categoriesRouter } from './routes/categories.js';
+import { imagesRouter } from './routes/images.js';
 import { checkoutRouter } from './routes/checkout.js';
 import { shippingRouter } from './routes/shipping.js';
 import { reviewsRouter } from './routes/reviews.js';
@@ -38,6 +39,8 @@ app.use(cors({ origin: corsOrigin(process.env.SITE_URL, process.env.NODE_ENV) })
 app.use(express.json());
 // Nomes de upload são UUIDs (conteúdo nunca muda): cache longo.
 app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '30d', immutable: true }));
+// Versões WebP no tamanho certo (480/1200), geradas na primeira vez e guardadas em disco.
+app.use('/img', imagesRouter);
 
 // Barra tentativa de adivinhar senha e criação em massa de contas.
 app.use('/api/auth/login', createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }));

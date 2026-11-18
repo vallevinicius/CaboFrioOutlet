@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { LucideAngularModule, Lock, CheckCircle2, XCircle, Copy, ArrowLeft } from 'lucide-angular';
@@ -36,7 +37,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-checkout-page',
-  imports: [LucideAngularModule, Navbar, Footer],
+  imports: [AppImageDirective, LucideAngularModule, Navbar, Footer],
   templateUrl: './checkout-page.html',
 })
 export class CheckoutPage implements OnInit, OnDestroy {

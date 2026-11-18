@@ -1,4 +1,5 @@
 import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { Router } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { LucideAngularModule, MessageCircle, Check } from 'lucide-angular';
@@ -26,7 +27,7 @@ const UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', '
 
 @Component({
   selector: 'app-wholesale-page',
-  imports: [LucideAngularModule, WholesaleHeader, Footer, CartDrawer],
+  imports: [AppImageDirective, LucideAngularModule, WholesaleHeader, Footer, CartDrawer],
   templateUrl: './wholesale-page.html',
 })
 export class WholesalePage implements OnDestroy {

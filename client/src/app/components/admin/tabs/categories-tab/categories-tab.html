@@ -31,7 +31,7 @@
           <div class="flex min-w-0 flex-1 items-center gap-4">
             <div class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/10">
               @if (c.image) {
-                <img [src]="c.image" alt="" class="h-full w-full object-cover" />
+                <img [appImage]="c.image" alt="" class="h-full w-full object-cover" />
               } @else {
                 <lucide-icon [img]="Tags" class="h-5 w-5 text-white/40" />
               }

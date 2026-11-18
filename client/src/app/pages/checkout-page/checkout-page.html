@@ -312,7 +312,7 @@
           <ul class="flex flex-col gap-3">
             @for (item of cartService.items(); track item.product.id + '-' + item.selectedSize) {
               <li class="flex gap-3">
-                <img [src]="item.product.image" [alt]="item.product.name" class="h-16 w-12 flex-shrink-0 rounded-sm object-cover" />
+                <img [appImage]="item.product.image" [alt]="item.product.name" class="h-16 w-12 flex-shrink-0 rounded-sm object-cover" />
                 <div class="flex-1 text-sm">
                   <p class="font-semibold leading-snug text-slate-900">{{ item.product.name }}</p>
                   <p class="text-xs text-slate-500">Tam. {{ item.selectedSize }} · Qtd {{ item.quantity }}</p>

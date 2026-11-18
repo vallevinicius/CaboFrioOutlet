@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { AppImageDirective } from '../../../directives/app-image.directive';
 import { LucideAngularModule, X, Upload } from 'lucide-angular';
 import { HeroSlide, HeroSlideInput } from '../../../types/hero-slide';
 import { ApiService } from '../../../services/api.service';
@@ -8,7 +9,7 @@ import { bannerImageHint } from '../../../utils/image-hint';
 
 @Component({
   selector: 'app-banner-form',
-  imports: [LucideAngularModule],
+  imports: [AppImageDirective, LucideAngularModule],
   templateUrl: './banner-form.html',
 })
 export class BannerForm implements OnInit {

@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { AppImageDirective } from '../../../../directives/app-image.directive';
 import { LucideAngularModule, Plus, Pencil, Trash2, ChevronUp, ChevronDown, Eye, EyeOff, Tags } from 'lucide-angular';
 import { AdminCategory } from '../../../../types/category';
 import { CategoryService } from '../../../../services/category.service';
@@ -10,7 +11,7 @@ import { CategoryForm, CategoryFormValue } from '../../category-form/category-fo
 /** Aba Categorias do painel: cria, edita, oculta, reordena e apaga categorias da loja. */
 @Component({
   selector: 'app-categories-tab',
-  imports: [LucideAngularModule, CategoryForm],
+  imports: [AppImageDirective, LucideAngularModule, CategoryForm],
   templateUrl: './categories-tab.html',
 })
 export class CategoriesTab implements OnInit {

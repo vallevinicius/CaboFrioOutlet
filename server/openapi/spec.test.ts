@@ -17,6 +17,7 @@ import { checkoutRouter } from '../routes/checkout.js';
 import { favoritesRouter } from '../routes/favorites.js';
 import { heroSlidesRouter } from '../routes/hero-slides.js';
 import { categoriesRouter } from '../routes/categories.js';
+import { imagesRouter } from '../routes/images.js';
 import { ordersRouter } from '../routes/orders.js';
 import { productsRouter } from '../routes/products.js';
 import { reportsRouter } from '../routes/reports.js';
@@ -52,6 +53,7 @@ const MOUNTS: [string, Router][] = [
   ['/api/reports', reportsRouter],
   ['/api/wholesale', wholesaleRouter],
   ['', seoRouter],
+  ['/img', imagesRouter],
 ];
 
 interface Layer {

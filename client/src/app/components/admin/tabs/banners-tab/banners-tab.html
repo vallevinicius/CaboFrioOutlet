@@ -30,7 +30,7 @@
     <div class="flex flex-col gap-3">
       @for (slide of heroSlideService.slides(); track slide.id; let i = $index) {
         <div class="flex items-center gap-4 rounded-2xl border border-white/15 p-4">
-          <img [src]="slide.image" alt="" class="h-16 w-28 flex-shrink-0 rounded-lg object-cover" />
+          <img [appImage]="slide.image" alt="" class="h-16 w-28 flex-shrink-0 rounded-lg object-cover" />
           <div class="min-w-0 flex-1">
             @if (slide.eyebrow) {
               <span class="font-mono text-[10px] font-bold uppercase tracking-wider text-yellow-300">

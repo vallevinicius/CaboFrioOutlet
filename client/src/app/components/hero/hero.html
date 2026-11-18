@@ -72,7 +72,8 @@
         <div class="relative h-[340px] overflow-hidden bg-black sm:h-[420px] lg:h-full">
           @for (s of slides(); track s.id; let i = $index) {
             <img
-              [src]="imageFor(s)"
+              [appImage]="imageFor(s)"
+              imageSize="full"
               (error)="markFailed(s.id)"
               [alt]="s.title + ' ' + s.highlight"
               [attr.loading]="i === 0 ? 'eager' : 'lazy'"

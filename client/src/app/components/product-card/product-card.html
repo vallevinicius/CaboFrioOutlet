@@ -1,7 +1,8 @@
 <div class="group flex flex-col overflow-hidden rounded-sm border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-accent">
   <div class="relative aspect-[4/5] overflow-hidden bg-slate-100">
     <img
-      [src]="product().image"
+      [appImage]="product().image"
+      imageSize="card"
       [alt]="product().name"
       loading="lazy"
       (click)="openLightbox($event)"
@@ -11,11 +12,12 @@
     />
     @if (product().images?.[0]; as second) {
       <img
-        [src]="second"
+        [appImage]="second"
+        imageSize="card"
         alt=""
         loading="lazy"
         aria-hidden="true"
-        class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        class="pointer-events-none absolute inset-0 hidden h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100 [@media(hover:hover)]:block"
       />
     }
 

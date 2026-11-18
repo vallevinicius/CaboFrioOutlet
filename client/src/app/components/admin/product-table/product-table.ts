@@ -1,4 +1,5 @@
 import { Component, input, output } from '@angular/core';
+import { AppImageDirective } from '../../../directives/app-image.directive';
 import { LucideAngularModule, Pencil, Trash2 } from 'lucide-angular';
 import { Product } from '../../../types/product';
 
@@ -8,7 +9,7 @@ function formatPrice(value: number): string {
 
 @Component({
   selector: 'app-product-table',
-  imports: [LucideAngularModule],
+  imports: [AppImageDirective, LucideAngularModule],
   templateUrl: './product-table.html',
 })
 export class ProductTable {

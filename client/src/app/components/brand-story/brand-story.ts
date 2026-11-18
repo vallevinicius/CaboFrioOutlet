@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { AppImageDirective } from '../../directives/app-image.directive';
 import { RouterLink } from '@angular/router';
 import { STORE_INFO } from '../../data/store-info';
 import { SettingsService } from '../../services/settings.service';
@@ -6,7 +7,7 @@ import { splitParagraphs } from '../../utils/text';
 
 @Component({
   selector: 'app-brand-story',
-  imports: [RouterLink],
+  imports: [AppImageDirective, RouterLink],
   templateUrl: './brand-story.html',
 })
 export class BrandStory {
