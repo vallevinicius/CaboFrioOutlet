@@ -21,9 +21,17 @@ const valid = {
   consent: true,
 };
 
+/** Keys das categorias ativas (vêm do banco). */
+const ALLOWED = ['camisas', 'calças', 'bermudas', 'bonés', 'jaquetas'];
+
 describe('validateQuote', () => {
+  it('aceita categoria nova cadastrada no painel e recusa a que não está na lista', () => {
+    const ok = validateQuote({ ...valid, interests: ['jaquetas'] }, ALLOWED);
+    expect(ok.ok && ok.value.interests).toEqual(['jaquetas']);
+    expect(validateQuote({ ...valid, interests: ['jaquetas'] }, ['camisas']).ok).toBe(false);
+  });
   it('aceita e normaliza um pedido completo', () => {
-    const r = validateQuote(valid);
+    const r = validateQuote(valid, ALLOWED);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value).toMatchObject({
@@ -39,7 +47,7 @@ describe('validateQuote', () => {
   });
 
   it('CNPJ, empresa, categorias, quantidade e mensagem são opcionais', () => {
-    const r = validateQuote({ name: 'Ana', phone: '2233334444', email: 'a@b.co', city: 'Cabo Frio', state: 'RJ', consent: true });
+    const r = validateQuote({ name: 'Ana', phone: '2233334444', email: 'a@b.co', city: 'Cabo Frio', state: 'RJ', consent: true }, ALLOWED);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toMatchObject({ cnpj: '', company: '', interests: [], estimatedPieces: null, message: '' });
   });
@@ -60,12 +68,12 @@ describe('validateQuote', () => {
     ['sem consentimento', { consent: false }],
     ['consentimento como texto', { consent: 'true' }],
   ])('rejeita: %s', (_nome, over) => {
-    expect(validateQuote({ ...valid, ...over }).ok).toBe(false);
+    expect(validateQuote({ ...valid, ...over }, ALLOWED).ok).toBe(false);
   });
 
   it('rejeita corpo que não é objeto', () => {
-    expect(validateQuote(null).ok).toBe(false);
-    expect(validateQuote('texto').ok).toBe(false);
+    expect(validateQuote(null, ALLOWED).ok).toBe(false);
+    expect(validateQuote('texto', ALLOWED).ok).toBe(false);
   });
 });
 

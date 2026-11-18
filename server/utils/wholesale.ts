@@ -1,7 +1,6 @@
 import { isValidCnpj, normalizeCnpj } from './cnpj.js';
 import { normalizeEmail, normalizeWhatsapp } from './contact.js';
 
-export const QUOTE_CATEGORIES = ['camisas', 'calças', 'bermudas', 'bonés'] as const;
 export const DEFAULT_MIN_PIECES = 10;
 export const DEFAULT_WHOLESALE_NOTES = [
   'Pode misturar modelos, marcas e tamanhos para chegar ao pedido mínimo.',
@@ -50,7 +49,8 @@ export function normalizeWholesaleNotes(raw: unknown): string | null {
   return notes.length <= MAX_NOTES_LENGTH ? notes : null;
 }
 
-export function validateQuote(raw: unknown): QuoteResult {
+/** `allowedCategories`: keys das categorias ativas (aba Categorias do painel). */
+export function validateQuote(raw: unknown, allowedCategories: readonly string[]): QuoteResult {
   if (typeof raw !== 'object' || raw === null) return { ok: false, error: 'Preencha o formulário.' };
   const b = raw as Record<string, unknown>;
 
@@ -82,7 +82,7 @@ export function validateQuote(raw: unknown): QuoteResult {
   if (b.interests !== undefined) {
     if (!Array.isArray(b.interests)) return { ok: false, error: 'Categorias inválidas.' };
     for (const i of b.interests) {
-      if (typeof i !== 'string' || !(QUOTE_CATEGORIES as readonly string[]).includes(i)) {
+      if (typeof i !== 'string' || !allowedCategories.includes(i)) {
         return { ok: false, error: 'Categorias inválidas.' };
       }
       if (!interests.includes(i)) interests.push(i);

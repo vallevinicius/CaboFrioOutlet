@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../db.js';
 import { notifyWholesaleQuote } from '../services/wholesale-notifications.js';
 import { isHoneypotFilled, validateQuote } from '../utils/wholesale.js';
+import { listActiveCategories } from './categories.js';
 import { requirePermission } from '../middleware/permissions.js';
 import { parseTiers, priceWholesaleItems, QuoteLine } from '../utils/wholesale-pricing.js';
 
@@ -39,7 +40,7 @@ wholesaleRouter.post('/quotes', async (req, res) => {
   // Robô preencheu o campo-isca: responde como sucesso, mas não grava nem avisa.
   if (isHoneypotFilled(req.body)) return res.status(201).json({ ok: true });
 
-  const result = validateQuote(req.body);
+  const result = validateQuote(req.body, (await listActiveCategories()).map((c) => c.key));
   if (!result.ok) return res.status(400).json({ error: result.error });
   const q = result.value;
 

@@ -21,8 +21,16 @@ beforeEach(() => mockReset(prisma()));
 describe('sitemap.xml', () => {
   it('não lista peças que são só de atacado (a página de produto é do varejo)', async () => {
     prisma().product.findMany.mockResolvedValue([{ id: 'p1', updatedAt: new Date('2026-11-01') }] as never);
+    prisma().category.findMany.mockResolvedValue([{ slug: 'jaquetas' }] as never);
     const res = await request(app).get('/sitemap.xml').expect(200);
     expect(prisma().product.findMany.mock.calls[0][0]!.where).toEqual({ channel: { not: 'WHOLESALE' } });
     expect(res.text).toContain('/produto/p1');
+  });
+  it('lista só as categorias ativas do banco', async () => {
+    prisma().product.findMany.mockResolvedValue([] as never);
+    prisma().category.findMany.mockResolvedValue([{ slug: 'jaquetas' }] as never);
+    const res = await request(app).get('/sitemap.xml').expect(200);
+    expect(prisma().category.findMany.mock.calls[0][0]).toEqual({ where: { active: true }, orderBy: { order: 'asc' } });
+    expect(res.text).toContain('/jaquetas</loc>');
   });
 });

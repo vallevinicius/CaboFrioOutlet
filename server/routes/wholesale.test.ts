@@ -38,6 +38,8 @@ beforeEach(() => {
   mockReset(prisma());
   mockAccess(prisma(), 'admin', { permissions: FULL_EDIT });
   notify.mockReset();
+  // Categorias ativas do banco: as quatro de sempre.
+  prisma().category.findMany.mockResolvedValue(['camisas', 'calças', 'bermudas', 'bonés'].map((key) => ({ key })) as never);
 });
 
 describe('POST /api/wholesale/quotes (público)', () => {

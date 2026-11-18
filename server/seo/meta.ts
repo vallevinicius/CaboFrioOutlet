@@ -17,11 +17,18 @@ export interface SeoSettings {
   openingHours: OpeningHoursRow[];
 }
 
+export interface SeoCategory {
+  name: string;
+  description: string;
+}
+
 export interface SeoContext {
   baseUrl: string;
   path: string;
   settings: SeoSettings;
   product?: SeoProduct | null;
+  /** Categoria do banco quando o caminho é /<slug> de uma categoria ativa. */
+  category?: SeoCategory | null;
   /** Código da meta tag de verificação do Google Search Console (GOOGLE_SITE_VERIFICATION). */
   siteVerification?: string;
 }
@@ -61,22 +68,6 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
     title: 'Roupas multimarcas com preço de outlet',
     description: 'Todas as peças da Cabo Frio Outlet, loja multimarcas em Cabo Frio: camisas, calças, bermudas e bonés com preço de outlet.',
   },
-  '/camisas': {
-    title: 'Camisas e camisetas multimarcas',
-    description: 'Camisas e camisetas multimarcas em Cabo Frio: básicas, oversized e estampadas, com preço de outlet.',
-  },
-  '/calcas': {
-    title: 'Calças jeans e sarja multimarcas',
-    description: 'Calças jeans, de sarja e modelos urbanos multimarcas em Cabo Frio, com preço de outlet.',
-  },
-  '/bermudas': {
-    title: 'Bermudas multimarcas',
-    description: 'Bermudas urbanas e confortáveis multimarcas em Cabo Frio, com preço de outlet.',
-  },
-  '/bones': {
-    title: 'Bonés multimarcas',
-    description: 'Bonés multimarcas de aba curva, aba reta e trucker em Cabo Frio, com preço de outlet.',
-  },
   '/atacado': {
     title: 'Atacado de moda urbana',
     description: 'Compre moda urbana no atacado em Cabo Frio: camisas, calças, bermudas e bonés. Peça um orçamento para a sua loja.',
@@ -99,8 +90,8 @@ export const PAGE_META: Record<string, { title: string; description: string }> =
   },
 };
 
-/** Páginas de listagem de produtos: mais importantes para buscadores que as institucionais. */
-export const LISTING_PATHS = ['/produtos', '/camisas', '/calcas', '/bermudas', '/bones'];
+/** Páginas de listagem de produtos: mais importantes para buscadores que as institucionais. As categorias vêm do banco. */
+export const LISTING_PATHS = ['/produtos'];
 
 /** Rotas que não devem ser indexadas (área privada ou transacional). */
 export const NOINDEX_PREFIXES = ['/admin', '/checkout', '/minha-conta', '/favoritos'];
@@ -261,7 +252,7 @@ interface PageMeta {
 }
 
 function resolvePageMeta(ctx: SeoContext): PageMeta {
-  const { baseUrl, path, settings, product } = ctx;
+  const { baseUrl, path, settings, product, category } = ctx;
   const store = settings.storeName;
   // Imagem de prévia (1200x630) usada quando a página não tem foto própria.
   const logo = absoluteUrl(baseUrl, '/og-default.jpg');
@@ -275,6 +266,16 @@ function resolvePageMeta(ctx: SeoContext): PageMeta {
       type: 'product',
       noindex,
       jsonLd: [buildProductJsonLd(ctx, product)],
+    };
+  }
+  if (category) {
+    return {
+      title: `${category.name} multimarcas | ${store}`,
+      description: truncate(category.description || `${category.name} multimarcas em Cabo Frio, com preço de outlet.`),
+      image: logo,
+      type: 'website',
+      noindex,
+      jsonLd: [],
     };
   }
   const page = PAGE_META[path];
@@ -342,9 +343,14 @@ export function buildRobotsTxt(baseUrl: string): string {
   ].join('\n');
 }
 
-export function buildSitemapXml(baseUrl: string, products: { id: string; updatedAt: Date }[]): string {
+export function buildSitemapXml(
+  baseUrl: string,
+  products: { id: string; updatedAt: Date }[],
+  categories: { slug: string }[] = [],
+): string {
   const urls = [
     { loc: `${baseUrl}/`, priority: '1.0' },
+    ...categories.map((c) => ({ loc: `${baseUrl}/${c.slug}`, priority: '0.8' })),
     ...Object.keys(PAGE_META).map((p) => ({ loc: `${baseUrl}${p}`, priority: LISTING_PATHS.includes(p) ? '0.8' : '0.5' })),
     ...products.map((p) => ({
       loc: `${baseUrl}/produto/${p.id}`,

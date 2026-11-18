@@ -102,6 +102,11 @@ function validatePayload(body: unknown): body is ProductPayload {
   );
 }
 
+/** A categoria do produto precisa estar cadastrada (aba Categorias do painel), mesmo que oculta. */
+async function categoryExists(key: string): Promise<boolean> {
+  return (await prisma.category.findUnique({ where: { key } })) !== null;
+}
+
 productsRouter.get('/', async (_req, res) => {
   const products = await prisma.product.findMany({
     include: INCLUDE,
@@ -118,6 +123,9 @@ productsRouter.post('/', requirePermission('produtos', 'edit'), async (req, res)
   const extraImages = normalizeImages((req.body as ProductPayload).images, image);
   if (extraImages === null) {
     return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
+  }
+  if (!(await categoryExists(category))) {
+    return res.status(400).json({ error: 'Categoria inválida.' });
   }
 
   const product = await prisma.product.create({
@@ -152,6 +160,9 @@ productsRouter.put('/:id', requirePermission('produtos', 'edit'), async (req, re
   const extraImages = normalizeImages((req.body as ProductPayload).images, image);
   if (extraImages === null) {
     return res.status(400).json({ error: 'Fotos adicionais inválidas (máximo de 8).' });
+  }
+  if (!(await categoryExists(category))) {
+    return res.status(400).json({ error: 'Categoria inválida.' });
   }
 
   try {

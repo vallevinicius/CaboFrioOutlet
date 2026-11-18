@@ -94,13 +94,23 @@ describe('buildSeoHead', () => {
     expect(head).toContain(`href="${BASE}/trocas-e-devolucoes"`);
     expect(head).not.toContain('ClothingStore');
   });
-  it('página de categoria usa título, descrição e canonical próprios', () => {
-    const head = buildSeoHead(ctx({ path: '/calcas' }));
-    expect(head).toContain('<title>Calças jeans e sarja multimarcas | Cabo Frio Outlet</title>');
-    expect(head).toContain('Calças jeans');
+  it('página de categoria (do banco) usa nome, descrição e canonical próprios', () => {
+    const category = { name: 'Calças', description: 'Calças jeans, de sarja e modelos urbanos.' };
+    const head = buildSeoHead(ctx({ path: '/calcas', category }));
+    expect(head).toContain('<title>Calças multimarcas | Cabo Frio Outlet</title>');
+    expect(head).toContain('<meta name="description" content="Calças jeans, de sarja e modelos urbanos.">');
     expect(head).toContain(`href="${BASE}/calcas"`);
     expect(head).not.toContain('noindex');
     expect(head).not.toContain('ClothingStore');
+  });
+  it('categoria sem descrição usa uma descrição padrão com o nome', () => {
+    const head = buildSeoHead(ctx({ path: '/jaquetas', category: { name: 'Jaquetas', description: '' } }));
+    expect(head).toContain('<meta name="description" content="Jaquetas multimarcas em Cabo Frio, com preço de outlet.">');
+  });
+  it('escapa o nome da categoria (vem do painel)', () => {
+    const head = buildSeoHead(ctx({ path: '/x', category: { name: '<b>X</b>', description: '' } }));
+    expect(head).not.toContain('<b>X</b>');
+    expect(head).toContain('&lt;b&gt;X&lt;/b&gt;');
   });
   it('produto: og:type product, preço com desconto e disponibilidade', () => {
     const head = buildSeoHead(ctx({ path: '/produto/abc123', product }));
@@ -172,10 +182,11 @@ describe('robots e sitemap', () => {
     expect(txt).toContain(`Sitemap: ${BASE}/sitemap.xml`);
   });
   it('sitemap lista home, páginas institucionais e produtos, sem rotas privadas', () => {
-    const xml = buildSitemapXml(BASE, [{ id: 'p1', updatedAt: new Date('2026-11-01T10:00:00Z') }]);
+    const categories = ['camisas', 'calcas', 'bermudas', 'bones', 'jaquetas'].map((slug) => ({ slug }));
+    const xml = buildSitemapXml(BASE, [{ id: 'p1', updatedAt: new Date('2026-11-01T10:00:00Z') }], categories);
     expect(xml).toContain(`<loc>${BASE}/</loc>`);
     expect(xml).toContain(`<loc>${BASE}/sobre-nos</loc>`);
-    for (const slug of ['camisas', 'calcas', 'bermudas', 'bones', 'produtos']) {
+    for (const slug of ['camisas', 'calcas', 'bermudas', 'bones', 'jaquetas', 'produtos']) {
       expect(xml).toContain(`<loc>${BASE}/${slug}</loc><priority>0.8</priority>`);
     }
     expect(xml).toContain(`<loc>${BASE}/produto/p1</loc><lastmod>2026-11-01</lastmod>`);
