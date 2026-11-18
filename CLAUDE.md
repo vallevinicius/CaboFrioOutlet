@@ -4,11 +4,12 @@ Guia do projeto para o Claude Code. As regras globais do Vinicius (`~/.claude/CL
 
 ## Domínio
 
-Loja virtual da **Cabo Frio Outlet**, loja **multimarcas** de moda urbana (camisas, calças, bermudas e bonés) com preço de outlet, há 10 anos no Centro de Cabo Frio/RJ (Av. Júlia Kubitschek, 16, Ed. Premier Center, lojas 3 e 4).
+Loja virtual da **Cabo Frio Outlet**, loja **multimarcas** de moda urbana (camisas, calças, bermudas, bonés e outras categorias cadastradas no painel) com preço de outlet, há 10 anos no Centro de Cabo Frio/RJ (Av. Júlia Kubitschek, 16, Ed. Premier Center, lojas 3 e 4).
 
 - **Varejo:** vitrine, carrinho, checkout com Mercado Pago (cartão parcelado, Pix etc.) e frete pela Melhor Envio.
 - **Atacado:** página `/atacado` com formulário de orçamento (`WholesaleQuote`). Cada produto tem um canal de venda (`SalesChannel`: `RETAIL`, `WHOLESALE` ou `BOTH`); peças só de atacado não aparecem no varejo nem no sitemap.
-- **Admin (`/admin`):** produtos, estoque por tamanho, banners da home, pedidos, orçamentos de atacado, clientes, configurações da loja e equipe com perfis de acesso.
+- **Categorias:** cadastradas no painel (tabela `Category`), não no código. Cada uma tem `key` (valor gravado em `Product.category`, nunca muda; as antigas são `camisas`, `calças`, `bermudas`, `bonés`), `slug` (endereço `/<slug>`, nunca muda), nome, foto do quadro da home, frase, descrição para o Google, ordem e ativa/oculta. Oculta some do site (página vira 404), mas as peças continuam em `/produtos`. Só dá para apagar sem peças.
+- **Admin (`/admin`):** produtos, categorias, estoque por tamanho, banners da home, pedidos, orçamentos de atacado, clientes, configurações da loja e equipe com perfis de acesso.
 - **Domínio de produção:** `https://cabofriooutlet.com.br` (sem `www`).
 
 ## Stack
@@ -51,8 +52,9 @@ uploads/             fotos enviadas pelo admin (fora do Git)
 Pontos importantes:
 
 - **Uma porta só:** o Express serve a API (`/api`), os uploads (`/uploads`) e o build do Angular. Qualquer rota fora de `/api` e `/uploads` cai em `sendIndexWithSeo`, que entrega o `index.html` com título, descrição, canonical, Open Graph e JSON-LD da rota já preenchidos.
-- **Sem SSR:** o Angular renderiza no navegador. O que buscadores leem com certeza é o `<head>` injetado pelo servidor (`server/seo/meta.ts`). Página nova que deve ser indexada precisa de entrada em `PAGE_META` (e entra no sitemap automaticamente).
-- **Permissões:** a autorização é sempre no backend e lida do banco a cada requisição (não do token). Seções: `inicio`, `banners`, `produtos`, `estoque`, `pedidos`, `atacado`, `clientes`, `configuracoes`, cada uma com nível `view` ou `edit`. Use `requirePermission(secao, nivel)` / `requireAnyPermission(...)`; equipe e perfis exigem `requireSuperAdmin`. Rotas do cliente usam `requireAuth` e checam o dono do recurso no serviço.
+- **Sem SSR:** o Angular renderiza no navegador. O que buscadores leem com certeza é o `<head>` injetado pelo servidor (`server/seo/meta.ts`). Página fixa nova que deve ser indexada precisa de entrada em `PAGE_META` (e entra no sitemap automaticamente). Páginas de categoria vêm do banco: `/<slug>` ativo recebe título `"<Nome> multimarcas | <loja>"` e a descrição da categoria, e o sitemap lista as ativas.
+- **Categorias no client:** `CategoryService` carrega `/api/categories` (só ativas) e é a única fonte de categorias do site: menu, rodapé, home, listagem, produto e atacado. A rota `/:categoria` usa `canMatch` (`category.guard.ts`) e fica antes do `**`; por isso slugs de páginas fixas são reservados (`server/utils/category-slug.ts`). Nada de lista fixa de categorias no código.
+- **Permissões:** a autorização é sempre no backend e lida do banco a cada requisição (não do token). Seções: `inicio`, `banners`, `produtos` (vale também para a aba Categorias), `estoque`, `pedidos`, `atacado`, `clientes`, `configuracoes`, cada uma com nível `view` ou `edit`. Use `requirePermission(secao, nivel)` / `requireAnyPermission(...)`; equipe e perfis exigem `requireSuperAdmin`. Rotas do cliente usam `requireAuth` e checam o dono do recurso no serviço.
 - **CPF cifrado:** o CPF é guardado com AES-256-GCM (`DATA_ENCRYPTION_KEY`) mais um hash para busca. Nunca trocar a chave de um banco que já tem CPFs cifrados.
 - **Upload de fotos:** até 20 MB (`MAX_UPLOAD_BYTES`, igual em `server/routes/upload.ts` e `client/src/app/utils/upload-error.ts`). O `sharp` aplica a orientação EXIF e salva JPG de até 1000px. Acima do limite, a API responde 413 em português; um 413 sem JSON vem do Nginx, e o front pede para aumentar o `client_max_body_size`.
 - **Conciliação de pagamentos:** ao subir, o servidor confere a cada 2 minutos no Mercado Pago os pedidos pendentes (webhook perdido, página fechada).
@@ -77,6 +79,7 @@ Pontos importantes:
 | `/shipping/melhor-envio` | `GET /status`, `POST /connect`, `GET /callback`, `DELETE /` | `configuracoes` (callback OAuth público) |
 | `/settings` | `GET /`, `PUT /` | público / `configuracoes` edit |
 | `/hero-slides` | `GET /`; `POST`, `PUT /:id`, `PATCH /:id/move`, `DELETE /:id` | público / `banners` edit |
+| `/categories` | `GET /` (ativas); `GET /all` (todas, com nº de peças); `POST`, `PUT /:id`, `PATCH /:id/move`, `DELETE /:id` (409 se houver peças) | público / `produtos` view / `produtos` edit |
 | `/upload` | `POST /` | `produtos`, `banners` ou `configuracoes` edit |
 | `/favorites` | `GET /`, `POST /merge`, `PUT/DELETE /:productId` | logado |
 | `/reviews` | `GET /` | público (Google Places) |
@@ -104,7 +107,7 @@ Arquivo `.env` na raiz (modelo em `.env.example`, sempre atualizado e sem valore
 | `ADMIN_EMAIL`, `ADMIN_DEFAULT_PASSWORD` | primeiro super admin (criado pelo seed) |
 | `DATA_ENCRYPTION_KEY` | 32 bytes em base64 (`openssl rand -base64 32`). **Obrigatória**; guardar cópia: perdida, os CPFs não voltam |
 | `MELHOR_ENVIO_CLIENT_ID`, `MELHOR_ENVIO_CLIENT_SECRET` | app da Melhor Envio; retorno em `SITE_URL/api/shipping/melhor-envio/callback` |
-| `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY`, `MP_WEBHOOK_SECRET` | Mercado Pago; webhook (evento "Order") em `SITE_URL/api/checkout/webhook` |
+| `MP_ACCESS_TOKEN`, `MP_PUBLIC_KEY`, `MP_WEBHOOK_SECRET` | Mercado Pago (**o servidor não sobe sem `MP_ACCESS_TOKEN`**; em dev use a credencial de teste); webhook (evento "Order") em `SITE_URL/api/checkout/webhook` |
 | `RESEND_API_KEY`, `EMAIL_FROM` | e-mails transacionais; vazio = envio ignorado |
 | `GOOGLE_PLACES_API_KEY` | avaliações do Google (o Place ID fica no admin) |
 | `GOOGLE_SITE_VERIFICATION` | código da meta tag do Google Search Console (chega com o PR #22) |
@@ -124,6 +127,7 @@ npm run db:encrypt-cpf                       # migração única: cifra CPFs ant
 ```
 
 Produção:
+- Deploy: `git pull`, `npm ci --include=dev`, `npm --prefix client ci --include=dev`, `npx prisma migrate deploy` (obrigatório quando há migration nova, como a de categorias), `npm run build`, reiniciar o PM2.
 - `.env` com `NODE_ENV=production`, `TRUST_PROXY=1` e `SITE_URL=https://cabofriooutlet.com.br`.
 - Redirecionar `www.cabofriooutlet.com.br` para o domínio sem `www`.
 - Nginx com `client_max_body_size 21m;` (o padrão de 1 MB barra as fotos do celular).
