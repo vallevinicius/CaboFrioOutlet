@@ -56,7 +56,8 @@ uploadRouter.post(
       // rotate() sem ângulo aplica a orientação EXIF: foto tirada em pé no celular não fica deitada.
       await sharp(req.file.buffer)
         .rotate()
-        .resize({ width: 1000, withoutEnlargement: true })
+        // 1600 px: origem nítida para a versão de 1200 (rota /img) e para e-mail/WhatsApp.
+        .resize({ width: 1600, withoutEnlargement: true })
         .jpeg({ quality: 82 })
         .toFile(path.join(UPLOADS_DIR, filename));
 

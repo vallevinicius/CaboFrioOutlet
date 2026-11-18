@@ -27,3 +27,6 @@ export const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UP
 
 /** Build do Angular servido pelo Express. */
 export const CLIENT_DIST = path.join(PROJECT_ROOT, 'client', 'dist', 'client', 'browser');
+
+/** Versões WebP das fotos (geradas sob demanda por /img). Pasta com ponto: o express.static de /uploads não a expõe. */
+export const IMAGE_CACHE_DIR = process.env.IMAGE_CACHE_DIR ? path.resolve(process.env.IMAGE_CACHE_DIR) : path.join(UPLOADS_DIR, '.variants');

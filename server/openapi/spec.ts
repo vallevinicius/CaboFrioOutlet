@@ -616,6 +616,20 @@ doc({ method: 'patch', path: '/api/wholesale/quotes/{id}', tag: 'Atacado', summa
 doc({ method: 'get', path: '/api/reports/overview', tag: 'Relatórios', summary: 'Vendas e estoque baixo', access: 'admin', query: z.object({ days: z.enum(['7', '30', '90']).optional().openapi({ description: 'Padrão 30' }) }), ok: { schema: Overview, description: 'Resumo do período' } });
 
 doc({ method: 'get', path: '/api/health', tag: 'Sistema', summary: 'Verificação de saúde', ok: { schema: z.object({ ok: z.boolean() }), description: 'Servidor no ar' } });
+registry.registerPath({
+  method: 'get',
+  path: '/img/{width}/{dir}/{file}',
+  tags: ['Sistema'],
+  summary: 'Foto em WebP na largura pedida (gerada na primeira vez e guardada em cache)',
+  request: {
+    params: z.object({
+      width: z.enum(['480', '1200']),
+      dir: z.enum(['uploads', 'placeholders']),
+      file: z.string().openapi({ example: 'cae59a8b-f70a-4cbc-a02a-24bdf8b6d503.jpg' }),
+    }),
+  },
+  responses: { 200: { description: 'Imagem WebP', content: { 'image/webp': { schema: z.string().openapi({ format: 'binary' }) } } }, 404: { description: 'Largura, pasta ou arquivo inválido' } },
+});
 registry.registerPath({ method: 'get', path: '/robots.txt', tags: ['Sistema'], summary: 'robots.txt', responses: { 200: { description: 'Texto', content: { 'text/plain': { schema: z.string() } } } } });
 registry.registerPath({ method: 'get', path: '/sitemap.xml', tags: ['Sistema'], summary: 'sitemap.xml com home, páginas e produtos', responses: { 200: { description: 'XML', content: { 'application/xml': { schema: z.string() } } } } });
 
